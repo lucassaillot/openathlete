@@ -36,6 +36,21 @@ const translations = {
       'These messages were grouped so you do not receive an email for every single message.',
     from: (senderName: string, time: string) => `From ${senderName} — ${time}`,
   },
+  IT: {
+    title: 'Nuovi messaggi nella tua casella',
+    preview: (count: number) =>
+      count > 1
+        ? `${count} nuovi messaggi in una conversazione`
+        : 'Nuovo messaggio in una conversazione',
+    intro: (threadTitle?: string | null) =>
+      threadTitle
+        ? `Hai ricevuto nuovi messaggi nella conversazione “${threadTitle}” su OpenAthlete.`
+        : 'Hai ricevuto nuovi messaggi in una delle tue conversazioni su OpenAthlete.',
+    openInbox: 'Apri la casella',
+    footerNote:
+      'Questi messaggi sono stati raggruppati per evitare di inviarti una email per ogni singolo messaggio.',
+    from: (senderName: string, time: string) => `Da ${senderName} — ${time}`,
+  },
 } as const;
 
 export function buildMessageThreadNotificationEmail({
@@ -63,7 +78,11 @@ export function buildMessageThreadNotificationEmail({
     .map((message) => {
       const createdAt = new Date(message.createdAtIso);
       const timeLabel = createdAt.toLocaleString(
-        language === Language.FR ? 'fr-FR' : 'en-US',
+        language === Language.FR
+          ? 'fr-FR'
+          : language === Language.IT
+            ? 'it-IT'
+            : 'en-US',
         {
           hour: '2-digit',
           minute: '2-digit',

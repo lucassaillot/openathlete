@@ -370,6 +370,7 @@ enum AvailabilityPriority {
 enum UserLanguage {
   FR
   EN
+  IT
 
   @@map("user_language")
 }

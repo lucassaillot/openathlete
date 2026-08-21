@@ -18,9 +18,21 @@ const frPlanLabel: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.CLUB_ULTRA]: 'Club Ultra',
 };
 
+const itPlanLabel: Record<SubscriptionPlan, string> = {
+  [SubscriptionPlan.FREE]: 'Gratuito',
+  [SubscriptionPlan.ATHLETE_PRO]: 'Athlete Pro',
+  [SubscriptionPlan.COACH_PRO]: 'Coach Pro',
+  [SubscriptionPlan.COACH_ULTRA]: 'Coach Ultra',
+  [SubscriptionPlan.CLUB_PRO]: 'Club Pro',
+  [SubscriptionPlan.CLUB_ULTRA]: 'Club Ultra',
+};
+
 function planLabel(plan: SubscriptionPlan, language: EmailLanguage): string {
   if (language === Language.EN) {
     return getPlanConfig(plan).name;
+  }
+  if (language === Language.IT) {
+    return itPlanLabel[plan];
   }
   return frPlanLabel[plan];
 }
@@ -53,6 +65,20 @@ const translations = {
     buttonLabel: 'Manage subscription',
     helpNote:
       'Questions? Reply to this email and we will get back to you shortly.',
+  },
+  IT: {
+    title: 'Il tuo abbonamento è confermato',
+    preview: 'Grazie per la tua fiducia',
+    greeting: (name?: string) =>
+      name
+        ? `Ciao ${name}, la tua iscrizione a OpenAthlete è stata registrata correttamente.`
+        : 'La tua iscrizione a OpenAthlete è stata registrata correttamente.',
+    planLine: (label: string) => `Piano sottoscritto: ${label}.`,
+    description:
+      'Hai ora accesso a tutte le funzionalità incluse nel tuo piano. Puoi gestire la fatturazione, i metodi di pagamento e il tuo abbonamento in qualsiasi momento.',
+    buttonLabel: 'Gestisci il mio abbonamento',
+    helpNote:
+      'Hai domande? Rispondi a questa email e ti risponderemo il prima possibile.',
   },
 } as const;
 

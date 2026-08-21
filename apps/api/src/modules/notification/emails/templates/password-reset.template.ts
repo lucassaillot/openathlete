@@ -27,6 +27,17 @@ const translations = {
       `If the button doesn't work, copy and paste this link into your browser: ${url}`,
     ignoreNote: "If you didn't make this request, you can ignore this email.",
   },
+  IT: {
+    title: 'Reimposta la tua password',
+    preview: 'Reimposta la tua password di OpenAthlete',
+    description:
+      'Abbiamo ricevuto una richiesta di reimpostazione della tua password. Clicca sul pulsante qui sotto per crearne una nuova.',
+    buttonLabel: 'Scegli una nuova password',
+    linkNote: (url: string) =>
+      `Se il pulsante non funziona, copia e incolla questo link nel tuo browser: ${url}`,
+    ignoreNote:
+      'Se non hai effettuato questa richiesta, puoi ignorare questa email.',
+  },
 } as const;
 
 export function buildPasswordResetEmail({

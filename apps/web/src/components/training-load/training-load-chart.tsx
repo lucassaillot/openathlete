@@ -69,7 +69,7 @@ export function TrainingLoadChart({
         ctl: item.ctl,
         tsb: item.tsb,
       }));
-  }, [history]);
+  }, [history, dateFnsLocale]);
 
   return (
     <Card>
@@ -143,7 +143,9 @@ export function TrainingLoadChart({
                         const timestamp =
                           typeof value === 'number' ? value : Number(value);
                         if (Number.isNaN(timestamp)) return '';
-                        return format(new Date(timestamp), 'dd MMM', { locale: dateFnsLocale });
+                        return format(new Date(timestamp), 'dd MMM', {
+                          locale: dateFnsLocale,
+                        });
                       } catch (error) {
                         console.error('Error formatting tick:', value, error);
                         return '';
@@ -162,7 +164,9 @@ export function TrainingLoadChart({
                             const timestamp =
                               typeof value === 'number' ? value : Number(value);
                             if (Number.isNaN(timestamp)) return String(value);
-                            return format(new Date(timestamp), 'dd MMMM yyyy', { locale: dateFnsLocale });
+                            return format(new Date(timestamp), 'dd MMMM yyyy', {
+                              locale: dateFnsLocale,
+                            });
                           } catch (error) {
                             console.error(
                               'Error formatting date:',

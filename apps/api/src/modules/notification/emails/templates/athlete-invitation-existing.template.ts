@@ -30,6 +30,18 @@ const translations = {
     settingsNote:
       'You can manage all your invitations in the Settings section of your account.',
   },
+  IT: {
+    title: 'Nuovo invito da un coach',
+    preview: (coachName: string) =>
+      `${coachName} ti invita a unirsi al suo team`,
+    description: (coachName: string) =>
+      `${coachName} ti invita a unirsi al suo team di atleti su OpenAthlete. Puoi accettare o rifiutare questo invito nelle tue impostazioni.`,
+    buttonLabel: 'Visualizza gli inviti',
+    linkNote: (url: string) =>
+      `Se il pulsante non funziona, copia e incolla questo link nel tuo browser: ${url}`,
+    settingsNote:
+      'Puoi gestire tutti i tuoi inviti nella sezione Impostazioni del tuo account.',
+  },
 } as const;
 
 export function buildAthleteInvitationExistingEmail({

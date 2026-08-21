@@ -43,9 +43,7 @@ export function ProfilePage() {
     <div className="w-full p-4 md:p-8 space-y-4">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">{m.profile()}</h2>
-        <p className="text-muted-foreground">
-          {m.select_an_option_below()}
-        </p>
+        <p className="text-muted-foreground">{m.select_an_option_below()}</p>
       </div>
 
       <div className="grid gap-4">

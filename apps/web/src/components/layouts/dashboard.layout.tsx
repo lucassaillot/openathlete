@@ -1,5 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SpaceConsumer, SpaceProvider } from '@/contexts/space';
+import { m } from '@/paraglide/messages';
 import { isCapacitor } from '@/utils/capacitor';
 import {
   DndContext,
@@ -27,7 +28,6 @@ import {
 } from '../create-event-from-template-dialog/dnd-types';
 import { MobileLayout } from '../mobile/mobile-layout';
 import { PlanImportHandler } from '../plan-import-handler';
-import { m } from '@/paraglide/messages';
 import { AppSidebar } from '../sidebar/app-sidebar';
 import { SportIcon } from '../sport-icon/sport-icon';
 

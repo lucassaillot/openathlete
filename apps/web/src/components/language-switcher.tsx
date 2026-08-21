@@ -8,16 +8,17 @@ import {
 import { useLanguageSync } from '@/hooks/use-language-sync';
 import { m } from '@/paraglide/messages';
 import { getLocale } from '@/paraglide/runtime';
-import { getLocaleName } from '@/utils/locales';
+import {
+  SUPPORTED_LOCALES,
+  SupportedLocale,
+  getLocaleName,
+} from '@/utils/locales';
 import { cn } from '@/utils/shadcn';
 import { Globe } from 'lucide-react';
 import { ComponentProps } from 'react';
 
 type ButtonVariant = ComponentProps<typeof Button>['variant'];
 type ButtonSize = ComponentProps<typeof Button>['size'];
-
-const SUPPORTED_LOCALES = ['en', 'fr'] as const;
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 interface LanguageSwitcherProps {
   className?: string;
