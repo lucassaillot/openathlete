@@ -41,7 +41,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN apk add --no-cache wget openssl libc6-compat \
+RUN apk add --no-cache wget openssl libc6-compat su-exec \
   && corepack enable && corepack prepare pnpm@9.15.9 --activate \
   && npm install -g prisma@6.15.0 \
   && addgroup -g 1001 -S openathlete \
@@ -68,11 +68,9 @@ COPY apps/api/scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh \
   && chown -R openathlete:openathlete /app
 
-USER openathlete
+USER root
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=180s --retries=18 \
-  CMD wget -qO- http://127.0.0.1:3000/health | grep -q '"status":"ok"' || exit 1
 
 CMD ["/app/docker-entrypoint.sh"]

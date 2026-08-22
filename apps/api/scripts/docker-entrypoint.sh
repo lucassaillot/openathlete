@@ -1,114 +1,49 @@
 #!/bin/sh
 set -e
 
-# Function to decode base64 secret if needed
-decode_secret() {
-  local var_name=$1
-  local var_value=$(eval echo \$$var_name)
-  local expected_pattern=$2
-  
-  if [ -z "$var_value" ]; then
-    return 0
-  fi
-  
-  # If expected pattern is provided, check if value matches it
-  if [ -n "$expected_pattern" ]; then
-    if echo "$var_value" | grep -qE "$expected_pattern"; then
-      # Already in expected format, no need to decode, but ensure it's exported
-      eval export "$var_name=\"$var_value\""
-      return 0
-    fi
-  fi
-  
-  # Try to decode from base64
-  DECODED=$(echo "$var_value" | base64 -d 2>/dev/null)
-  if [ $? -eq 0 ] && [ -n "$DECODED" ]; then
-    # If expected pattern is provided, verify decoded value matches
-    if [ -n "$expected_pattern" ]; then
-      if echo "$DECODED" | grep -qE "$expected_pattern"; then
-        eval export "$var_name=\"$DECODED\""
-        return 0
-      fi
-    else
-      # No pattern to check, use decoded value
-      eval export "$var_name=\"$DECODED\""
-      return 0
-    fi
-  fi
-  
-  # If expected pattern is required but not matched, return error
-  if [ -n "$expected_pattern" ]; then
-    return 1
-  fi
-  
-  # No pattern required and decode failed, use original value (ensure it's exported)
-  eval export "$var_name=\"$var_value\""
-  return 0
+log() {
+  echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') $*"
 }
 
-# Decode DATABASE_URL
+die() {
+  log "ERROR: $*"
+  exit 1
+}
+
+log "OpenAthlete API entrypoint starting"
+
 if [ -z "$DATABASE_URL" ]; then
-  exit 1
+  die "DATABASE_URL is required"
 fi
 
-if ! decode_secret "DATABASE_URL" '^(postgresql|postgres)://'; then
-  exit 1
-fi
+case "$DATABASE_URL" in
+  postgresql://*|postgres://*) ;;
+  *) die "DATABASE_URL must start with postgresql:// or postgres://" ;;
+esac
 
-PROTOCOL=$(echo "$DATABASE_URL" | cut -d: -f1)
-if [ "$PROTOCOL" != "postgresql" ] && [ "$PROTOCOL" != "postgres" ]; then
-  exit 1
-fi
-
-# Decode REDIS_URL
 if [ -n "$REDIS_URL" ]; then
-  if ! decode_secret "REDIS_URL" '^redis://'; then
-    exit 1
-  fi
-  
-  PROTOCOL=$(echo "$REDIS_URL" | cut -d: -f1)
-  if [ "$PROTOCOL" != "redis" ]; then
-    exit 1
-  fi
+  case "$REDIS_URL" in
+    redis://*|rediss://*) ;;
+    *) die "REDIS_URL must start with redis:// or rediss://" ;;
+  esac
 fi
-
-decode_secret "OPENAI_API_KEY"
-decode_secret "BREVO_API_KEY"
-decode_secret "GARMIN_CLIENT_SECRET"
-decode_secret "POLAR_CLIENT_SECRET"
-decode_secret "POLAR_WEBHOOK_SECRET_KEY"
-decode_secret "GOOGLE_GENERATIVE_AI_API_KEY"
-decode_secret "STRIPE_SECRET_KEY"
-decode_secret "STRIPE_WEBHOOK_SECRET"
-decode_secret "STRAVA_WEBHOOK_TOKEN"
-# decode_secret "SUUNTO_CLIENT_SECRET"
-# decode_secret "SUUNTO_SUBSCRIPTION_KEY"
-decode_secret "HASH_PEPPER"
-decode_secret "STRIPE_PUBLISHABLE_KEY"
-decode_secret "STRIPE_PRICE_IDS"
-decode_secret "BETTER_STACK_DSN"
-if [ -n "$STRIPE_PRICE_IDS" ]; then
-  if ! echo "$STRIPE_PRICE_IDS" | grep -qE '^\{".*"\}$'; then
-    STRIPE_PRICE_IDS=$(echo "$STRIPE_PRICE_IDS" | sed 's/^{//;s/}$//' | sed -E 's/([A-Z_]+):([^,}]+)/"\1":"\2"/g' | sed 's/^/{/;s/$/}/')
-    export STRIPE_PRICE_IDS
-  fi
-fi
-decode_secret "FIREBASE_FUNCTIONS_URL"
-
-export DATABASE_URL
 
 if [ "${SKIP_MIGRATIONS:-false}" = "true" ]; then
-  echo "Skipping database migrations (SKIP_MIGRATIONS=true)"
+  log "Skipping database migrations (SKIP_MIGRATIONS=true)"
 else
+  log "Running prisma migrate deploy..."
   cd /app/libs/database
-
-  if prisma migrate deploy; then
-    echo "✓ Migrations completed successfully"
-  else
-    exit 1
+  if ! prisma migrate deploy; then
+    die "prisma migrate deploy failed"
   fi
+  log "Migrations completed successfully"
 fi
 
+log "Starting NestJS (node dist/main.js)"
 cd /app/apps/api
-exec node dist/main.js
 
+if [ "$(id -u)" = "0" ]; then
+  exec su-exec openathlete node dist/main.js
+fi
+
+exec node dist/main.js
