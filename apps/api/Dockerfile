@@ -4,7 +4,9 @@
 FROM node:22.14.0-alpine AS build
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+# Prisma engines on Alpine need OpenSSL; libc6-compat for Node native addons
+RUN apk add --no-cache openssl libc6-compat \
+  && corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json apps/api/package.json
@@ -15,8 +17,12 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Dummy URL is enough for `prisma generate` (no DB connection)
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
+
 WORKDIR /app/libs/database
-RUN pnpm db:generate && pnpm build:config
+RUN pnpm db:generate
+RUN pnpm build:config
 
 WORKDIR /app/libs/shared
 RUN pnpm build
@@ -30,7 +36,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN apk add --no-cache wget \
+RUN apk add --no-cache wget openssl libc6-compat \
   && corepack enable && corepack prepare pnpm@9.15.9 --activate \
   && npm install -g prisma@6.15.0 \
   && addgroup -g 1001 -S openathlete \

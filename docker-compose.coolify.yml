@@ -55,6 +55,7 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    image: openathlete-api:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -113,10 +114,10 @@ services:
     labels:
       - "coolify.managed=true"
 
+  # Same image as api — do not add a second `build:` (Coolify would rebuild
+  # and inject runtime secrets as Dockerfile ARG, which breaks prisma generate)
   worker:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+    image: openathlete-api:latest
     restart: unless-stopped
     depends_on:
       api:
