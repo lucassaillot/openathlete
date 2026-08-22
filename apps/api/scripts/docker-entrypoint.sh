@@ -95,14 +95,18 @@ if [ -n "$STRIPE_PRICE_IDS" ]; then
 fi
 decode_secret "FIREBASE_FUNCTIONS_URL"
 
-cd /app/libs/database
-
 export DATABASE_URL
 
-if prisma migrate deploy; then
-  echo "✓ Migrations completed successfully${NC}"
+if [ "${SKIP_MIGRATIONS:-false}" = "true" ]; then
+  echo "Skipping database migrations (SKIP_MIGRATIONS=true)"
 else
-  exit 1
+  cd /app/libs/database
+
+  if prisma migrate deploy; then
+    echo "✓ Migrations completed successfully"
+  else
+    exit 1
+  fi
 fi
 
 cd /app/apps/api

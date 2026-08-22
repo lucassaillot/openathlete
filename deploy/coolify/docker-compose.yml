@@ -1,0 +1,168 @@
+# OpenAthlete — Backend stack for Coolify / VPS
+#
+# Backend only: postgres + redis + api + worker
+# Frontend (app.openathlete.org) is hosted on Vercel — see MIGRATION.md
+#
+# Usage:
+#   cp deploy/coolify/.env.example deploy/coolify/.env
+#   # Fill in secrets, then:
+#   docker compose -f deploy/coolify/docker-compose.yml --env-file deploy/coolify/.env up -d
+#
+# Coolify alternative: create each service individually in the UI using this file as reference.
+# See deploy/coolify/MIGRATION.md for the full migration guide.
+
+name: openathlete
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - openathlete
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - openathlete
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENV: ${ENV}
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      HASH_PEPPER: ${HASH_PEPPER}
+      APP_URL: ${APP_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_FROM_EMAIL: ${BREVO_FROM_EMAIL}
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET}
+      STRAVA_REDIRECT_URI: ${STRAVA_REDIRECT_URI}
+      STRAVA_WEBHOOK_TOKEN: ${STRAVA_WEBHOOK_TOKEN}
+      POLAR_CLIENT_ID: ${POLAR_CLIENT_ID}
+      POLAR_CLIENT_SECRET: ${POLAR_CLIENT_SECRET}
+      POLAR_REDIRECT_URI: ${POLAR_REDIRECT_URI}
+      POLAR_WEBHOOK_URL: ${POLAR_WEBHOOK_URL}
+      POLAR_WEBHOOK_SECRET_KEY: ${POLAR_WEBHOOK_SECRET_KEY}
+      GARMIN_CLIENT_ID: ${GARMIN_CLIENT_ID:-}
+      GARMIN_CLIENT_SECRET: ${GARMIN_CLIENT_SECRET:-}
+      GARMIN_REDIRECT_URI: ${GARMIN_REDIRECT_URI:-}
+      SUUNTO_CLIENT_ID: ${SUUNTO_CLIENT_ID:-}
+      SUUNTO_CLIENT_SECRET: ${SUUNTO_CLIENT_SECRET:-}
+      SUUNTO_REDIRECT_URI: ${SUUNTO_REDIRECT_URI:-}
+      SUUNTO_SUBSCRIPTION_KEY: ${SUUNTO_SUBSCRIPTION_KEY:-}
+      COROS_CLIENT_ID: ${COROS_CLIENT_ID:-}
+      COROS_CLIENT_SECRET: ${COROS_CLIENT_SECRET:-}
+      COROS_REDIRECT_URI: ${COROS_REDIRECT_URI:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_IDS: ${STRIPE_PRICE_IDS:-}
+      FIREBASE_FUNCTIONS_URL: ${FIREBASE_FUNCTIONS_URL:-}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      BETTER_STACK_DSN: ${BETTER_STACK_DSN:-}
+      ENABLE_ACTIVITY_IMPORT: "false"
+      ENABLE_ACTIVITY_PROCESSING: "false"
+      ENABLE_TRAINING_LOAD_ESTIMATION: "false"
+      SKIP_MIGRATIONS: "false"
+    expose:
+      - "3000"
+    networks:
+      - openathlete
+    labels:
+      - "coolify.managed=true"
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      ENV: ${ENV}
+      NODE_ENV: ${NODE_ENV}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      HASH_PEPPER: ${HASH_PEPPER}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_FROM_EMAIL: ${BREVO_FROM_EMAIL}
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET}
+      STRAVA_REDIRECT_URI: ${STRAVA_REDIRECT_URI}
+      STRAVA_WEBHOOK_TOKEN: ${STRAVA_WEBHOOK_TOKEN}
+      GARMIN_CLIENT_ID: ${GARMIN_CLIENT_ID:-}
+      GARMIN_CLIENT_SECRET: ${GARMIN_CLIENT_SECRET:-}
+      GARMIN_REDIRECT_URI: ${GARMIN_REDIRECT_URI:-}
+      POLAR_CLIENT_ID: ${POLAR_CLIENT_ID}
+      POLAR_CLIENT_SECRET: ${POLAR_CLIENT_SECRET}
+      POLAR_REDIRECT_URI: ${POLAR_REDIRECT_URI}
+      POLAR_WEBHOOK_URL: ${POLAR_WEBHOOK_URL}
+      POLAR_WEBHOOK_SECRET_KEY: ${POLAR_WEBHOOK_SECRET_KEY}
+      SUUNTO_CLIENT_ID: ${SUUNTO_CLIENT_ID:-}
+      SUUNTO_CLIENT_SECRET: ${SUUNTO_CLIENT_SECRET:-}
+      SUUNTO_REDIRECT_URI: ${SUUNTO_REDIRECT_URI:-}
+      SUUNTO_SUBSCRIPTION_KEY: ${SUUNTO_SUBSCRIPTION_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_IDS: ${STRIPE_PRICE_IDS:-}
+      FIREBASE_FUNCTIONS_URL: ${FIREBASE_FUNCTIONS_URL:-}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      BETTER_STACK_DSN: ${BETTER_STACK_DSN:-}
+      ENABLE_ACTIVITY_IMPORT: "true"
+      ENABLE_ACTIVITY_PROCESSING: "true"
+      ENABLE_TRAINING_LOAD_ESTIMATION: "true"
+      SKIP_MIGRATIONS: "true"
+    networks:
+      - openathlete
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  openathlete:
+    driver: bridge

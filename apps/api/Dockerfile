@@ -1,59 +1,48 @@
 # syntax=docker/dockerfile:1.7
 
 # ---- Build stage ----
-FROM node:22-alpine AS build
+FROM node:22.14.0-alpine AS build
 WORKDIR /app
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
-# Copy monorepo manifests for better caching
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY libs/shared/package.json libs/shared/package.json
 COPY libs/database/package.json libs/database/package.json
 
-# Install dependencies (Hoisted with pnpm)
 RUN pnpm install --frozen-lockfile
 
-# Copy full repo (only after deps to maximize layer cache)
 COPY . .
 
-# Generate Prisma client FIRST (required by shared and API)
-# Also compile prisma.config.ts to prisma.config.js for Docker runtime
 WORKDIR /app/libs/database
 RUN pnpm db:generate && pnpm build:config
 
-# Build shared (depends on database types)
 WORKDIR /app/libs/shared
 RUN pnpm build
 
-# Build API (depends on shared and database)
 WORKDIR /app/apps/api
 RUN pnpm build
 
 # ---- Runtime stage ----
-FROM node:22-alpine AS runtime
+FROM node:22.14.0-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN apk add --no-cache wget \
+  && corepack enable && corepack prepare pnpm@9.15.9 --activate \
+  && npm install -g prisma@6.15.0 \
+  && addgroup -g 1001 -S openathlete \
+  && adduser -S openathlete -u 1001 -G openathlete
 
-# Install Prisma CLI globally for migrations
-RUN npm install -g prisma@6.15.0
-
-# Bring only necessary package manifests
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY libs/shared/package.json libs/shared/package.json
 COPY libs/database/package.json libs/database/package.json
 
-# Install production dependencies (including shared and database)
 RUN pnpm install --frozen-lockfile --filter ./apps/api... --prod
 
-# Copy built artifacts
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 COPY --from=build /app/apps/api/assets ./apps/api/assets
@@ -64,12 +53,15 @@ COPY --from=build /app/libs/database/package.json ./libs/database/package.json
 COPY --from=build /app/libs/database/prisma ./libs/database/prisma
 COPY --from=build /app/libs/database/prisma.config.js ./libs/database/prisma.config.js
 
-# Copy and set up entrypoint script
 COPY apps/api/scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh \
+  && chown -R openathlete:openathlete /app
 
+USER openathlete
 
 EXPOSE 3000
 
-# Use entrypoint script to handle migrations and start the API
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3000/health | grep -q '"status":"ok"' || exit 1
+
 CMD ["/app/docker-entrypoint.sh"]

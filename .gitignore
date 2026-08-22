@@ -44,7 +44,6 @@ scripts/**/assets
 *.env
 !*.env.example
 *.env.build
-deploy/
 files/
 
 # Terraform

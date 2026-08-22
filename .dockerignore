@@ -1,0 +1,79 @@
+# Git & IDE
+.git
+.gitignore
+.github
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Dependencies (reinstalled in container)
+**/node_modules
+
+# Build outputs (rebuilt in container)
+**/dist
+**/build
+**/.next
+**/.turbo
+**/.vite
+**/coverage
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Prisma generated (regenerated during build)
+libs/database/generated
+
+# Mobile & native
+**/ios
+**/android
+**/.capacitor
+apps/web/ios
+apps/web/android
+
+# Documentation & marketing (not needed for API/Web images)
+apps/docs
+apps/website
+lab
+
+# Firebase functions (separate deployment)
+apps/firebase-functions
+
+# Infrastructure as code (not needed at runtime)
+infra
+
+# Deployment docs (not needed in image)
+deploy
+
+# Test & dev artifacts
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+**/__mocks__
+**/e2e
+**/*.md
+!apps/api/assets/**
+
+# Logs & temp
+*.log
+npm-debug.log*
+pnpm-debug.log*
+tmp
+temp
+
+# Vercel
+.vercel
+
+# Large/binary assets not required for build
+**/*.mp4
+**/*.mov
+**/*.zip
+**/*.tar
+**/*.gz
