@@ -72,5 +72,7 @@ USER root
 
 EXPOSE 3000
 
+HEALTHCHECK --interval=15s --timeout=5s --start-period=120s --retries=8 \
+  CMD wget -qO- http://127.0.0.1:3000/health | grep -q '"status":"ok"' || exit 1
 
 CMD ["/app/docker-entrypoint.sh"]
