@@ -13,22 +13,27 @@ COPY apps/api/package.json apps/api/package.json
 COPY libs/shared/package.json libs/shared/package.json
 COPY libs/database/package.json libs/database/package.json
 
-RUN pnpm install --frozen-lockfile
+# Coolify injects ARG NODE_ENV=production into this stage (build-args).
+# That makes pnpm skip devDependencies — including `prisma` CLI required
+# for `pnpm db:generate`. Force a full install on this RUN only.
+RUN NODE_ENV=development pnpm install --frozen-lockfile --prod=false
 
 COPY . .
 
-# Dummy URL is enough for `prisma generate` (no DB connection)
+# Dummy URL is enough for `prisma generate` (no DB connection).
+# Keep NODE_ENV=development so prisma (devDependency) remains on PATH.
+ENV NODE_ENV=development
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
 
 WORKDIR /app/libs/database
-RUN pnpm db:generate
-RUN pnpm build:config
+RUN NODE_ENV=development pnpm db:generate
+RUN NODE_ENV=development pnpm build:config
 
 WORKDIR /app/libs/shared
-RUN pnpm build
+RUN NODE_ENV=development pnpm build
 
 WORKDIR /app/apps/api
-RUN pnpm build
+RUN NODE_ENV=development pnpm build
 
 # ---- Runtime stage ----
 FROM node:22.14.0-alpine AS runtime
