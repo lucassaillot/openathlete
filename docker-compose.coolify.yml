@@ -109,6 +109,16 @@ services:
       SKIP_MIGRATIONS: "false"
     expose:
       - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'wget -qO- http://127.0.0.1:3000/health 2>/dev/null | grep -q ''"status":"ok"'' || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 180s
     networks:
       - openathlete
     labels:
@@ -121,7 +131,8 @@ services:
     restart: unless-stopped
     depends_on:
       api:
-        condition: service_healthy
+        # service_started: don't block stack if API health is slow (migrations)
+        condition: service_started
     environment:
       ENV: ${ENV}
       NODE_ENV: ${NODE_ENV}

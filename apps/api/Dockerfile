@@ -72,7 +72,7 @@ USER openathlete
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=5s --start-period=180s --retries=18 \
   CMD wget -qO- http://127.0.0.1:3000/health | grep -q '"status":"ok"' || exit 1
 
 CMD ["/app/docker-entrypoint.sh"]
