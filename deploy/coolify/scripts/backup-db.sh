@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMPOSE_FILE="${SCRIPT_DIR}/../docker-compose.yml"
+COMPOSE_FILE="${SCRIPT_DIR}/../../../docker-compose.coolify.yml"
 ENV_FILE="${SCRIPT_DIR}/../.env"
 OUTPUT_DIR="${1:-${SCRIPT_DIR}/../backups}"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"

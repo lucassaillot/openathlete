@@ -1,21 +1,23 @@
 # OpenAthlete — Backend stack for Coolify / VPS
 #
-# Backend only: postgres + redis + api + worker
-# Frontend (app.openathlete.org) is hosted on Vercel — see MIGRATION.md
+# MUST live at the monorepo root so Coolify build context is correct.
+# (Coolify resolves relative paths against --project-directory = repo root.)
 #
-# Usage:
+# Coolify settings:
+#   Base Directory:          (empty / repository root)
+#   Docker Compose Location: docker-compose.coolify.yml
+#
+# Local usage:
 #   cp deploy/coolify/.env.example deploy/coolify/.env
-#   # Fill in secrets, then:
-#   docker compose -f deploy/coolify/docker-compose.yml --env-file deploy/coolify/.env up -d
+#   docker compose -f docker-compose.coolify.yml --env-file deploy/coolify/.env up -d --build
 #
-# Coolify alternative: create each service individually in the UI using this file as reference.
-# See deploy/coolify/MIGRATION.md for the full migration guide.
+# See deploy/coolify/MIGRATION.md
 
 name: openathlete
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -51,7 +53,7 @@ services:
 
   api:
     build:
-      context: ../..
+      context: .
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
@@ -113,7 +115,7 @@ services:
 
   worker:
     build:
-      context: ../..
+      context: .
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
