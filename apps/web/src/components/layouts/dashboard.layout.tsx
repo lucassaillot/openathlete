@@ -1,5 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { SpaceConsumer, SpaceProvider } from '@/contexts/space';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { m } from '@/paraglide/messages';
 import { isCapacitor } from '@/utils/capacitor';
 import {
@@ -36,7 +37,10 @@ interface P {
 }
 
 function LayoutContent({ children }: P) {
+  const isMobile = useIsMobile();
+
   const { onDragStart, onDragEnd, activeItem } = useSharedDnd() || {};
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -69,10 +73,12 @@ function LayoutContent({ children }: P) {
                 <FileText className="h-4 w-4 text-primary" />
               )}
             </div>
+
             <div className="flex flex-col min-w-0">
               <span className="font-medium text-sm truncate max-w-[180px]">
                 {event?.name}
               </span>
+
               <span className="text-xs text-muted-foreground">Template</span>
             </div>
           </div>
@@ -96,10 +102,12 @@ function LayoutContent({ children }: P) {
                 style={{ color: activeData.folder.color || '#6366f1' }}
               />
             </div>
+
             <div className="flex flex-col min-w-0">
               <span className="font-medium text-sm truncate max-w-[180px]">
                 {activeData.folder.name}
               </span>
+
               <span className="text-xs text-muted-foreground">Dossier</span>
             </div>
           </div>
@@ -111,11 +119,14 @@ function LayoutContent({ children }: P) {
     const eventData = activeItem.data.current as
       | { type: 'event'; event: Event }
       | undefined;
+
     if (eventData?.type === 'event' && eventData.event) {
       const event = eventData.event;
+
       const isTrainingOrCompetition =
         event.type === EVENT_TYPE.TRAINING ||
         event.type === EVENT_TYPE.COMPETITION;
+
       const isNote = event.type === EVENT_TYPE.NOTE;
 
       return (
@@ -130,8 +141,10 @@ function LayoutContent({ children }: P) {
                 <Calendar className="h-4 w-4 text-primary" />
               )}
             </div>
+
             <div className="flex flex-col min-w-0 flex-1">
               <span className="font-medium text-sm truncate">{event.name}</span>
+
               <span className="text-xs text-muted-foreground">
                 {isTrainingOrCompetition
                   ? m.event_type_session()
@@ -155,9 +168,10 @@ function LayoutContent({ children }: P) {
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <AppSidebar />
+      {!isMobile && !isCapacitor() && <AppSidebar />}
+
       <SpaceConsumer>
-        {isCapacitor() ? (
+        {isCapacitor() || isMobile ? (
           <MobileLayout>{children}</MobileLayout>
         ) : (
           <>
@@ -165,12 +179,15 @@ function LayoutContent({ children }: P) {
               <TemplateLibrarySidebar />
               <SidebarInset className="flex-1">{children}</SidebarInset>
             </div>
+
             <ChatBubble />
             <ChatWindow />
           </>
         )}
       </SpaceConsumer>
+
       <PlanImportHandler />
+
       <DragOverlay dropAnimation={null} style={{ cursor: 'grabbing' }}>
         {getDragOverlayContent()}
       </DragOverlay>
