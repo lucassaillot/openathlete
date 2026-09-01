@@ -119,9 +119,15 @@ export class UserService {
     password,
     firstName,
     lastName,
+    accessCode,
     invitationToken,
     coachInvitationToken,
   }: CreateAccountDto) => {
+    const requiredAccessCode = this.configService.get('SIGNUP_ACCESS_CODE');
+    if (accessCode !== requiredAccessCode) {
+      throw new UnauthorizedException('Invalid access code');
+    }
+
     const normalizedEmail = email.toLowerCase();
     const hashedPassword = await this.hashPassword(password);
 
@@ -242,7 +248,7 @@ export class UserService {
       SendEmailEvent.SLUG,
       new SendEmailEvent({
         type: 'signup-notification',
-        to: 'contact@openathlete.org',
+        to: this.configService.get('ADMIN_NOTIFICATION_EMAIL'),
         params: {
           email: normalizedEmail,
           firstName,
@@ -603,9 +609,6 @@ export class UserService {
       where: { senderId: userId },
     });
     await this.prisma.messageReadReceipt.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.subscription.deleteMany({
       where: { userId },
     });
     await this.prisma.coachAthlete.deleteMany({

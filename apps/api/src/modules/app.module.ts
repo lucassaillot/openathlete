@@ -27,7 +27,6 @@ import { PrismaService } from './prisma/services/prisma.service';
 import { ProvidersSyncModule } from './providers-sync/providers-sync.module';
 import { QueueModule } from './queue';
 import { SeoPlanModule } from './seo/seo-plan.module';
-import { SubscriptionModule } from './subscription';
 
 @Module({
   imports: [
@@ -62,7 +61,6 @@ import { SubscriptionModule } from './subscription';
     ProvidersSyncModule,
     QueueModule,
     SeoPlanModule,
-    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [

@@ -15,7 +15,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
 
   // Validate locale
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -23,7 +23,7 @@ export default async function LocaleLayout({
   setLocale(locale);
 
   // Map locale to HTML lang attribute
-  const htmlLang = locale === 'fr' ? 'fr' : 'en';
+  const htmlLang = 'fr';
 
   return (
     <>

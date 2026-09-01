@@ -158,7 +158,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           >
             <img
               src={resolvedTheme === 'dark' ? logoWhiteSrc : logoDarkSrc}
-              alt="OpenAthlete Logo"
+              alt="Team Running Rouxmesnil Logo"
               className="h-10 w-10"
             />
           </Link>

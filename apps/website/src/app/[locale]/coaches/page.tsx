@@ -11,7 +11,7 @@ export default async function CoachesPage({
 }) {
   const { locale } = await params;
 
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 

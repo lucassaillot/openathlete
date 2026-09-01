@@ -91,7 +91,7 @@ export function WebPageStructuredData({
         name: title,
         description,
         url,
-        inLanguage: ['en', 'fr'],
+        inLanguage: ['fr'],
         isPartOf: {
           '@type': 'WebSite',
           name: 'OpenAthlete',
@@ -122,7 +122,7 @@ export function FAQPageStructuredData({
           },
         })),
         url,
-        inLanguage: ['en', 'fr'],
+        inLanguage: ['fr'],
       }}
     />
   );
@@ -198,7 +198,7 @@ export function ArticleStructuredData({
           '@type': 'WebPage',
           '@id': url,
         },
-        inLanguage: ['en', 'fr'],
+        inLanguage: ['fr'],
       }}
     />
   );
@@ -251,7 +251,7 @@ export function SoftwareApplicationStructuredData({
           name: 'OpenAthlete',
           url: SITE_URL,
         },
-        inLanguage: ['en', 'fr'],
+        inLanguage: ['fr'],
       }}
     />
   );

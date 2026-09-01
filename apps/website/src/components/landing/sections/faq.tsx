@@ -10,7 +10,7 @@ interface FAQProps {
   locale?: string;
 }
 
-export function FAQ({ locale = 'en' }: FAQProps) {
+export function FAQ({ locale = 'fr' }: FAQProps) {
   const faqs = [
     {
       question: m.landing_faq_item_1_q(),
@@ -34,7 +34,7 @@ export function FAQ({ locale = 'en' }: FAQProps) {
     },
   ];
 
-  const faqUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}#faq`;
+  const faqUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}#faq`;
 
   return (
     <>

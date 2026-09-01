@@ -4,6 +4,21 @@ import { ENV } from '../environment.enum';
 import { NODE_ENV } from '../node-environment.enum';
 
 /**
+ * An optional URL field that also tolerates an empty string as "not set".
+ * Plain `.string().url().optional()` only treats `undefined` as absent —
+ * an empty string (which is what Docker Compose passes for an unset
+ * `${VAR:-}` interpolation) would still fail `.url()` validation even
+ * though the field is meant to be optional. Chain `.default(...)` on the
+ * result if the field needs one.
+ */
+function optionalUrl(errorMessage: string) {
+  return z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().url(errorMessage).optional(),
+  );
+}
+
+/**
  * Environment variable validation schema for the API application.
  * This schema ensures all required environment variables are present and valid
  * before the application starts. Missing or invalid variables will cause
@@ -56,6 +71,13 @@ export const ApiEnvSchema = z
       )
       .describe('Secret key used to sign and verify JWT tokens'),
 
+    SIGNUP_ACCESS_CODE: z
+      .string()
+      .min(1, 'SIGNUP_ACCESS_CODE is required for private deployments')
+      .describe(
+        'Shared code that must be provided to create an account — keeps signup private',
+      ),
+
     // Database
     DATABASE_URL: z
       .string()
@@ -64,19 +86,19 @@ export const ApiEnvSchema = z
       .describe('PostgreSQL database connection URL'),
 
     // Application URLs
-    APP_URL: z
-      .string()
-      .url('APP_URL must be a valid URL')
-      .optional()
-      .describe(
-        'Base URL of the application (e.g., https://app.openathlete.org)',
-      ),
+    APP_URL: optionalUrl('APP_URL must be a valid URL').describe(
+      'Base URL of the application (e.g., https://app.openathlete.org)',
+    ),
 
     FRONTEND_URL: z
-      .string()
-      .url('FRONTEND_URL must be a valid URL')
-      .optional()
-      .default('http://localhost:5173')
+      .preprocess(
+        (val) => (val === '' ? undefined : val),
+        z
+          .string()
+          .url('FRONTEND_URL must be a valid URL')
+          .optional()
+          .default('http://localhost:5173'),
+      )
       .describe('Frontend application URL for redirects'),
 
     CORS_ORIGINS: z
@@ -84,30 +106,29 @@ export const ApiEnvSchema = z
       .optional()
       .describe('Comma-separated list of allowed CORS origins'),
 
-    // Strava OAuth
+    // Strava OAuth (optional — connector is hidden on the frontend if unset)
     STRAVA_CLIENT_ID: z
       .string()
-      .min(1, 'STRAVA_CLIENT_ID is required for Strava integration')
-      .describe('Strava OAuth client ID'),
+      .optional()
+      .describe('Strava OAuth client ID (optional)'),
 
     STRAVA_CLIENT_SECRET: z
       .string()
-      .min(1, 'STRAVA_CLIENT_SECRET is required for Strava integration')
-      .describe('Strava OAuth client secret'),
+      .optional()
+      .describe('Strava OAuth client secret (optional)'),
 
-    STRAVA_REDIRECT_URI: z
-      .string()
-      .url('STRAVA_REDIRECT_URI must be a valid URL')
-      .min(1, 'STRAVA_REDIRECT_URI is required for Strava OAuth callback')
-      .describe('Strava OAuth redirect URI'),
+    STRAVA_REDIRECT_URI: optionalUrl(
+      'STRAVA_REDIRECT_URI must be a valid URL',
+    ).describe('Strava OAuth redirect URI (optional)'),
 
     STRAVA_WEBHOOK_TOKEN: z
       .string()
-      .min(
-        1,
-        'STRAVA_WEBHOOK_TOKEN is required for Strava webhook verification',
-      )
-      .describe('Token for verifying Strava webhook requests'),
+      .optional()
+      .describe('Token for verifying Strava webhook requests (optional)'),
+
+    STRAVA_WEBHOOK_URL: optionalUrl(
+      'STRAVA_WEBHOOK_URL must be a valid URL',
+    ).describe('Public Strava webhook callback URL (optional)'),
 
     // Garmin OAuth (optional)
     GARMIN_CLIENT_ID: z
@@ -120,11 +141,9 @@ export const ApiEnvSchema = z
       .optional()
       .describe('Garmin OAuth client secret (optional)'),
 
-    GARMIN_REDIRECT_URI: z
-      .string()
-      .url('GARMIN_REDIRECT_URI must be a valid URL')
-      .optional()
-      .describe('Garmin OAuth redirect URI (optional)'),
+    GARMIN_REDIRECT_URI: optionalUrl(
+      'GARMIN_REDIRECT_URI must be a valid URL',
+    ).describe('Garmin OAuth redirect URI (optional)'),
 
     // Suunto OAuth (optional)
     SUUNTO_CLIENT_ID: z
@@ -137,11 +156,9 @@ export const ApiEnvSchema = z
       .optional()
       .describe('Suunto OAuth client secret (optional)'),
 
-    SUUNTO_REDIRECT_URI: z
-      .string()
-      .url('SUUNTO_REDIRECT_URI must be a valid URL')
-      .optional()
-      .describe('Suunto OAuth redirect URI (optional)'),
+    SUUNTO_REDIRECT_URI: optionalUrl(
+      'SUUNTO_REDIRECT_URI must be a valid URL',
+    ).describe('Suunto OAuth redirect URI (optional)'),
 
     SUUNTO_SUBSCRIPTION_KEY: z
       .string()
@@ -165,59 +182,82 @@ export const ApiEnvSchema = z
     //   .optional()
     //   .describe('Coros OAuth redirect URI (optional)'),
 
-    // Polar OAuth
+    // Polar OAuth (optional — connector is hidden on the frontend if unset)
     POLAR_CLIENT_ID: z
       .string()
-      .min(1, 'POLAR_CLIENT_ID is required for Polar integration')
-      .describe('Polar OAuth client ID'),
+      .optional()
+      .describe('Polar OAuth client ID (optional)'),
 
     POLAR_CLIENT_SECRET: z
       .string()
-      .min(1, 'POLAR_CLIENT_SECRET is required for Polar integration')
-      .describe('Polar OAuth client secret'),
+      .optional()
+      .describe('Polar OAuth client secret (optional)'),
 
-    POLAR_REDIRECT_URI: z
-      .string()
-      .url('POLAR_REDIRECT_URI must be a valid URL')
-      .min(1, 'POLAR_REDIRECT_URI is required for Polar OAuth callback')
-      .describe('Polar OAuth redirect URI'),
+    POLAR_REDIRECT_URI: optionalUrl(
+      'POLAR_REDIRECT_URI must be a valid URL',
+    ).describe('Polar OAuth redirect URI (optional)'),
 
-    POLAR_WEBHOOK_URL: z
-      .string()
-      .url('POLAR_WEBHOOK_URL must be a valid URL')
-      .min(1, 'POLAR_WEBHOOK_URL is required for Polar webhook configuration')
-      .describe('URL where Polar webhooks will be received'),
+    POLAR_WEBHOOK_URL: optionalUrl(
+      'POLAR_WEBHOOK_URL must be a valid URL',
+    ).describe('URL where Polar webhooks will be received (optional)'),
 
     POLAR_WEBHOOK_SECRET_KEY: z
       .string()
-      .min(
-        1,
-        'POLAR_WEBHOOK_SECRET_KEY is required for Polar webhook verification',
-      )
-      .describe('Secret key for verifying Polar webhook requests'),
+      .optional()
+      .describe('Secret key for verifying Polar webhook requests (optional)'),
 
-    // Email service (Brevo)
-    BREVO_API_KEY: z
+    // Email service (SMTP)
+    SMTP_HOST: z
       .string()
-      .min(1, 'BREVO_API_KEY is required for sending emails')
-      .describe('Brevo (formerly Sendinblue) API key for email service'),
+      .min(1, 'SMTP_HOST is required for sending emails')
+      .describe('SMTP server hostname'),
 
-    BREVO_FROM_EMAIL: z
+    SMTP_PORT: z
       .string()
-      .email('BREVO_FROM_EMAIL must be a valid email address')
-      .min(1, 'BREVO_FROM_EMAIL is required for sending emails')
-      .describe('Default sender email address for Brevo emails'),
+      .regex(/^\d+$/, 'SMTP_PORT must be a valid port number')
+      .min(1, 'SMTP_PORT is required for sending emails')
+      .describe('SMTP server port (e.g. 587, 465)'),
 
-    // AI Services
+    SMTP_SECURE: z
+      .string()
+      .optional()
+      .default('false')
+      .describe(
+        'Whether to use TLS on connect ("true" for port 465, "false" for STARTTLS on other ports)',
+      ),
+
+    SMTP_USER: z
+      .string()
+      .min(1, 'SMTP_USER is required for sending emails')
+      .describe('SMTP authentication username'),
+
+    SMTP_PASSWORD: z
+      .string()
+      .min(1, 'SMTP_PASSWORD is required for sending emails')
+      .describe('SMTP authentication password'),
+
+    SMTP_FROM_EMAIL: z
+      .string()
+      .email('SMTP_FROM_EMAIL must be a valid email address')
+      .min(1, 'SMTP_FROM_EMAIL is required for sending emails')
+      .describe('Default sender email address'),
+
+    ADMIN_NOTIFICATION_EMAIL: z
+      .string()
+      .email('ADMIN_NOTIFICATION_EMAIL must be a valid email address')
+      .min(1, 'ADMIN_NOTIFICATION_EMAIL is required for admin notifications')
+      .describe('Email address that receives new-signup notifications'),
+
+    // AI Services (optional — AI features are hidden if neither is set)
     OPENAI_API_KEY: z
       .string()
-      .min(1, 'OPENAI_API_KEY is required for AI features')
-      .describe('OpenAI API key for AI-powered features'),
+      .optional()
+      .describe('OpenAI API key for AI-powered features (optional)'),
 
     GOOGLE_GENERATIVE_AI_API_KEY: z
       .string()
-      .min(1, 'GOOGLE_GENERATIVE_AI_API_KEY is required for Google AI features')
-      .describe('Google Generative AI API key'),
+      .optional()
+      .describe('Google Generative AI API key (optional)'),
 
     // AI Model Configuration (optional, uses defaults if not provided)
     AI_MODEL_EVENT_GENERATION: z
@@ -255,38 +295,20 @@ export const ApiEnvSchema = z
 
     // Redis
     REDIS_URL: z
-      .string()
-      .url('REDIS_URL must be a valid Redis connection URL')
-      .optional()
-      .default('redis://localhost:6379/0')
+      .preprocess(
+        (val) => (val === '' ? undefined : val),
+        z
+          .string()
+          .url('REDIS_URL must be a valid Redis connection URL')
+          .optional()
+          .default('redis://localhost:6379/0'),
+      )
       .describe('Redis connection URL for queue and caching'),
 
-    // Stripe (optional, required for subscription features)
-    STRIPE_SECRET_KEY: z
-      .string()
-      .optional()
-      .describe('Stripe secret key for payment processing (optional)'),
-
-    STRIPE_PRICE_IDS: z
-      .string()
-      .optional()
-      .describe(
-        'JSON string of Stripe price IDs mapped to subscription plans (optional)',
-      ),
-
-    STRIPE_WEBHOOK_SECRET: z
-      .string()
-      .optional()
-      .describe(
-        'Stripe webhook secret for verifying webhook requests (optional)',
-      ),
-
     // Firebase
-    FIREBASE_FUNCTIONS_URL: z
-      .string()
-      .url('FIREBASE_FUNCTIONS_URL must be a valid URL')
-      .optional()
-      .describe('Firebase Cloud Functions URL (optional)'),
+    FIREBASE_FUNCTIONS_URL: optionalUrl(
+      'FIREBASE_FUNCTIONS_URL must be a valid URL',
+    ).describe('Firebase Cloud Functions URL (optional)'),
 
     FIREBASE_SERVICE_ACCOUNT_JSON: z
       .string()
@@ -318,11 +340,9 @@ export const ApiEnvSchema = z
       .describe('Enable training load estimation processing'),
 
     // Monitoring & Error Tracking
-    BETTER_STACK_DSN: z
-      .string()
-      .url('BETTER_STACK_DSN must be a valid URL')
-      .optional()
-      .describe('Better Stack (Sentry) DSN for error tracking and monitoring'),
+    BETTER_STACK_DSN: optionalUrl(
+      'BETTER_STACK_DSN must be a valid URL',
+    ).describe('Better Stack (Sentry) DSN for error tracking and monitoring'),
 
     // Normalization processor configuration (optional)
     NORMALIZATION_MIN_MOVING_SPEED_MS: z

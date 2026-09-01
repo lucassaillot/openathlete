@@ -4,27 +4,11 @@ import { BrandLogo } from '@/components/landing/brand-logo';
 import { Container } from '@/components/landing/container';
 import { APP_URL } from '@/config';
 import { m } from '@/paraglide/messages';
-import { getLocale } from '@/paraglide/runtime';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export function Footer() {
-  const pathname = usePathname();
-  const locale = getLocale();
-
-  // Extract locale from pathname or use current locale
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const currentLocale =
-    pathSegments[0] === 'fr' || pathSegments[0] === 'en'
-      ? pathSegments[0]
-      : locale === 'fr'
-        ? 'fr'
-        : 'en';
-
-  // Build localized URLs - always use explicit locale to avoid middleware rewriting
-  const getLocalizedPath = (path: string) => {
-    return `/${currentLocale}${path}`;
-  };
+  // French is served unprefixed, so paths need no locale segment.
+  const getLocalizedPath = (path: string) => path;
 
   const loginUrl = `${APP_URL}/auth/login`;
   const signupUrl = `${APP_URL}/auth/create-account`;

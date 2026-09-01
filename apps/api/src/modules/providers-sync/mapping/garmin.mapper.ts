@@ -23,7 +23,7 @@ import type {
 } from './garmin.types';
 import type { ProviderPlannedWorkoutPayload } from './index';
 
-const WORKOUT_PROVIDER = 'OpenAthlete';
+const WORKOUT_PROVIDER = 'Team Running Rouxmesnil';
 const WORKOUT_SOURCE_ID = 'openathlete';
 
 function truncateDescription(

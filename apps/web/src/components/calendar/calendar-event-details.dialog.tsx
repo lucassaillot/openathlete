@@ -6,6 +6,7 @@ import {
   eventTypeLabelMap,
 } from '@/utils/label-map/core';
 import { cn } from '@/utils/shadcn';
+import { Trash2 } from 'lucide-react';
 
 import { EVENT_TYPE, Event } from '@openathlete/shared';
 
@@ -22,6 +23,7 @@ interface P {
   onClose: () => void;
   event?: Event;
   onEditEvent: () => void;
+  onDeleteEvent: () => void;
 }
 
 export function CalendarEventDetailsDialog({
@@ -29,6 +31,7 @@ export function CalendarEventDetailsDialog({
   onClose,
   event,
   onEditEvent,
+  onDeleteEvent,
 }: P) {
   const { athleteId } = useCalendarContext();
   const { data: athlete } = useGetMyAthleteQuery();
@@ -88,6 +91,15 @@ export function CalendarEventDetailsDialog({
                 className="w-full md:w-auto text-xs md:text-sm"
               >
                 {m.edit()}
+              </Button>
+              <Button
+                onClick={onDeleteEvent}
+                variant="outline"
+                size="sm"
+                className="w-full md:w-auto text-xs md:text-sm text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                {m.delete_()}
               </Button>
             </div>
           </DialogTitle>

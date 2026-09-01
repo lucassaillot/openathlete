@@ -1,7 +1,11 @@
 import { CalendarAPI } from '@/api/calendar/calendar.api';
 import { useGetMyCyclesQuery, useUpdateCycleMutation } from '@/api/cycle';
 import { cycleKeys } from '@/api/cycle/cycle.keys';
-import { useDuplicateEventMutation, useUpdateEventMutation } from '@/api/event';
+import {
+  useDeleteEventMutation,
+  useDuplicateEventMutation,
+  useUpdateEventMutation,
+} from '@/api/event';
 import { useUseEventTemplateMutation } from '@/api/event-template';
 import { eventKeys } from '@/api/event/event.keys';
 import { useWeeklyLoadSummaryQuery } from '@/api/training-load';
@@ -33,6 +37,7 @@ import {
 } from '@openathlete/shared';
 
 import { AIGenerateEventDialog } from '../ai-generate-event-dialog/ai-generate-event.dialog';
+import { ConfirmAction } from '../confirm-action';
 import { CreateCycleDialog } from '../create-cycle-dialog';
 import { CreateEventDialog } from '../create-event-dialog';
 import { CreateEventFromTemplateDialog } from '../create-event-from-template-dialog/create-event-from-template.dialog';
@@ -292,6 +297,9 @@ export function Calendar({
   const [editEventDialog, setEditEventDialog] = useState<
     Event['eventId'] | null
   >(null);
+  const [deleteEventDialog, setDeleteEventDialog] = useState<
+    Event['eventId'] | null
+  >(null);
   const [createCycleDialog, setCreateCycleDialog] = useState<{
     startDate: Date;
     endDate: Date;
@@ -327,6 +335,16 @@ export function Calendar({
     onSuccess: (duplicated) => {
       posthog?.capture(AnalyticsEvent.event_duplicated, {
         event_type: duplicated.type,
+      });
+    },
+  });
+  const deleteEventMutation = useDeleteEventMutation({
+    onSuccess: (_, eventId) => {
+      const deletedEvent = calendarData.events.find(
+        (e) => e.eventId === eventId,
+      );
+      posthog?.capture(AnalyticsEvent.event_deleted, {
+        event_type: deletedEvent?.type,
       });
     },
   });
@@ -400,6 +418,7 @@ export function Calendar({
       openEventDetails: setEventDetailsOpened,
       eventDetailsOpened,
       editEvent: (eventId) => setEditEventDialog(eventId),
+      deleteEvent: (eventId) => setDeleteEventDialog(eventId),
       createCycle: (startDate, endDate) => {
         setCreateCycleDialog({ startDate, endDate });
       },
@@ -691,6 +710,23 @@ export function Calendar({
                 setEditEventDialog(eventDetailsOpened);
                 setEventDetailsOpened(null);
               }}
+              onDeleteEvent={() => {
+                setDeleteEventDialog(eventDetailsOpened);
+                setEventDetailsOpened(null);
+              }}
+            />
+            <ConfirmAction
+              open={deleteEventDialog !== null}
+              onClose={() => setDeleteEventDialog(null)}
+              onConfirm={() => {
+                if (deleteEventDialog !== null) {
+                  deleteEventMutation.mutate(deleteEventDialog);
+                }
+                setDeleteEventDialog(null);
+              }}
+              title={m.delete_event()}
+              message={m.confirm_delete_event()}
+              isLoading={deleteEventMutation.isPending}
             />
             <CreateEventFromTemplateDialog
               open={createEventFromTemplateDialog !== null}

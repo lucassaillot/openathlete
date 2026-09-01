@@ -19,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; distance: string; timeTarget: string }>;
 }): Promise<Metadata> {
   const { locale, distance, timeTarget } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -55,7 +55,7 @@ export default async function TriathlonTrainingPlanPage({
 }) {
   const { locale, distance, timeTarget } = await params;
 
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -63,7 +63,7 @@ export default async function TriathlonTrainingPlanPage({
     const planData = await loadPlan('triathlon', distance, timeTarget, locale);
     const path = `/training-plans/triathlon/${distance}/${timeTarget}`;
 
-    const pageUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}${path}`;
+    const pageUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}${path}`;
 
     return (
       <>

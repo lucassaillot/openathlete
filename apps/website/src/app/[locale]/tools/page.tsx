@@ -42,7 +42,7 @@ export default async function ToolsPage({
   const { locale } = await params;
 
   // Validate locale
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 

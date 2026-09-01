@@ -1,10 +1,13 @@
 import { openai } from '@ai-sdk/openai';
 
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { Prisma } from '@openathlete/database';
+import type { ApiEnvSchemaType } from '@openathlete/shared';
 
+import { isAIConfigured } from 'src/common/utils/ai-config.util';
 import { ActivityFeedbackCompletedEvent } from 'src/events';
 import { extractInjuryAgent, extractRpeAgent } from 'src/mastra/agents';
 import { CalendarWebSocketService } from 'src/modules/calendar/services/calendar-websocket.service';
@@ -19,11 +22,19 @@ export class ActivityFeedbackExtractionListener {
   constructor(
     private readonly prisma: PrismaService,
     private readonly calendarWebSocketService: CalendarWebSocketService,
+    private readonly configService: ConfigService<ApiEnvSchemaType, true>,
   ) {}
 
   @OnEvent(ActivityFeedbackCompletedEvent.SLUG, { async: true })
   async handleActivityFeedbackCompleted(event: ActivityFeedbackCompletedEvent) {
     const { eventActivityId, trigger } = event.payload;
+
+    if (!isAIConfigured(this.configService)) {
+      this.logger.debug(
+        `No AI provider configured, skipping feedback extraction for activity ${eventActivityId}`,
+      );
+      return;
+    }
 
     try {
       this.logger.log(

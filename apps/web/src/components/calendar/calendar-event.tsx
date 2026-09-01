@@ -1,4 +1,4 @@
-import { useDeleteEventMutation, useDuplicateEventMutation } from '@/api/event';
+import { useDuplicateEventMutation } from '@/api/event';
 import { useCreateEventTemplateMutation } from '@/api/event-template';
 import { useIsEventValidated } from '@/hooks/use-event-validation';
 import { m } from '@/paraglide/messages';
@@ -11,9 +11,16 @@ import {
 } from '@/utils/color';
 import { cn } from '@/utils/shadcn';
 import { useDraggable } from '@dnd-kit/core';
-import { ActivityIcon, Copy, Edit2, FileText, Trash2 } from 'lucide-react';
+import {
+  ActivityIcon,
+  Copy,
+  Edit2,
+  FileText,
+  MoreVertical,
+  Trash2,
+} from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -24,8 +31,8 @@ import {
   formatDuration,
 } from '@openathlete/shared';
 
-import { ConfirmAction } from '../confirm-action';
 import { SportIcon } from '../sport-icon/sport-icon';
+import { Button } from '../ui/button';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -33,6 +40,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '../ui/context-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { CalendarEventTooltipWrapper } from './calendar-event-tooltip-wrapper';
 import { useEventClipboard } from './contexts/event-clipboard-context';
 import { useEventContextMenu } from './contexts/event-context-menu-context';
@@ -103,18 +117,11 @@ export function CalendarEvent({ event, wrapped }: P) {
   const {
     openEventDetails,
     editEvent,
+    deleteEvent,
     events: allEvents,
     coloredBy,
     athleteId,
   } = useCalendarContext();
-  const [deleteEventDialog, setDeleteEventDialog] = useState<boolean>(false);
-  const deleteEventMutation = useDeleteEventMutation({
-    onSuccess: () => {
-      posthog?.capture(AnalyticsEvent.event_deleted, {
-        event_type: event.type,
-      });
-    },
-  });
   const duplicateEventMutation = useDuplicateEventMutation({
     onSuccess: (duplicated) => {
       posthog?.capture(AnalyticsEvent.event_duplicated, {
@@ -172,14 +179,14 @@ export function CalendarEvent({ event, wrapped }: P) {
           setContextMenuOpen(event.eventId, open);
         }}
       >
-        <ContextMenuTrigger className="w-full">
+        <ContextMenuTrigger className="w-full relative block">
           <CalendarEventTooltipWrapper
             event={event}
             disabled={isDragging || isAnyContextMenuOpen}
           >
             <div
               className={cn(
-                'calendar-event rounded-sm cursor-pointer text-left flex flex-col items-start justify-center py-0.5 px-1 overflow-hidden w-full',
+                'calendar-event relative rounded-sm cursor-pointer text-left flex flex-col items-start justify-center py-0.5 px-1 overflow-hidden w-full',
                 eventColor,
                 wrapped ? 'border-2' : '',
                 !isValidated ? 'opacity-60' : '',
@@ -202,7 +209,7 @@ export function CalendarEvent({ event, wrapped }: P) {
                 }
               }}
             >
-              <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis px-1">
+              <div className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis px-1 pr-5">
                 {event.type !== EVENT_TYPE.NOTE && (
                   <SportIcon
                     sport={event.sport}
@@ -251,6 +258,77 @@ export function CalendarEvent({ event, wrapped }: P) {
               )}
             </div>
           </CalendarEventTooltipWrapper>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-0.5 right-0.5 h-6 w-6 rounded-full shadow-sm border border-border/50 opacity-80 hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={m.actions()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DropdownMenuItem
+                onClick={() => {
+                  editEvent(event.eventId);
+                }}
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                {m.edit()}
+              </DropdownMenuItem>
+              {event.type === EVENT_TYPE.TRAINING && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    createEventTemplateMutation.mutate({
+                      eventId: event.eventId,
+                    });
+                  }}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  {m.save_as_template()}
+                </DropdownMenuItem>
+              )}
+              {event.type !== EVENT_TYPE.ACTIVITY && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      duplicateEventMutation.mutate({
+                        eventId: event.eventId,
+                      });
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    {m.duplicate()}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      copyEvent(event);
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    {m.copy()}
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => {
+                  deleteEvent(event.eventId);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {m.delete_()}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem
@@ -302,7 +380,7 @@ export function CalendarEvent({ event, wrapped }: P) {
           <ContextMenuItem
             variant="destructive"
             onClick={(e) => {
-              setDeleteEventDialog(true);
+              deleteEvent(event.eventId);
               e.stopPropagation();
             }}
           >
@@ -311,17 +389,6 @@ export function CalendarEvent({ event, wrapped }: P) {
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      <ConfirmAction
-        open={deleteEventDialog}
-        onClose={() => setDeleteEventDialog(false)}
-        onConfirm={() => {
-          deleteEventMutation.mutate(event.eventId);
-          setDeleteEventDialog(false);
-        }}
-        title={m.delete_event()}
-        message={m.confirm_delete_event()}
-        isLoading={deleteEventMutation.isPending}
-      />
     </>
   );
 }

@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -40,8 +40,8 @@ export async function generateMetadata({
       : post.metadata.description.en;
 
   const metadata = generatePageMetadata({ locale });
-  const postUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/blog/${slug}`;
-  // Canonical URL should always point to the English version
+  const postUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/blog/${slug}`;
+  // Canonical URL always points to the unprefixed (French) version
   const canonicalUrl = `${SITE_URL}/blog/${slug}`;
 
   return {
@@ -91,7 +91,6 @@ export async function generateStaticParams() {
   const params: Array<{ locale: string; slug: string }> = [];
 
   for (const post of posts) {
-    params.push({ locale: 'en', slug: post.metadata.slug });
     params.push({ locale: 'fr', slug: post.metadata.slug });
   }
 
@@ -104,7 +103,7 @@ export default async function BlogPostPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -120,8 +119,8 @@ export default async function BlogPostPage({
       ? post.metadata.description.fr
       : post.metadata.description.en;
 
-  const postUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/blog/${slug}`;
-  const blogUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/blog`;
+  const postUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/blog/${slug}`;
+  const blogUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/blog`;
 
   const publishedDate = new Date(post.metadata.publishedAt).toLocaleDateString(
     locale === 'fr' ? 'fr-FR' : 'en-US',

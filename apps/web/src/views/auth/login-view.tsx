@@ -6,7 +6,6 @@ import { useAuthContext } from '@/contexts/auth';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import { cn } from '@/utils/shadcn';
-import { OAuthButtons } from '@/views/auth/oauth-buttons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect } from 'react';
@@ -90,7 +89,6 @@ export function LoginView({ className }: React.ComponentProps<'form'>) {
         >
           {m.login()}
         </Button>
-        <OAuthButtons />
       </div>
       <div className="text-center text-sm">
         {m.dont_have_account()}{' '}

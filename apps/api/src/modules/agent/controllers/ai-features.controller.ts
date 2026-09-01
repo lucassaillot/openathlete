@@ -1,6 +1,13 @@
 import { ZodValidationPipe } from 'nestjs-zod';
 
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
@@ -12,9 +19,9 @@ import {
 
 import { SportType } from '@openathlete/database';
 import {
+  ApiEnvSchemaType,
   CreateWorkoutStepDto,
   EVENT_TYPE,
-  FeatureName,
   GenerateEventDto,
   GenerateEventResponseDto,
   ModifyEventDto,
@@ -27,9 +34,9 @@ import {
   modifyEventDtoSchema,
 } from '@openathlete/shared';
 
+import { isAIConfigured } from 'src/common/utils/ai-config.util';
 import { JwtUser, UserTypeGuard } from 'src/modules/auth';
 import { AuthUser } from 'src/modules/auth/decorators/user.decorator';
-import { FeatureAccessGuard, RequireFeature } from 'src/modules/subscription';
 
 import { EventGenerationService } from '../services/event-generation.service';
 import { EventModificationService } from '../services/event-modification.service';
@@ -40,16 +47,16 @@ export class AIFeaturesController {
   constructor(
     private readonly eventGenerationService: EventGenerationService,
     private readonly eventModificationService: EventModificationService,
+    private readonly configService: ConfigService<ApiEnvSchemaType, true>,
   ) {}
 
-  @UseGuards(AuthGuard('jwt'), UserTypeGuard, FeatureAccessGuard)
-  @RequireFeature(FeatureName.AI_GENERATION)
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
   @ApiBearerAuth()
   @Post('events/generate')
   @ApiOperation({
     summary: 'Generate a training event using AI',
     description:
-      "Generates a complete training event using AI based on a natural language prompt. The AI considers the athlete's training zones, latest metrics, and training load to create a personalized workout. The generated event includes a structured workout with steps (warmup, intervals, cooldown, etc.), targets (heart rate zones, pace, power), and goals (duration, distance, elevation, RPE). The event is scheduled for the specified date with a default start time of 8:00 AM. Requires AI_GENERATION feature access (available in paid subscription plans).",
+      "Generates a complete training event using AI based on a natural language prompt. The AI considers the athlete's training zones, latest metrics, and training load to create a personalized workout. The generated event includes a structured workout with steps (warmup, intervals, cooldown, etc.), targets (heart rate zones, pace, power), and goals (duration, distance, elevation, RPE). The event is scheduled for the specified date with a default start time of 8:00 AM. Requires an AI provider to be configured on the server.",
   })
   @ApiBody({
     description: 'Event generation request',
@@ -217,8 +224,7 @@ export class AIFeaturesController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'Forbidden - AI_GENERATION feature access required (paid subscription)',
+    description: 'Forbidden - no AI provider configured on the server',
   })
   @ApiResponse({
     status: 500,
@@ -229,6 +235,12 @@ export class AIFeaturesController {
     @JwtUser() user: AuthUser,
     @Body(new ZodValidationPipe(generateEventDtoSchema)) dto: GenerateEventDto,
   ): Promise<GenerateEventResponseDto> {
+    if (!isAIConfigured(this.configService)) {
+      throw new ForbiddenException(
+        'AI features are not configured on this server',
+      );
+    }
+
     const athleteId = user.athlete?.athleteId || user.userId;
 
     const parsedDate = new Date(dto.date);
@@ -314,14 +326,13 @@ export class AIFeaturesController {
     return result;
   }
 
-  @UseGuards(AuthGuard('jwt'), UserTypeGuard, FeatureAccessGuard)
-  @RequireFeature(FeatureName.AI_GENERATION)
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
   @ApiBearerAuth()
   @Post('events/modify')
   @ApiOperation({
     summary: 'Modify an existing training event using AI',
     description:
-      "Modifies an existing training event using AI based on a natural language prompt. The AI considers the current event structure, athlete's training zones, latest metrics, and training load to apply the requested modifications. This is a COMPLETE UPDATE operation - the AI returns the full, complete event with all workout steps. The modification can change event details (name, description, goals), adjust workout structure, modify targets, or add/remove steps. Requires AI_GENERATION feature access (available in paid subscription plans).",
+      "Modifies an existing training event using AI based on a natural language prompt. The AI considers the current event structure, athlete's training zones, latest metrics, and training load to apply the requested modifications. This is a COMPLETE UPDATE operation - the AI returns the full, complete event with all workout steps. The modification can change event details (name, description, goals), adjust workout structure, modify targets, or add/remove steps. Requires an AI provider to be configured on the server.",
   })
   @ApiBody({
     description: 'Event modification request',
@@ -548,8 +559,7 @@ export class AIFeaturesController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'Forbidden - AI_GENERATION feature access required (paid subscription)',
+    description: 'Forbidden - no AI provider configured on the server',
   })
   @ApiResponse({
     status: 500,
@@ -560,6 +570,12 @@ export class AIFeaturesController {
     @JwtUser() user: AuthUser,
     @Body(new ZodValidationPipe(modifyEventDtoSchema)) dto: ModifyEventDto,
   ): Promise<ModifyEventResponseDto> {
+    if (!isAIConfigured(this.configService)) {
+      throw new ForbiddenException(
+        'AI features are not configured on this server',
+      );
+    }
+
     const athleteId = user.athlete?.athleteId || user.userId;
 
     const modifiedEvent =

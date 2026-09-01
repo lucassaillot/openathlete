@@ -28,6 +28,7 @@ function getPageTitle(pathname: string): string {
   // Map routes to titles
   const titleMap: Record<string, string> = {
     [getPath(['dashboard', 'calendar'])]: m.calendar(),
+    [getPath(['dashboard', 'coach'])]: m.coach_dashboard(),
     [getPath(['dashboard', 'profile'])]: m.profile(),
     [getPath(['dashboard', 'messages'])]: m.messages(),
     [getPath(['dashboard', 'statistics'])]: m.statistics(),
@@ -36,7 +37,7 @@ function getPageTitle(pathname: string): string {
     [getPath(['dashboard', 'settings'])]: m.settings(),
   };
 
-  return titleMap[pathname] || 'OpenAthlete';
+  return titleMap[pathname] || 'Team Running Rouxmesnil';
 }
 
 /**
@@ -45,6 +46,7 @@ function getPageTitle(pathname: string): string {
 function shouldShowNavbar(pathname: string): boolean {
   const navbarRoutes = [
     getPath(['dashboard', 'calendar']),
+    getPath(['dashboard', 'coach']),
     getPath(['dashboard', 'profile']),
     getPath(['dashboard', 'messages']),
   ];
@@ -61,6 +63,7 @@ function isProfileSubPage(pathname: string): boolean {
     getPath(['dashboard', 'progression']),
     getPath(['dashboard', 'records']),
     getPath(['dashboard', 'metrics']),
+    getPath(['dashboard', 'settings']),
   ];
   return profileSubPages.some((route) => pathname === route);
 }

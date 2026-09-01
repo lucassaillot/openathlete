@@ -6,37 +6,23 @@ import { LanguageSwitcher } from '@/components/landing/language-switcher';
 import { Button } from '@/components/ui/button';
 import { APP_URL } from '@/config';
 import { m } from '@/paraglide/messages';
-import { getLocale } from '@/paraglide/runtime';
 import { cn } from '@/utils/shadcn';
 import { Github, Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 export function Navbar() {
-  const pathname = usePathname();
-  const locale = getLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Extract locale from pathname or use current locale
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const currentLocale =
-    pathSegments[0] === 'fr' || pathSegments[0] === 'en'
-      ? pathSegments[0]
-      : locale === 'fr'
-        ? 'fr'
-        : 'en';
-
-  // Build localized home URL - always use explicit locale to avoid middleware rewriting
-  const homeUrl = `/${currentLocale}`;
+  const homeUrl = '/';
 
   const navLinks = [
     {
-      href: `/${currentLocale}/blog`,
+      href: '/blog',
       label: m.blog_title(),
     },
     {
-      href: `/${currentLocale}/#features`,
+      href: '/#features',
       label: m.landing_nav_features(),
     },
   ];

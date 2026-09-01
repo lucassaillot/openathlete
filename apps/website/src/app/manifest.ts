@@ -24,7 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
     categories: ['sports', 'health', 'fitness'],
-    lang: 'en',
+    lang: 'fr',
     dir: 'ltr',
     orientation: 'portrait-primary',
     scope: SITE_URL,

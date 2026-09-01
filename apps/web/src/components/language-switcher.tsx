@@ -38,7 +38,7 @@ export function LanguageSwitcher({
     locale as SupportedLocale,
   )
     ? (locale as SupportedLocale)
-    : 'en';
+    : 'fr';
   const { syncLanguage } = useLanguageSync();
 
   return (

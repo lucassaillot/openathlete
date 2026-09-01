@@ -39,6 +39,7 @@ import {
 import { JwtUser, UserTypeGuard } from 'src/modules/auth';
 import { AuthUser } from 'src/modules/auth/decorators/user.decorator';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
+import { QueueService } from 'src/modules/queue';
 
 import {
   GarminHealthPingPayload,
@@ -50,6 +51,7 @@ import { CorosProviderService, SuuntoProviderService } from '../providers';
 import { GarminProviderService } from '../providers/garmin.provider.service';
 import { PolarProviderService } from '../providers/polar.provider.service';
 import { StravaProviderService } from '../providers/strava.provider.service';
+import { StravaWebhookPayload } from '../types/strava-webhook.types';
 
 function toConnectorProvider(provider: ConnectorProvider): ConnectorProvider {
   return provider as unknown as ConnectorProvider;
@@ -68,7 +70,46 @@ export class ProviderOAuthController {
     private readonly corosProviderService: CorosProviderService,
     private readonly polarProviderService: PolarProviderService,
     private readonly prisma: PrismaService,
+    private readonly queueService: QueueService,
   ) {}
+
+  /** Whether the server has OAuth credentials configured for this provider. */
+  private isProviderConfigured(providerEnum: ConnectorProvider): boolean {
+    switch (providerEnum) {
+      case ConnectorProvider.STRAVA:
+        return (
+          !!this.configService.get('STRAVA_CLIENT_ID') &&
+          !!this.configService.get('STRAVA_CLIENT_SECRET')
+        );
+      case ConnectorProvider.GARMIN:
+        return (
+          !!this.configService.get('GARMIN_CLIENT_ID') &&
+          !!this.configService.get('GARMIN_CLIENT_SECRET')
+        );
+      case ConnectorProvider.SUUNTO:
+        return (
+          !!this.configService.get('SUUNTO_CLIENT_ID') &&
+          !!this.configService.get('SUUNTO_CLIENT_SECRET')
+        );
+      case ConnectorProvider.POLAR:
+        return (
+          !!this.configService.get('POLAR_CLIENT_ID') &&
+          !!this.configService.get('POLAR_CLIENT_SECRET')
+        );
+      case ConnectorProvider.COROS:
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  private requireProviderConfigured(providerEnum: ConnectorProvider): void {
+    if (!this.isProviderConfigured(providerEnum)) {
+      throw new BadRequestException(
+        `Provider ${providerEnum} is not configured on this server`,
+      );
+    }
+  }
 
   private async getAthleteForUser(user: AuthUser) {
     const athlete = await this.prisma.athlete.findUnique({
@@ -149,6 +190,7 @@ export class ProviderOAuthController {
   })
   getAuthorizationUri(@Param('provider') provider: string) {
     const providerEnum = provider.toUpperCase() as ConnectorProvider;
+    this.requireProviderConfigured(providerEnum);
 
     switch (providerEnum) {
       case ConnectorProvider.STRAVA:
@@ -245,6 +287,7 @@ export class ProviderOAuthController {
   ) {
     const { code } = body;
     const providerEnum = provider.toUpperCase() as ConnectorProvider;
+    this.requireProviderConfigured(providerEnum);
 
     const athlete = await this.getAthleteForUser(user);
 
@@ -827,9 +870,7 @@ export class ProviderOAuthController {
     const mode = request.query['hub.mode'];
     const token = request.query['hub.verify_token'];
     const challenge = request.query['hub.challenge'];
-    this.logger.log(
-      `Strava webhook verification: mode=${mode}, token=${token}, challenge=${challenge}, STRAVA_WEBHOOK_TOKEN=${this.configService.get('STRAVA_WEBHOOK_TOKEN')}`,
-    );
+    this.logger.log(`Strava webhook verification: mode=${String(mode)}`);
 
     const verifyToken = this.configService.get('STRAVA_WEBHOOK_TOKEN');
     if (mode === 'subscribe' && token === verifyToken) {
@@ -843,6 +884,7 @@ export class ProviderOAuthController {
    * Strava webhook handler (POST)
    */
   @Post('strava/webhook')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Strava webhook event handler',
     description:
@@ -865,12 +907,19 @@ export class ProviderOAuthController {
         },
         aspect_type: {
           type: 'string',
-          enum: ['create', 'delete'],
-          description: 'Type of event (create or delete)',
+          enum: ['create', 'update', 'delete'],
+          description: 'Type of event',
           example: 'create',
         },
       },
-      required: ['object_id', 'owner_id', 'aspect_type'],
+      required: [
+        'object_id',
+        'owner_id',
+        'object_type',
+        'aspect_type',
+        'subscription_id',
+        'event_time',
+      ],
     },
   })
   @ApiResponse({
@@ -879,13 +928,20 @@ export class ProviderOAuthController {
   })
   async stravaWebhookPost(
     @Body()
-    body: {
-      object_id: number;
-      owner_id: number;
-      aspect_type: 'create' | 'delete';
-    },
+    body: StravaWebhookPayload,
   ) {
-    await this.stravaProviderService.handleWebhook(body);
+    if (
+      !Number.isSafeInteger(body.object_id) ||
+      !Number.isSafeInteger(body.owner_id) ||
+      !Number.isSafeInteger(body.subscription_id) ||
+      !Number.isSafeInteger(body.event_time) ||
+      !['activity', 'athlete'].includes(body.object_type) ||
+      !['create', 'update', 'delete'].includes(body.aspect_type)
+    ) {
+      throw new BadRequestException('Invalid Strava webhook payload');
+    }
+
+    await this.queueService.addStravaWebhookJob(body);
   }
 
   @Post('garmin/webhook/activity-ping')

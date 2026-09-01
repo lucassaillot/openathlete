@@ -3,12 +3,9 @@ import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
-import { BadRequestException as BadRequestException2 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -17,7 +14,6 @@ import { ApiEnvSchemaType } from '@openathlete/shared';
 
 import { SendEmailEvent } from 'src/events';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
-import { FeatureAccessService } from 'src/modules/subscription';
 
 @Injectable()
 export class AthleteInvitationService {
@@ -25,8 +21,6 @@ export class AthleteInvitationService {
     private readonly prisma: PrismaService,
     private configService: ConfigService<ApiEnvSchemaType, true>,
     private eventEmitter: EventEmitter2,
-    @Inject(forwardRef(() => FeatureAccessService))
-    private featureAccessService: FeatureAccessService,
   ) {}
 
   async generateInvitationToken(): Promise<string> {
@@ -253,16 +247,6 @@ export class AthleteInvitationService {
       throw new NotFoundException('Athlete not found');
     }
 
-    // Check athlete limit for coach
-    const canAdd = await this.featureAccessService.checkAthleteLimit(
-      invitation.userId,
-    );
-    if (!canAdd) {
-      throw new BadRequestException2(
-        'Coach has reached the maximum number of athletes for their subscription plan',
-      );
-    }
-
     // Create coach-athlete link
     await this.prisma.coachAthlete.create({
       data: {
@@ -304,16 +288,6 @@ export class AthleteInvitationService {
 
     if (invitation.status !== InvitationStatus.PENDING) {
       throw new BadRequestException('This invitation is no longer pending');
-    }
-
-    // Check athlete limit for coach
-    const canAdd = await this.featureAccessService.checkAthleteLimit(
-      invitation.userId,
-    );
-    if (!canAdd) {
-      throw new BadRequestException2(
-        'Coach has reached the maximum number of athletes for their subscription plan',
-      );
     }
 
     // Create coach-athlete link

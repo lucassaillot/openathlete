@@ -135,6 +135,9 @@ export class AuthService {
         password: randomPassword,
         firstName,
         lastName,
+        // Already authenticated via a verified Firebase ID token — that's
+        // this path's trust boundary, not the public signup access code.
+        accessCode: this.configService.get('SIGNUP_ACCESS_CODE'),
         invitationToken: body.invitationToken,
         coachInvitationToken: body.coachInvitationToken,
       });

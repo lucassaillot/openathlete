@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { AthleteInjury, Prisma } from '@openathlete/database';
 import { InputJsonValue } from '@openathlete/database/generated/client/runtime/library';
-import { FeatureName } from '@openathlete/shared';
+import type { ApiEnvSchemaType } from '@openathlete/shared';
 
 import { Language } from 'src/common/constants/languages.constant';
+import { isAIConfigured } from 'src/common/utils/ai-config.util';
 import { ActivityImportedEvent } from 'src/events';
 import { postActivityFeedbackAgent } from 'src/mastra/agents';
 import {
@@ -17,7 +19,6 @@ import {
   getLatestMetrics,
 } from 'src/modules/agent/services/event-ai-helpers';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
-import { FeatureAccessService } from 'src/modules/subscription';
 
 @Injectable()
 export class ActivityFeedbackListener {
@@ -25,7 +26,7 @@ export class ActivityFeedbackListener {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly featureAccessService: FeatureAccessService,
+    private readonly configService: ConfigService<ApiEnvSchemaType, true>,
   ) {}
 
   @OnEvent(ActivityImportedEvent.SLUG, { async: true })
@@ -79,11 +80,7 @@ export class ActivityFeedbackListener {
       const athleteId = activity.event.athleteId;
       const userLanguage = activity.event.athlete.user?.language ?? Language.FR;
 
-      const hasAIAccess =
-        await this.featureAccessService.canAccessFeatureForAthlete(
-          athleteId,
-          FeatureName.AI_RPE_QUESTIONS,
-        );
+      const hasAIAccess = isAIConfigured(this.configService);
 
       if (!hasAIAccess) {
         this.logger.debug(

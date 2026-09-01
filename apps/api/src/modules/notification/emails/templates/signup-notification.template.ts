@@ -11,8 +11,8 @@ const translations = {
     preview: 'Un nouvel utilisateur vient de créer un compte.',
     intro: (name?: string) =>
       name
-        ? `${name} vient de s'inscrire sur OpenAthlete.`
-        : 'Un nouvel utilisateur vient de s’inscrire sur OpenAthlete.',
+        ? `${name} vient de s'inscrire sur Team Running Rouxmesnil.`
+        : 'Un nouvel utilisateur vient de s’inscrire sur Team Running Rouxmesnil.',
     emailLabel: 'Email',
     nameLabel: 'Nom complet',
     followUp:
@@ -24,8 +24,8 @@ const translations = {
     preview: 'A new user just created an account.',
     intro: (name?: string) =>
       name
-        ? `${name} just signed up for OpenAthlete.`
-        : 'A new user just signed up for OpenAthlete.',
+        ? `${name} just signed up for Team Running Rouxmesnil.`
+        : 'A new user just signed up for Team Running Rouxmesnil.',
     emailLabel: 'Email',
     nameLabel: 'Full name',
     followUp:
@@ -37,8 +37,8 @@ const translations = {
     preview: 'Un nuovo utente ha appena creato un account.',
     intro: (name?: string) =>
       name
-        ? `${name} si è appena iscritto a OpenAthlete.`
-        : 'Un nuovo utente si è appena iscritto a OpenAthlete.',
+        ? `${name} si è appena iscritto a Team Running Rouxmesnil.`
+        : 'Un nuovo utente si è appena iscritto a Team Running Rouxmesnil.',
     emailLabel: 'Email',
     nameLabel: 'Nome completo',
     followUp:

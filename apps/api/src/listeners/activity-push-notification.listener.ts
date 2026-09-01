@@ -1,14 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 
-import { FeatureName } from '@openathlete/shared';
+import type { ApiEnvSchemaType } from '@openathlete/shared';
 
 import { Language } from 'src/common/constants/languages.constant';
+import { isAIConfigured } from 'src/common/utils/ai-config.util';
 import { ActivityImportedEvent } from 'src/events';
 import { getPushNotificationTranslation } from 'src/modules/notification/push';
 import { PushNotificationService } from 'src/modules/notification/services/push-notification.service';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
-import { FeatureAccessService } from 'src/modules/subscription';
 
 @Injectable()
 export class ActivityPushNotificationListener {
@@ -17,7 +18,7 @@ export class ActivityPushNotificationListener {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pushNotificationService: PushNotificationService,
-    private readonly featureAccessService: FeatureAccessService,
+    private readonly configService: ConfigService<ApiEnvSchemaType, true>,
   ) {}
 
   @OnEvent(ActivityImportedEvent.SLUG, { async: true })
@@ -78,11 +79,7 @@ export class ActivityPushNotificationListener {
         return;
       }
 
-      const hasAIAccess =
-        await this.featureAccessService.canAccessFeatureForAthlete(
-          athleteId,
-          FeatureName.AI_RPE_QUESTIONS,
-        );
+      const hasAIAccess = isAIConfigured(this.configService);
 
       const athleteSettings = await this.prisma.athleteSettings.findUnique({
         where: { athleteId: athleteId },

@@ -8,7 +8,7 @@ import { layout } from '../core/layout';
 const translations = {
   FR: {
     title: 'Réinitialiser votre mot de passe',
-    preview: 'Réinitialisez votre mot de passe OpenAthlete',
+    preview: 'Réinitialisez votre mot de passe Team Running Rouxmesnil',
     description:
       'Nous avons reçu une demande pour réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.',
     buttonLabel: 'Choisir un nouveau mot de passe',
@@ -19,7 +19,7 @@ const translations = {
   },
   EN: {
     title: 'Reset your password',
-    preview: 'Reset your OpenAthlete password',
+    preview: 'Reset your Team Running Rouxmesnil password',
     description:
       'We received a request to reset your password. Click the button below to create a new password.',
     buttonLabel: 'Choose a new password',
@@ -29,7 +29,7 @@ const translations = {
   },
   IT: {
     title: 'Reimposta la tua password',
-    preview: 'Reimposta la tua password di OpenAthlete',
+    preview: 'Reimposta la tua password di Team Running Rouxmesnil',
     description:
       'Abbiamo ricevuto una richiesta di reimpostazione della tua password. Clicca sul pulsante qui sotto per crearne una nuova.',
     buttonLabel: 'Scegli una nuova password',

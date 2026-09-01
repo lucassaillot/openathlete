@@ -662,7 +662,7 @@ export function OnboardingView() {
       <div className="mb-4 sm:mb-8">
         <img
           src={resolvedTheme === 'dark' ? logoWhiteSrc : logoDarkSrc}
-          alt="OpenAthlete"
+          alt="Team Running Rouxmesnil"
           className="h-6 sm:h-8"
         />
       </div>

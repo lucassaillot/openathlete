@@ -7,9 +7,9 @@ import { layout } from '../core/layout';
 
 const translations = {
   FR: {
-    title: 'Bienvenue sur OpenAthlete',
+    title: 'Bienvenue sur Team Running Rouxmesnil',
     preview: (name?: string) =>
-      name ? `Bienvenue, ${name} !` : 'Bienvenue sur OpenAthlete',
+      name ? `Bienvenue, ${name} !` : 'Bienvenue sur Team Running Rouxmesnil',
     greeting: (name?: string) =>
       name
         ? `Ravi de vous compter parmi nous, ${name}.`
@@ -21,9 +21,9 @@ const translations = {
       "Besoin d'aide ? Répondez simplement à cet email et nous vous aiderons rapidement.",
   },
   EN: {
-    title: 'Welcome to OpenAthlete',
+    title: 'Welcome to Team Running Rouxmesnil',
     preview: (name?: string) =>
-      name ? `Welcome, ${name}!` : 'Welcome to OpenAthlete',
+      name ? `Welcome, ${name}!` : 'Welcome to Team Running Rouxmesnil',
     greeting: (name?: string) =>
       name
         ? `We're thrilled to have you with us, ${name}.`
@@ -35,9 +35,9 @@ const translations = {
       'Need help? Simply reply to this email and we will help you quickly.',
   },
   IT: {
-    title: 'Benvenuto su OpenAthlete',
+    title: 'Benvenuto su Team Running Rouxmesnil',
     preview: (name?: string) =>
-      name ? `Benvenuto, ${name}!` : 'Benvenuto su OpenAthlete',
+      name ? `Benvenuto, ${name}!` : 'Benvenuto su Team Running Rouxmesnil',
     greeting: (name?: string) =>
       name
         ? `Siamo felici di averti con noi, ${name}.`

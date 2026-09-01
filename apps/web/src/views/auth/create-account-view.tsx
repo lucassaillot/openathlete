@@ -7,12 +7,12 @@ import { useAuthContext } from '@/contexts/auth';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import { cn } from '@/utils/shadcn';
-import { OAuthButtons } from '@/views/auth/oauth-buttons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import z from 'zod';
 
 import { createAccountDtoSchema } from '@openathlete/shared';
@@ -36,6 +36,7 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
       password: '',
       firstName: '',
       lastName: '',
+      accessCode: '',
       invitationToken: invitationToken || undefined,
       coachInvitationToken: coachInvitationToken || undefined,
     },
@@ -75,6 +76,9 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
     onSuccess: async (_, variables) => {
       posthog?.capture('user_signed_up');
       loginMutation.mutate(variables);
+    },
+    onError: (error) => {
+      toast.error(error.message || m.create_account_failed());
     },
   });
 
@@ -137,6 +141,13 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
           required
           label={m.password()}
         />
+        <RHFTextField
+          name="accessCode"
+          type="text"
+          placeholder={m.access_code_placeholder()}
+          label={m.access_code()}
+          required
+        />
         <Button
           type="submit"
           className="w-full"
@@ -145,11 +156,6 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
         >
           {m.create_account()}
         </Button>
-        <OAuthButtons
-          invitationToken={invitationToken}
-          coachInvitationToken={coachInvitationToken}
-          redirectTo={getPath(['dashboard'])}
-        />
       </div>
       <div className="text-center text-sm">
         {m.already_have_account()}{' '}

@@ -5,6 +5,7 @@ export const createAccountDtoSchema = z.object({
   password: z.string(),
   firstName: z.string(),
   lastName: z.string(),
+  accessCode: z.string().min(1, 'Access code is required'),
   invitationToken: z.string().optional(),
   coachInvitationToken: z.string().optional(),
 });

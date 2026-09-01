@@ -85,9 +85,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   // Note: lang attribute will be set dynamically in [locale]/layout.tsx
-  // Default to 'en' for root layout (will be overridden by locale layout)
+  // Default to 'fr' for root layout (will be overridden by locale layout)
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body className={inter.className}>
         {/* Google Analytics */}
         <Script

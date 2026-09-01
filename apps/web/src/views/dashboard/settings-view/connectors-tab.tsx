@@ -1,3 +1,4 @@
+import { useConfiguredConnectorProviders } from '@/api/config';
 import { useGetMyIcalCalendarSecretQuery } from '@/api/event';
 import {
   useDisconnectProviderMutation,
@@ -47,16 +48,9 @@ import {
 
 import { SettingsSection } from './settings-section';
 
-const SUPPORTED_PROVIDERS: ConnectorProvider[] = [
-  'STRAVA',
-  'GARMIN',
-  'SUUNTO',
-  'POLAR',
-  // 'COROS',
-];
-
 export function ConnectorsTab() {
   const posthog = usePostHog();
+  const supportedProviders = useConfiguredConnectorProviders();
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
   const [providerToDisconnect, setProviderToDisconnect] =
     useState<ConnectorProvider | null>(null);
@@ -221,7 +215,7 @@ export function ConnectorsTab() {
       >
         <div className="grid gap-4">
           {isLoadingConnected
-            ? Array.from({ length: SUPPORTED_PROVIDERS.length }).map((_, i) => (
+            ? Array.from({ length: supportedProviders.length }).map((_, i) => (
                 <Card key={i}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -239,7 +233,7 @@ export function ConnectorsTab() {
                   </CardContent>
                 </Card>
               ))
-            : SUPPORTED_PROVIDERS.map((provider) => {
+            : supportedProviders.map((provider) => {
                 const connected = isConnected(provider);
                 const isLoading =
                   getOAuthUriMutation.isPending ||

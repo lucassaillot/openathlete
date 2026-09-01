@@ -21,7 +21,7 @@ export function AuthLayout({ children }: P) {
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--oa-bg)] text-primary-foreground">
                 <img src={whiteLogoSrc} alt="Logo" className="h-6 w-6" />
               </div>
-              OpenAthlete
+              Team Running Rouxmesnil
             </Link>
           </div>
           <LanguageSwitcher />

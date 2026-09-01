@@ -1,10 +1,6 @@
-import * as brevo from '@getbrevo/brevo';
-
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import {
-  ApiEnvSchemaType,
   EmailId,
   EmailLanguage,
   EmailPropsFromId,
@@ -16,24 +12,16 @@ import { PrismaService } from 'src/modules/prisma/services/prisma.service';
 
 import { emailTemplates } from '../emails/templates';
 import { SendEmail } from '../types';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
-  private apiInstance: brevo.TransactionalEmailsApi;
-  private apiKey: string;
 
   constructor(
-    private configService: ConfigService<ApiEnvSchemaType, true>,
     private readonly prisma: PrismaService,
-  ) {
-    this.apiKey = configService.get('BREVO_API_KEY') ?? '';
-    this.apiInstance = new brevo.TransactionalEmailsApi();
-    this.apiInstance.setApiKey(
-      brevo.TransactionalEmailsApiApiKeys.apiKey,
-      this.apiKey,
-    );
-  }
+    private readonly emailService: EmailService,
+  ) {}
 
   async sendEmail<T extends EmailId>(payload: SendEmail<T>) {
     try {
@@ -46,26 +34,17 @@ export class NotificationService {
       const language: EmailLanguage = (user?.language ||
         Language.FR) as EmailLanguage;
 
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.to = [{ email: payload.to }];
-      sendSmtpEmail.sender = {
-        email: this.configService.get('BREVO_FROM_EMAIL'),
-      };
-
       const defaultSubject = emailLibrary[payload.type].defaultSubject;
       const subject = payload.subject || defaultSubject[language];
 
       const buildHtml = emailTemplates[payload.type] as (
         props: EmailPropsFromId<T> & { language?: EmailLanguage },
       ) => string;
-      const htmlContent = buildHtml
+      const html = buildHtml
         ? buildHtml({ ...payload.params, language })
         : `<p>${subject}</p>`;
 
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = htmlContent;
-
-      await this.apiInstance.sendTransacEmail(sendSmtpEmail);
+      await this.emailService.sendEmail({ to: payload.to, subject, html });
     } catch (error) {
       this.logger.error(
         `Error sending email: ${error instanceof Error ? error.message : String(error)}`,

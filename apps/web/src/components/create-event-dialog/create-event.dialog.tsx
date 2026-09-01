@@ -19,7 +19,6 @@ import { EVENT_TYPE } from '@openathlete/shared';
 import { useCalendarContext } from '../calendar/hooks/use-calendar-context';
 import { FormProvider } from '../hook-form';
 import { RHFCheckbox } from '../hook-form/rhf-checkbox';
-import { PaywallDialog } from '../paywall';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { AIModifyEventDialog } from './components/ai-modify-event-dialog';
@@ -138,7 +137,6 @@ export function CreateEventDialog({ open, onClose, ...rest }: P) {
 
   // AI modification/generation dialog state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
-  const [paywallOpen, setPaywallOpen] = useState(false);
 
   // Check AI feature access
   const { hasAccess: hasAIAccess } = useFeatureAccess(
@@ -293,16 +291,10 @@ export function CreateEventDialog({ open, onClose, ...rest }: P) {
               {edit && 'isTemplate' in rest && rest.isTemplate ? '' : m.a()}{' '}
               {eventTypeLabelMap[type as keyof typeof eventTypeLabelMap]}
             </div>
-            {type === EVENT_TYPE.TRAINING && (
+            {type === EVENT_TYPE.TRAINING && hasAIAccess && (
               <div className="flex items-center gap-2 md:pr-4 md:-translate-y-4 w-full md:w-auto">
                 <Button
-                  onClick={() => {
-                    if (hasAIAccess) {
-                      setAiDialogOpen(true);
-                    } else {
-                      setPaywallOpen(true);
-                    }
-                  }}
+                  onClick={() => setAiDialogOpen(true)}
                   variant="outline"
                   size="sm"
                   className="flex-1 md:flex-none text-xs md:text-sm"
@@ -367,12 +359,6 @@ export function CreateEventDialog({ open, onClose, ...rest }: P) {
           onEventModified={handleEventModified}
         />
       )}
-      <PaywallDialog
-        open={paywallOpen}
-        onOpenChange={setPaywallOpen}
-        reason="ai-feature"
-        analyticsSource="event_dialog"
-      />
     </Dialog>
   );
 }

@@ -13,8 +13,7 @@ interface HtmlLangProps {
 export function HtmlLang({ locale }: HtmlLangProps) {
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      const htmlLang = locale === 'fr' ? 'fr' : 'en';
-      document.documentElement.lang = htmlLang;
+      document.documentElement.lang = 'fr';
     }
   }, [locale]);
 

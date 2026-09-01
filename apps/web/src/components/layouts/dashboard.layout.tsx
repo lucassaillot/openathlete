@@ -27,6 +27,7 @@ import {
   DraggableData,
   DraggableType,
 } from '../create-event-from-template-dialog/dnd-types';
+import { InstallAppPrompt } from '../install-app-prompt/install-app-prompt';
 import { MobileLayout } from '../mobile/mobile-layout';
 import { PlanImportHandler } from '../plan-import-handler';
 import { AppSidebar } from '../sidebar/app-sidebar';
@@ -187,6 +188,7 @@ function LayoutContent({ children }: P) {
       </SpaceConsumer>
 
       <PlanImportHandler />
+      <InstallAppPrompt />
 
       <DragOverlay dropAnimation={null} style={{ cursor: 'grabbing' }}>
         {getDragOverlayContent()}

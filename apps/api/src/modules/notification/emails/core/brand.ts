@@ -12,6 +12,8 @@ export const brand = {
   cardBg: '#ffffff',
   border: '#eef1f7',
   footerBg: '#fafbff',
-  // Public absolute URL to a PNG/SVG logo suitable for email clients
-  logoUrl: 'https://openathlete.org/logo_white.png',
+  // Public absolute URL to a PNG/SVG logo suitable for email clients.
+  // Derived from APP_URL (the deployed web app serves this asset itself,
+  // e.g. apps/web/public/logo_white.png) rather than a fixed domain.
+  logoUrl: `${(process.env.APP_URL || 'http://localhost:5173').replace(/\/$/, '')}/logo_white.png`,
 } as const;

@@ -7,11 +7,11 @@ import { layout } from '../core/layout';
 
 const translations = {
   FR: {
-    title: 'Invitation à rejoindre OpenAthlete',
+    title: 'Invitation à rejoindre Team Running Rouxmesnil',
     preview: (coachName: string) =>
-      `${coachName} vous invite à rejoindre OpenAthlete`,
+      `${coachName} vous invite à rejoindre Team Running Rouxmesnil`,
     description: (coachName: string) =>
-      `${coachName} vous invite à rejoindre OpenAthlete en tant qu'athlète. Cliquez sur le bouton ci-dessous pour créer votre compte et commencer à suivre vos entraînements.`,
+      `${coachName} vous invite à rejoindre Team Running Rouxmesnil en tant qu'athlète. Cliquez sur le bouton ci-dessous pour créer votre compte et commencer à suivre vos entraînements.`,
     buttonLabel: 'Créer mon compte',
     linkNote: (url: string) =>
       `Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur: ${url}`,
@@ -19,11 +19,11 @@ const translations = {
       "Cette invitation est valable pendant 7 jours. Si vous n'êtes pas intéressé, vous pouvez ignorer cet email.",
   },
   EN: {
-    title: 'Invitation to join OpenAthlete',
+    title: 'Invitation to join Team Running Rouxmesnil',
     preview: (coachName: string) =>
-      `${coachName} invites you to join OpenAthlete`,
+      `${coachName} invites you to join Team Running Rouxmesnil`,
     description: (coachName: string) =>
-      `${coachName} invites you to join OpenAthlete as an athlete. Click the button below to create your account and start tracking your workouts.`,
+      `${coachName} invites you to join Team Running Rouxmesnil as an athlete. Click the button below to create your account and start tracking your workouts.`,
     buttonLabel: 'Create my account',
     linkNote: (url: string) =>
       `If the button doesn't work, copy and paste this link into your browser: ${url}`,
@@ -31,11 +31,11 @@ const translations = {
       'This invitation is valid for 7 days. If you are not interested, you can ignore this email.',
   },
   IT: {
-    title: 'Invito a unirsi a OpenAthlete',
+    title: 'Invito a unirsi a Team Running Rouxmesnil',
     preview: (coachName: string) =>
-      `${coachName} ti invita a unirti a OpenAthlete`,
+      `${coachName} ti invita a unirti a Team Running Rouxmesnil`,
     description: (coachName: string) =>
-      `${coachName} ti invita a unirti a OpenAthlete come atleta. Clicca sul pulsante qui sotto per creare il tuo account e iniziare a monitorare i tuoi allenamenti.`,
+      `${coachName} ti invita a unirti a Team Running Rouxmesnil come atleta. Clicca sul pulsante qui sotto per creare il tuo account e iniziare a monitorare i tuoi allenamenti.`,
     buttonLabel: 'Crea il mio account',
     linkNote: (url: string) =>
       `Se il pulsante non funziona, copia e incolla questo link nel tuo browser: ${url}`,

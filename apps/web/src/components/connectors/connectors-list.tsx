@@ -1,3 +1,4 @@
+import { useConfiguredConnectorProviders } from '@/api/config';
 import {
   useDisconnectProviderMutation,
   useGetConnectedProvidersQuery,
@@ -36,20 +37,15 @@ interface ConnectorsListProps {
   oauthConnectSource?: OauthConnectSource;
 }
 
-const DEFAULT_SUPPORTED_PROVIDERS: ConnectorProvider[] = [
-  'STRAVA',
-  'GARMIN',
-  'SUUNTO',
-  'POLAR',
-];
-
 export function ConnectorsList({
-  supportedProviders = DEFAULT_SUPPORTED_PROVIDERS,
+  supportedProviders,
   showSkip = false,
   onSkip,
   oauthConnectSource = 'settings',
 }: ConnectorsListProps) {
   const posthog = usePostHog();
+  const configuredProviders = useConfiguredConnectorProviders();
+  const providers = supportedProviders ?? configuredProviders;
   const { data: connectedProviders = [], isLoading: isLoadingConnected } =
     useGetConnectedProvidersQuery();
 
@@ -123,7 +119,7 @@ export function ConnectorsList({
     <div className="flex flex-col gap-6">
       <div className="grid gap-4">
         {isLoadingConnected
-          ? Array.from({ length: supportedProviders.length }).map((_, i) => (
+          ? Array.from({ length: providers.length }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -141,7 +137,7 @@ export function ConnectorsList({
                 </CardContent>
               </Card>
             ))
-          : supportedProviders.map((provider) => {
+          : providers.map((provider) => {
               const connected = isConnected(provider);
               const isLoading =
                 getOAuthUriMutation.isPending ||

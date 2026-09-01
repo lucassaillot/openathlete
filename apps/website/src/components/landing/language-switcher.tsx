@@ -18,7 +18,7 @@ import { ComponentProps } from 'react';
 type ButtonVariant = ComponentProps<typeof Button>['variant'];
 type ButtonSize = ComponentProps<typeof Button>['size'];
 
-const SUPPORTED_LOCALES = ['en', 'fr'] as const;
+const SUPPORTED_LOCALES = ['fr'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 interface LanguageSwitcherProps {
@@ -40,7 +40,7 @@ export function LanguageSwitcher({
     locale as SupportedLocale,
   )
     ? (locale as SupportedLocale)
-    : 'en';
+    : 'fr';
 
   const handleLanguageChange = (newLocale: SupportedLocale) => {
     // Don't do anything if already on this locale

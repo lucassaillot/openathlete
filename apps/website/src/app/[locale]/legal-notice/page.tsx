@@ -11,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -37,7 +37,7 @@ export default async function LegalNoticePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -48,7 +48,7 @@ export default async function LegalNoticePage({
       <WebPageStructuredData
         title={m.legal_notice_title()}
         description={m.legal_notice_identification_content()}
-        url={`${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/legal-notice`}
+        url={`${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/legal-notice`}
       />
       <div className="mx-auto max-w-3xl p-8 space-y-8">
         <header className="space-y-2">

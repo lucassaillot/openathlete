@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/config';
+import { queryClient } from '@/lib/query-client';
 import { getAccessToken } from '@/utils/auth';
-import { QueryClient } from '@tanstack/react-query';
 import axios, { isAxiosError } from 'axios';
 
 import { ConnectorProvider, Event } from '@openathlete/shared';
@@ -8,6 +8,9 @@ import { ConnectorProvider, Event } from '@openathlete/shared';
 import { ACCESS_TOKEN, REFRESH_TOKEN, setItem } from './local-storage';
 
 export const routes = {
+  app: {
+    config: '/config',
+  },
   auth: {
     login: '/auth/login',
     firebaseLogin: '/auth/firebase',
@@ -204,16 +207,6 @@ export const routes = {
     weeklySummary: '/training-load/weekly-summary',
     recalculate: '/training-load/recalculate',
   },
-  subscription: {
-    current: '/subscription/current',
-    checkout: '/subscription/checkout',
-    cancel: '/subscription/cancel',
-    resume: '/subscription/resume',
-    invoices: '/subscription/invoices',
-    portal: '/subscription/portal',
-    getAthleteFeatureAccess: (athleteId: number, featureName: string) =>
-      `/subscription/athlete/${athleteId}/feature-access/${featureName}`,
-  },
   seoPlan: {
     create: '/seo-plan',
     getPlan: (token: string) => `/seo-plan/${token}`,
@@ -241,11 +234,9 @@ client.interceptors.response.use(undefined, async (error) => {
   if (isAxiosError(error) && error.response?.status === 401) {
     localStorage.removeItem(ACCESS_TOKEN);
     localStorage.removeItem(REFRESH_TOKEN);
-    const queryClient = new QueryClient();
     queryClient.clear();
-  } else {
-    throw error;
   }
+  throw error;
 });
 
 export default client;

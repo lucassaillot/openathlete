@@ -1,11 +1,8 @@
-import type { SubscriptionPlan } from '../types/subscription.types';
-
 export type EmailLanguage = 'FR' | 'EN' | 'IT';
 
 const emailSubjects: {
   'password-reset': Record<EmailLanguage, string>;
   welcome: Record<EmailLanguage, string>;
-  'subscription-confirmation': Record<EmailLanguage, string>;
   'athlete-invitation': Record<EmailLanguage, string>;
   'athlete-invitation-existing': Record<EmailLanguage, string>;
   'coach-invitation-new': Record<EmailLanguage, string>;
@@ -21,11 +18,6 @@ const emailSubjects: {
     FR: 'Bienvenue sur OpenAthlete',
     EN: 'Welcome to OpenAthlete',
     IT: 'Benvenuto su OpenAthlete',
-  },
-  'subscription-confirmation': {
-    FR: 'Confirmation de votre abonnement OpenAthlete',
-    EN: 'Your OpenAthlete subscription is confirmed',
-    IT: 'Il tuo abbonamento OpenAthlete è confermato',
   },
   'athlete-invitation': {
     FR: 'Invitation à rejoindre OpenAthlete',
@@ -62,14 +54,6 @@ export const emailLibrary = {
   welcome: {
     defaultSubject: emailSubjects.welcome,
     props: {} as { name?: string; dashboard_url?: string },
-  },
-  'subscription-confirmation': {
-    defaultSubject: emailSubjects['subscription-confirmation'],
-    props: {} as {
-      plan: SubscriptionPlan;
-      name?: string;
-      subscription_settings_url: string;
-    },
   },
   'athlete-invitation': {
     defaultSubject: emailSubjects['athlete-invitation'],

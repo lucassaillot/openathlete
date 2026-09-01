@@ -25,10 +25,23 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  // This is a private deployment — tell any crawler that does reach it
+  // (search engine, archiver, etc.) not to index or follow anything.
+  app.use(
+    (
+      _req: unknown,
+      res: { setHeader: (name: string, value: string) => void },
+      next: () => void,
+    ) => {
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      next();
+    },
+  );
+
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('OpenAthlete API')
-    .setDescription('API documentation for OpenAthlete')
+    .setTitle('Team Running Rouxmesnil API')
+    .setDescription('API documentation for Team Running Rouxmesnil')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

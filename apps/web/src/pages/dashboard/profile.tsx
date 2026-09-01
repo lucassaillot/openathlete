@@ -6,7 +6,13 @@ import {
 } from '@/components/ui/card';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
-import { Activity, MedalIcon, PieChart, TrendingUp } from 'lucide-react';
+import {
+  Activity,
+  CogIcon,
+  MedalIcon,
+  PieChart,
+  TrendingUp,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function ProfilePage() {
@@ -36,6 +42,12 @@ export function ProfilePage() {
       description: m.metrics(),
       icon: Activity,
       path: getPath(['dashboard', 'metrics']),
+    },
+    {
+      title: m.settings(),
+      description: m.settings(),
+      icon: CogIcon,
+      path: getPath(['dashboard', 'settings']),
     },
   ];
 

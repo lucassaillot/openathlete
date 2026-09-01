@@ -20,7 +20,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
 
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -58,7 +58,7 @@ export default async function VMACalculatorPage({
   const { locale } = await params;
 
   // Validate locale
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 

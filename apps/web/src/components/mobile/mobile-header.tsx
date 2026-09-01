@@ -25,6 +25,7 @@ function isProfileSubPage(pathname: string): boolean {
     getPath(['dashboard', 'statistics']),
     getPath(['dashboard', 'records']),
     getPath(['dashboard', 'metrics']),
+    getPath(['dashboard', 'settings']),
   ];
   return profileSubPages.some((route) => pathname === route);
 }

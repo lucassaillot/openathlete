@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -49,12 +49,12 @@ export default async function BlogPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
   const posts = getAllPosts();
-  const blogUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/blog`;
+  const blogUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/blog`;
 
   return (
     <>

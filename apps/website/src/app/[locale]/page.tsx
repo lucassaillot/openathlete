@@ -38,7 +38,7 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
 
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -47,7 +47,7 @@ export default async function HomePage({
       <WebPageStructuredData
         title={m.landing_seo_title()}
         description={m.landing_seo_description()}
-        url={`${SITE_URL}${locale === 'en' ? '' : `/${locale}`}`}
+        url={`${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}`}
       />
       <div className="min-h-screen bg-background">
         <TopBar />

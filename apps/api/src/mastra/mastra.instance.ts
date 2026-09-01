@@ -5,7 +5,7 @@ import { mastraStorage } from './config/memory.config';
 import { createOpenAthleteCoachAssistant } from './index';
 
 const logger = new PinoLogger({
-  name: 'OpenAthlete-Mastra',
+  name: 'TeamRunningRouxmesnil-Mastra',
   level: 'info',
 });
 

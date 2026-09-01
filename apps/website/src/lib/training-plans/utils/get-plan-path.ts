@@ -3,14 +3,14 @@
  * @param sport - Sport type: 'running', 'trail', or 'triathlon'
  * @param distance - Distance identifier (e.g., 'marathon', '50km', 'ironman')
  * @param variant - Variant identifier (e.g., '4h30', '2000d+', '12h')
- * @param locale - Locale code (e.g., 'en', 'fr'). Defaults to 'en' if not provided
+ * @param locale - Locale code (e.g., 'fr'). Defaults to 'fr' if not provided
  * @returns File path relative to plans directory
  */
 export function getPlanPath(
   sport: 'running' | 'trail' | 'triathlon',
   distance: string,
   variant: string,
-  locale: string = 'en',
+  locale: string = 'fr',
 ): string {
   // Normalize distance and variant for filename
   const normalizedDistance = distance.toLowerCase().replace(/\s+/g, '-');
@@ -27,14 +27,14 @@ export function getPlanPath(
  * @param sport - Sport from route
  * @param distance - Distance from route
  * @param variant - Variant from route (timeTarget or elevationRange)
- * @param locale - Locale code (e.g., 'en', 'fr'). Defaults to 'en' if not provided
+ * @param locale - Locale code (e.g., 'fr'). Defaults to 'fr' if not provided
  * @returns File path relative to plans directory
  */
 export function getPlanPathFromRoute(
   sport: string,
   distance: string,
   variant: string,
-  locale: string = 'en',
+  locale: string = 'fr',
 ): string {
   // Validate sport
   if (!['running', 'trail', 'triathlon'].includes(sport.toLowerCase())) {

@@ -14,8 +14,8 @@ const translations = {
         : 'Nouveau message dans une conversation',
     intro: (threadTitle?: string | null) =>
       threadTitle
-        ? `Vous avez reçu de nouveaux messages dans la conversation « ${threadTitle} » sur OpenAthlete.`
-        : 'Vous avez reçu de nouveaux messages dans une de vos conversations sur OpenAthlete.',
+        ? `Vous avez reçu de nouveaux messages dans la conversation « ${threadTitle} » sur Team Running Rouxmesnil.`
+        : 'Vous avez reçu de nouveaux messages dans une de vos conversations sur Team Running Rouxmesnil.',
     openInbox: 'Ouvrir la messagerie',
     footerNote:
       'Ces messages ont été regroupés pour éviter de vous envoyer un email à chaque nouveau message.',
@@ -29,8 +29,8 @@ const translations = {
         : 'New message in a conversation',
     intro: (threadTitle?: string | null) =>
       threadTitle
-        ? `You received new messages in the “${threadTitle}” conversation on OpenAthlete.`
-        : 'You received new messages in one of your conversations on OpenAthlete.',
+        ? `You received new messages in the “${threadTitle}” conversation on Team Running Rouxmesnil.`
+        : 'You received new messages in one of your conversations on Team Running Rouxmesnil.',
     openInbox: 'Open inbox',
     footerNote:
       'These messages were grouped so you do not receive an email for every single message.',
@@ -44,8 +44,8 @@ const translations = {
         : 'Nuovo messaggio in una conversazione',
     intro: (threadTitle?: string | null) =>
       threadTitle
-        ? `Hai ricevuto nuovi messaggi nella conversazione “${threadTitle}” su OpenAthlete.`
-        : 'Hai ricevuto nuovi messaggi in una delle tue conversazioni su OpenAthlete.',
+        ? `Hai ricevuto nuovi messaggi nella conversazione “${threadTitle}” su Team Running Rouxmesnil.`
+        : 'Hai ricevuto nuovi messaggi in una delle tue conversazioni su Team Running Rouxmesnil.',
     openInbox: 'Apri la casella',
     footerNote:
       'Questi messaggi sono stati raggruppati per evitare di inviarti una email per ogni singolo messaggio.',

@@ -10,12 +10,10 @@ import {
   FileText,
   StickyNote,
 } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { EVENT_TYPE, Event, FeatureName } from '@openathlete/shared';
 
-import { PaywallDialog } from '../paywall';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -54,7 +52,6 @@ export function CalendarDay({ day, events, cycleSegments = [] }: P) {
   const { hasAccess: hasAIAccess } = useFeatureAccess(
     FeatureName.AI_GENERATION,
   );
-  const [paywallOpen, setPaywallOpen] = useState(false);
   const duplicateEventMutation = useDuplicateEventMutation({
     onSuccess: () => {
       toast.success(m.event_created_successfully());
@@ -268,19 +265,15 @@ export function CalendarDay({ day, events, cycleSegments = [] }: P) {
               )}
             </Tooltip>
             <ContextMenuSeparator />
-            <ContextMenuItem
-              onClick={() => {
-                if (hasAIAccess) {
-                  createEventWithAI(day);
-                } else {
-                  setPaywallOpen(true);
-                }
-              }}
-            >
-              <SparklesIcon className="w-4 h-4 mr-2" />
-              {m.create_with_ai()}
-            </ContextMenuItem>
-            <ContextMenuSeparator />
+            {hasAIAccess && (
+              <>
+                <ContextMenuItem onClick={() => createEventWithAI(day)}>
+                  <SparklesIcon className="w-4 h-4 mr-2" />
+                  {m.create_with_ai()}
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+              </>
+            )}
             <ContextMenuItem onClick={() => createEventFromTemplate(day)}>
               <FileText className="w-4 h-4 mr-2" />
               {m.set_a_template()}
@@ -305,12 +298,6 @@ export function CalendarDay({ day, events, cycleSegments = [] }: P) {
           </ContextMenuContent>
         )}
       </ContextMenu>
-      <PaywallDialog
-        open={paywallOpen}
-        onOpenChange={setPaywallOpen}
-        reason="ai-feature"
-        analyticsSource="calendar_day"
-      />
     </div>
   );
 }

@@ -22,7 +22,7 @@ export async function generateMetadata({
   }>;
 }): Promise<Metadata> {
   const { locale, distance, elevationRange } = await params;
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -58,7 +58,7 @@ export default async function TrailTrainingPlanPage({
 }) {
   const { locale, distance, elevationRange } = await params;
 
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -66,7 +66,7 @@ export default async function TrailTrainingPlanPage({
     const planData = await loadPlan('trail', distance, elevationRange, locale);
     const path = `/training-plans/trail/${distance}/${elevationRange}`;
 
-    const pageUrl = `${SITE_URL}${locale === 'en' ? '' : `/${locale}`}${path}`;
+    const pageUrl = `${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}${path}`;
 
     return (
       <>

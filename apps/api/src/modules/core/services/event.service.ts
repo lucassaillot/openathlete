@@ -1022,7 +1022,7 @@ export class EventService {
       },
     });
     const calendar = ical({
-      name: 'OpenAthlete',
+      name: 'Team Running Rouxmesnil',
       timezone: 'UTC',
       method: ICalCalendarMethod.PUBLISH,
     });

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import { Calendar } from 'lucide-react';
@@ -26,6 +27,14 @@ function formatMeters(meters: number): string {
   if (!meters) return '0 km';
   const km = meters / 1000;
   return km % 1 === 0 ? `${km} km` : `${km.toFixed(1)} km`;
+}
+
+function getComplianceBadgeClass(compliance: number): string {
+  if (compliance >= 80)
+    return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+  if (compliance >= 50)
+    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300';
+  return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
 }
 
 function HeaderText({
@@ -69,13 +78,14 @@ function getPeriodDates(period: PeriodType): { start: Date; end: Date } {
 
 export function CoachDashboardView() {
   const nav = useNavigate();
+  const isMobile = useIsMobile();
   const [period, setPeriod] = useState<PeriodType>('week');
   const { start, end } = getPeriodDates(period);
   const { data, isLoading } = useCoachDashboardQuery(start, end);
 
   return (
     <div className="px-0 pt-6 h-full flex flex-col min-h-0">
-      <div className="mb-6 px-6 flex items-start justify-between">
+      <div className="mb-6 px-4 sm:px-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{m.coach_dashboard()}</h1>
           <p className="text-muted-foreground">{m.coach_dashboard_title()}</p>
@@ -84,7 +94,7 @@ export function CoachDashboardView() {
           value={period}
           onValueChange={(value) => setPeriod(value as PeriodType)}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -95,160 +105,262 @@ export function CoachDashboardView() {
         </Select>
       </div>
 
-      <div className="border-t rounded-none bg-background flex-1 min-h-0 flex flex-col relative">
-        <div className="absolute left-[239px] top-0 bottom-0 w-4 pointer-events-none bg-gradient-to-r from-black/6 to-transparent dark:from-white/10 z-[45] border-l" />
-        <div className="flex-1 min-h-0 overflow-x-auto relative">
-          <div className="relative min-w-[1560px] flex flex-col h-full">
-            <div className="sticky top-0 z-[25] bg-background grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px] border-b shrink-0">
-              <div className="sticky left-0 z-[35] bg-background border-r pl-4 pr-2 h-10 flex items-center font-medium">
-                <HeaderText>{m.name()}</HeaderText>
+      {isMobile ? (
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 flex flex-col gap-3">
+          {isLoading &&
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="rounded-lg border p-4 space-y-3">
+                <Skeleton className="h-5 w-32" />
+                <div className="grid grid-cols-2 gap-2">
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <Skeleton key={j} className="h-4 w-full" />
+                  ))}
+                </div>
               </div>
-              <div className="pl-6 pr-2 h-10 flex items-center bg-background">
-                <HeaderText>{m.email()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.planned_sessions()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.completed_sessions()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.planned_time()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.completed_time()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.completed_distance()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.compliance()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.last_activity()}</HeaderText>
-              </div>
-              <div className="px-2 h-10 flex items-center justify-center bg-background">
-                <HeaderText>{m.actions()}</HeaderText>
-              </div>
-            </div>
+            ))}
 
-            <div className="flex-1 min-h-0">
-              <div className="grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px]">
-                {isLoading && (
-                  <>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="contents">
-                        <div className="sticky left-0 z-[30] bg-background border-r border-b pl-4 pr-2 h-[57px] flex items-center">
-                          <Skeleton className="h-4 w-24" />
-                        </div>
-                        {Array.from({ length: 9 }).map((_, j) => (
-                          <div
-                            key={j}
-                            className="pl-6 pr-2 h-[57px] flex items-center border-b bg-background"
-                          >
-                            <Skeleton className="h-4 w-20" />
+          {!isLoading &&
+            data?.athletes?.map((row) => (
+              <div key={row.athleteId} className="rounded-lg border p-4">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium truncate">
+                      {row.firstName} {row.lastName}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={() =>
+                        nav(
+                          getPath(['dashboard', 'calendar']) +
+                            `/${row.athleteId}`,
+                        )
+                      }
+                      title={m.view_calendar()}
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Badge
+                    className={getComplianceBadgeClass(row.compliancePercent)}
+                  >
+                    {row.compliancePercent}
+                    {m.percent_symbol()}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground truncate mb-3">
+                  {row.email}
+                </p>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.planned_sessions()}
+                    </span>
+                    <span>{row.plannedSessions}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.completed_sessions()}
+                    </span>
+                    <span>{row.completedSessions}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.planned_time()}
+                    </span>
+                    <span>{formatSeconds(row.plannedTime)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.completed_time()}
+                    </span>
+                    <span>{formatSeconds(row.completedTime)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.completed_distance()}
+                    </span>
+                    <span>{formatMeters(row.completedDistance)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {m.last_activity()}
+                    </span>
+                    <span>
+                      {row.lastActivityAt
+                        ? new Date(row.lastActivityAt).toLocaleDateString()
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={() =>
+                    nav(getPath(['dashboard', 'metrics']) + `/${row.athleteId}`)
+                  }
+                >
+                  {m.metrics()}
+                </Button>
+              </div>
+            ))}
+        </div>
+      ) : (
+        <div className="border-t rounded-none bg-background flex-1 min-h-0 flex flex-col relative">
+          <div className="absolute left-[239px] top-0 bottom-0 w-4 pointer-events-none bg-gradient-to-r from-black/6 to-transparent dark:from-white/10 z-[45] border-l" />
+          <div className="flex-1 min-h-0 overflow-x-auto relative">
+            <div className="relative min-w-[1560px] flex flex-col h-full">
+              <div className="sticky top-0 z-[25] bg-background grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px] border-b shrink-0">
+                <div className="sticky left-0 z-[35] bg-background border-r pl-4 pr-2 h-10 flex items-center font-medium">
+                  <HeaderText>{m.name()}</HeaderText>
+                </div>
+                <div className="pl-6 pr-2 h-10 flex items-center bg-background">
+                  <HeaderText>{m.email()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.planned_sessions()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.completed_sessions()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.planned_time()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.completed_time()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.completed_distance()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.compliance()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.last_activity()}</HeaderText>
+                </div>
+                <div className="px-2 h-10 flex items-center justify-center bg-background">
+                  <HeaderText>{m.actions()}</HeaderText>
+                </div>
+              </div>
+
+              <div className="flex-1 min-h-0">
+                <div className="grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px]">
+                  {isLoading && (
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="contents">
+                          <div className="sticky left-0 z-[30] bg-background border-r border-b pl-4 pr-2 h-[57px] flex items-center">
+                            <Skeleton className="h-4 w-24" />
                           </div>
-                        ))}
-                      </div>
-                    ))}
-                  </>
-                )}
+                          {Array.from({ length: 9 }).map((_, j) => (
+                            <div
+                              key={j}
+                              className="pl-6 pr-2 h-[57px] flex items-center border-b bg-background"
+                            >
+                              <Skeleton className="h-4 w-20" />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </>
+                  )}
 
-                {!isLoading &&
-                  data?.athletes?.map((row) => {
-                    const compliance = row.compliancePercent;
-                    const badgeClass =
-                      compliance >= 80
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
-                        : compliance >= 50
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
-                    return (
-                      <div key={row.athleteId} className="contents group">
-                        <div className="sticky left-0 z-[30] bg-background border-r border-b pl-4 pr-2 h-[57px] flex items-center font-medium group-hover:bg-accent">
-                          <div className="flex items-center gap-2">
+                  {!isLoading &&
+                    data?.athletes?.map((row) => {
+                      const badgeClass = getComplianceBadgeClass(
+                        row.compliancePercent,
+                      );
+                      return (
+                        <div key={row.athleteId} className="contents group">
+                          <div className="sticky left-0 z-[30] bg-background border-r border-b pl-4 pr-2 h-[57px] flex items-center font-medium group-hover:bg-accent">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                {row.firstName} {row.lastName}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() =>
+                                  nav(
+                                    getPath(['dashboard', 'calendar']) +
+                                      `/${row.athleteId}`,
+                                  )
+                                }
+                                title={m.view_calendar()}
+                              >
+                                <Calendar className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="pl-6 pr-2 h-[57px] flex items-center text-muted-foreground border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">{row.email}</span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
                             <span className="text-sm">
-                              {row.firstName} {row.lastName}
+                              {row.plannedSessions}
                             </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">
+                              {row.completedSessions}
+                            </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">
+                              {formatSeconds(row.plannedTime)}
+                            </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">
+                              {formatSeconds(row.completedTime)}
+                            </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">
+                              {formatMeters(row.completedDistance)}
+                            </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
+                            <Badge className={badgeClass}>
+                              {row.compliancePercent}
+                              {m.percent_symbol()}
+                            </Badge>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center text-muted-foreground border-b group-hover:bg-muted/40 bg-background">
+                            <span className="text-sm">
+                              {row.lastActivityAt
+                                ? new Date(
+                                    row.lastActivityAt,
+                                  ).toLocaleDateString()
+                                : '-'}
+                            </span>
+                          </div>
+                          <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
+                              variant="outline"
+                              size="sm"
                               onClick={() =>
                                 nav(
-                                  getPath(['dashboard', 'calendar']) +
+                                  getPath(['dashboard', 'metrics']) +
                                     `/${row.athleteId}`,
                                 )
                               }
-                              title={m.view_calendar()}
                             >
-                              <Calendar className="h-4 w-4" />
+                              {m.metrics()}
                             </Button>
                           </div>
                         </div>
-                        <div className="pl-6 pr-2 h-[57px] flex items-center text-muted-foreground border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">{row.email}</span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">{row.plannedSessions}</span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">
-                            {row.completedSessions}
-                          </span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">
-                            {formatSeconds(row.plannedTime)}
-                          </span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">
-                            {formatSeconds(row.completedTime)}
-                          </span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">
-                            {formatMeters(row.completedDistance)}
-                          </span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <Badge className={badgeClass}>
-                            {row.compliancePercent}
-                            {m.percent_symbol()}
-                          </Badge>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center text-muted-foreground border-b group-hover:bg-muted/40 bg-background">
-                          <span className="text-sm">
-                            {row.lastActivityAt
-                              ? new Date(
-                                  row.lastActivityAt,
-                                ).toLocaleDateString()
-                              : '-'}
-                          </span>
-                        </div>
-                        <div className="px-2 h-[57px] flex items-center justify-center border-b group-hover:bg-muted/40 bg-background">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              nav(
-                                getPath(['dashboard', 'metrics']) +
-                                  `/${row.athleteId}`,
-                              )
-                            }
-                          >
-                            {m.metrics()}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

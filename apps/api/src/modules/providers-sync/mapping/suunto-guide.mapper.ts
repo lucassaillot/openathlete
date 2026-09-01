@@ -24,7 +24,7 @@ import type {
 } from './suunto-guide.types';
 import { mapSportToSuuntoActivityIds, truncateText } from './suunto-helpers';
 
-const GUIDE_OWNER = 'OpenAthlete';
+const GUIDE_OWNER = 'Team Running Rouxmesnil';
 const GUIDE_URL = 'https://openathlete.org';
 
 /**

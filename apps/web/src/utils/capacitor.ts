@@ -22,21 +22,6 @@ export function isAndroid(): boolean {
 }
 
 /**
- * Check if payments are disabled (iOS build or environment variable)
- * Apple requires in-app purchases, so we disable Stripe payments on iOS
- */
-export function isPaymentDisabled(): boolean {
-  // Check environment variable first (for build-time configuration)
-  const envDisabled = import.meta.env.VITE_DISABLE_PAYMENTS === 'true';
-  if (envDisabled) {
-    return true;
-  }
-
-  // Check if running on iOS
-  return isIOS();
-}
-
-/**
  * Get the API base URL, handling both web and native environments
  * In native, you may want to use a different URL or read from Capacitor config
  */

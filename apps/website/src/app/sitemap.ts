@@ -4,7 +4,7 @@ import { existsSync, readdirSync, statSync } from 'fs';
 import type { MetadataRoute } from 'next';
 import { join } from 'path';
 
-const locales = ['en', 'fr'] as const;
+const locales = ['fr'] as const;
 
 /**
  * Recursively scan directory for page.tsx files and return their routes
@@ -166,7 +166,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     for (const locale of locales) {
       const url =
-        locale === 'en' ? `${baseUrl}${route}` : `${baseUrl}/${locale}${route}`;
+        locale === 'fr' ? `${baseUrl}${route}` : `${baseUrl}/${locale}${route}`;
 
       sitemapEntries.push({
         url,
@@ -177,7 +177,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           languages: Object.fromEntries(
             locales.map((loc) => [
               loc,
-              loc === 'en' ? `${baseUrl}${route}` : `${baseUrl}/${loc}${route}`,
+              loc === 'fr' ? `${baseUrl}${route}` : `${baseUrl}/${loc}${route}`,
             ]),
           ),
         },
@@ -197,7 +197,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const routeMetadata = getRouteMetadata(route);
     for (const locale of locales) {
       const url =
-        locale === 'en' ? `${baseUrl}${route}` : `${baseUrl}/${locale}${route}`;
+        locale === 'fr' ? `${baseUrl}${route}` : `${baseUrl}/${locale}${route}`;
 
       sitemapEntries.push({
         url,
@@ -208,7 +208,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           languages: Object.fromEntries(
             locales.map((loc) => [
               loc,
-              loc === 'en' ? `${baseUrl}${route}` : `${baseUrl}/${loc}${route}`,
+              loc === 'fr' ? `${baseUrl}${route}` : `${baseUrl}/${loc}${route}`,
             ]),
           ),
         },
@@ -227,7 +227,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const post of blogPosts) {
     for (const locale of locales) {
       const url =
-        locale === 'en'
+        locale === 'fr'
           ? `${baseUrl}/blog/${post.metadata.slug}`
           : `${baseUrl}/${locale}/blog/${post.metadata.slug}`;
 
@@ -242,7 +242,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           languages: Object.fromEntries(
             locales.map((loc) => [
               loc,
-              loc === 'en'
+              loc === 'fr'
                 ? `${baseUrl}/blog/${post.metadata.slug}`
                 : `${baseUrl}/${loc}/blog/${post.metadata.slug}`,
             ]),

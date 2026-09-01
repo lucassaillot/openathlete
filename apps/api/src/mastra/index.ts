@@ -11,12 +11,12 @@ export function createOpenAthleteCoachAssistant(
   const memory = createMastraMemory();
 
   const coachAssistant = new Agent({
-    id: 'openathlete-coach',
-    name: 'OpenAthlete Coach Assistant',
+    id: 'team-running-rouxmesnil-coach',
+    name: 'Team Running Rouxmesnil Coach Assistant',
     description:
       'Intelligent router that directs athlete requests to specialized agents and workflows for training plan management.',
     ...(context && { context }),
-    instructions: `You are the routing coordinator for OpenAthlete's AI coaching system.
+    instructions: `You are the routing coordinator for Team Running Rouxmesnil's AI coaching system.
 
 Your ONLY job is to analyze the athlete's request and route it to the appropriate agent or workflow.
 

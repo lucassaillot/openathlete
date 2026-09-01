@@ -91,7 +91,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Authenticate user with Firebase OAuth (ID token exchange)',
     description:
-      'Verifies a Firebase ID token (OAuth providers: Google/Apple/GitHub), creates a user if missing, and returns OpenAthlete access and refresh tokens.',
+      'Verifies a Firebase ID token (OAuth providers: Google/Apple/GitHub), creates a user if missing, and returns access and refresh tokens.',
   })
   async loginWithFirebase(
     @Body(new ZodValidationPipe(firebaseLoginDtoSchema)) body: FirebaseLoginDto,

@@ -11,7 +11,7 @@ const translations = {
     preview: (coachName: string) =>
       `${coachName} vous invite à rejoindre son équipe`,
     description: (coachName: string) =>
-      `${coachName} vous invite à rejoindre son équipe d'athlètes sur OpenAthlete. Vous pouvez accepter ou refuser cette invitation dans vos paramètres.`,
+      `${coachName} vous invite à rejoindre son équipe d'athlètes sur Team Running Rouxmesnil. Vous pouvez accepter ou refuser cette invitation dans vos paramètres.`,
     buttonLabel: 'Voir les invitations',
     linkNote: (url: string) =>
       `Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur: ${url}`,
@@ -23,7 +23,7 @@ const translations = {
     preview: (coachName: string) =>
       `${coachName} invites you to join their team`,
     description: (coachName: string) =>
-      `${coachName} invites you to join their team of athletes on OpenAthlete. You can accept or decline this invitation in your settings.`,
+      `${coachName} invites you to join their team of athletes on Team Running Rouxmesnil. You can accept or decline this invitation in your settings.`,
     buttonLabel: 'View invitations',
     linkNote: (url: string) =>
       `If the button doesn't work, copy and paste this link into your browser: ${url}`,
@@ -35,7 +35,7 @@ const translations = {
     preview: (coachName: string) =>
       `${coachName} ti invita a unirsi al suo team`,
     description: (coachName: string) =>
-      `${coachName} ti invita a unirsi al suo team di atleti su OpenAthlete. Puoi accettare o rifiutare questo invito nelle tue impostazioni.`,
+      `${coachName} ti invita a unirsi al suo team di atleti su Team Running Rouxmesnil. Puoi accettare o rifiutare questo invito nelle tue impostazioni.`,
     buttonLabel: 'Visualizza gli inviti',
     linkNote: (url: string) =>
       `Se il pulsante non funziona, copia e incolla questo link nel tuo browser: ${url}`,

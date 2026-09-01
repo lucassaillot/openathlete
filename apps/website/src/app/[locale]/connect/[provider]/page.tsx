@@ -58,7 +58,7 @@ export default async function ConnectProviderPage({
   const { locale, provider } = await params;
 
   // Validate locale
-  if (locale !== 'en' && locale !== 'fr') {
+  if (locale !== 'fr') {
     notFound();
   }
 
@@ -80,7 +80,7 @@ export default async function ConnectProviderPage({
             `connect_${provider}_seo_description` as keyof typeof m
           ] as () => string
         )()}
-        url={`${SITE_URL}${locale === 'en' ? '' : `/${locale}`}/connect/${provider}`}
+        url={`${SITE_URL}${locale === 'fr' ? '' : `/${locale}`}/connect/${provider}`}
       />
       <div className="min-h-screen bg-background">
         <TopBar />
