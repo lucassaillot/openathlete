@@ -39,6 +39,15 @@ else
   log "Migrations completed successfully"
 fi
 
+if [ -n "$STRAVA_CLIENT_ID" ] && [ -n "$STRAVA_CLIENT_SECRET" ] && [ -n "$STRAVA_WEBHOOK_URL" ] && [ -n "$STRAVA_WEBHOOK_TOKEN" ]; then
+  log "Ensuring Strava webhook subscription..."
+  if ! node /app/apps/api/scripts/ensure-strava-webhook.mjs; then
+    log "WARNING: Failed to ensure Strava webhook subscription (continuing startup)"
+  fi
+else
+  log "Strava webhook env vars not fully set, skipping webhook subscription check"
+fi
+
 log "Starting NestJS (node dist/main.js)"
 cd /app/apps/api
 

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/auth';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
+import { getErrorMessage } from '@/utils/axios';
 import { cn } from '@/utils/shadcn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePostHog } from 'posthog-js/react';
@@ -71,6 +72,10 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
       await initialize();
       navigate(getPath(['dashboard', 'onboarding']));
     },
+    onError: () => {
+      toast.error(m.account_created_login_failed());
+      navigate('/auth/login');
+    },
   });
   const createAccountMutation = useCreateAccountMutation({
     onSuccess: async (_, variables) => {
@@ -78,7 +83,7 @@ export function CreateAccountView({ className }: React.ComponentProps<'form'>) {
       loginMutation.mutate(variables);
     },
     onError: (error) => {
-      toast.error(error.message || m.create_account_failed());
+      toast.error(getErrorMessage(error, m.create_account_failed()));
     },
   });
 

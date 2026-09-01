@@ -1,4 +1,5 @@
 export const brand = {
+  name: 'Team Running Rouxmesnil',
   // Outer background (email body)
   bg: '#f6f7fb',
   // Default content text color (on white card)

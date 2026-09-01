@@ -214,6 +214,27 @@ export const routes = {
   },
 } as const;
 
+/**
+ * Extracts the backend's error message from a NestJS-style error response
+ * (`{ message: string | string[] }`), falling back to a generic message when
+ * unavailable (network error, non-Axios error, unexpected response shape).
+ */
+export function getErrorMessage(error: unknown, fallback: string): string {
+  if (isAxiosError(error)) {
+    const data = error.response?.data as
+      | { message?: string | string[] }
+      | undefined;
+    const message = data?.message;
+    if (Array.isArray(message) && message.length > 0) {
+      return message.join(', ');
+    }
+    if (typeof message === 'string' && message.length > 0) {
+      return message;
+    }
+  }
+  return fallback;
+}
+
 const client = axios.create({
   baseURL: API_BASE_URL,
 });

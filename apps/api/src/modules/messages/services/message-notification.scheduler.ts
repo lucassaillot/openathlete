@@ -4,6 +4,7 @@ import { Cron } from '@nestjs/schedule';
 
 import type { ApiEnvSchemaType } from '@openathlete/shared';
 
+import { brand } from 'src/modules/notification/emails/core/brand';
 import { buildMessageThreadNotificationEmail } from 'src/modules/notification/emails/templates/message-thread-notification.template';
 import { EmailService } from 'src/modules/notification/services/email.service';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
@@ -131,8 +132,7 @@ export class MessageNotificationScheduler {
             const senderFirstName = message.sender.firstName || '';
             const senderLastName = message.sender.lastName || '';
             const senderName =
-              `${senderFirstName} ${senderLastName}`.trim() ||
-              'Team Running Rouxmesnil';
+              `${senderFirstName} ${senderLastName}`.trim() || brand.name;
 
             const content = message.content || '';
             const snippet =
@@ -154,7 +154,7 @@ export class MessageNotificationScheduler {
           subject:
             'Nouveaux messages dans votre messagerie Team Running Rouxmesnil',
           html: htmlContent,
-          fromName: 'Team Running Rouxmesnil',
+          fromName: brand.name,
         });
         await (
           this.prisma as unknown as {
