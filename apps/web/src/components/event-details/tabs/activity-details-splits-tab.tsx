@@ -145,6 +145,34 @@ function computeSplits(stream: ActivityStream | undefined) {
     return t0 + r * (t1 - t0);
   };
 
+  // Cumulative moving time: identical to elapsed time except that deltas
+  // where instantaneous speed drops below MIN_MOVING_SPEED_MS (paused/near-
+  // stationary, e.g. a red light) contribute 0 instead of dt. Same threshold
+  // as the backend's NormalizationProcessor default (NORMALIZATION_MIN_MOVING_SPEED_MS).
+  const MIN_MOVING_SPEED_MS = 0.3;
+  const movingT: number[] = new Array(t.length);
+  movingT[0] = t[0];
+  for (let i = 1; i < t.length; i++) {
+    const dt = t[i] - t[i - 1];
+    const dd = d[i] - d[i - 1];
+    const v = dt > 0 ? dd / dt : 0;
+    movingT[i] = movingT[i - 1] + (dd > 0 && v >= MIN_MOVING_SPEED_MS ? dt : 0);
+  }
+
+  const movingTimeAtDistance = (targetM: number) => {
+    let i = 0;
+    while (i < d.length && d[i] < targetM) i++;
+    if (i === 0) return movingT[0];
+    if (i >= d.length) return movingT[movingT.length - 1];
+    const d0 = d[i - 1];
+    const d1 = d[i];
+    const mt0 = movingT[i - 1];
+    const mt1 = movingT[i];
+    if (d1 === d0) return mt1;
+    const r = (targetM - d0) / (d1 - d0);
+    return mt0 + r * (mt1 - mt0);
+  };
+
   const elevationAtDistance = (targetM: number) => {
     if (!alt?.length) return undefined as number | undefined;
     let i = 0;
@@ -165,7 +193,8 @@ function computeSplits(stream: ActivityStream | undefined) {
     const endDist = km * 1000;
     const Ts = timeAtDistance(startDist);
     const Te = timeAtDistance(endDist);
-    const durationSec = Te - Ts;
+    const durationSec =
+      movingTimeAtDistance(endDist) - movingTimeAtDistance(startDist);
     const paceSecPerKm = durationSec;
 
     // Cumulative D+ / D- within the split

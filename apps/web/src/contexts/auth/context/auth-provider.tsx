@@ -1,4 +1,6 @@
 import { UserAPI } from '@/api/user';
+import { userKeys } from '@/api/user/user.keys';
+import { queryClient } from '@/lib/query-client';
 import { getPath } from '@/routes/paths';
 import { isValidToken } from '@/utils/auth';
 import { signOutFirebase } from '@/utils/firebase-auth';
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: Props) {
         setItem(ACCESS_TOKEN, accessToken);
 
         const user = await UserAPI.getMe();
+        queryClient.setQueryData([userKeys.getMe], user);
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlLang = urlParams.get('lang');
@@ -105,6 +108,7 @@ export function AuthProvider({ children }: Props) {
       } else {
         try {
           const user = await UserAPI.getMe();
+          queryClient.setQueryData([userKeys.getMe], user);
 
           const urlParams = new URLSearchParams(window.location.search);
           const urlLang = urlParams.get('lang');
