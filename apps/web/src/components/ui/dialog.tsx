@@ -1,3 +1,4 @@
+import { useIsMobile } from '@/hooks/use-mobile';
 import { isCapacitor } from '@/utils/capacitor';
 import { cn } from '@/utils/shadcn';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
@@ -52,7 +53,8 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   mobileFullscreen?: boolean;
 }) {
-  const isMobile = isCapacitor();
+  const isMobileViewport = useIsMobile();
+  const isMobile = isCapacitor() || isMobileViewport;
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />

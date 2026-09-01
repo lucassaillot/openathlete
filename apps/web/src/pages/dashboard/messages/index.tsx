@@ -14,6 +14,7 @@ import { PageLoader } from '@/components/ui/loader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { UnreadBadge } from '@/components/ui/unread-badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useSetPageActions } from '@/hooks/use-page-actions';
 import { m } from '@/paraglide/messages';
 import { getLocale } from '@/paraglide/runtime';
@@ -47,7 +48,8 @@ export function MessagesPage() {
     number | null
   >(null);
   const [mobileView, setMobileView] = useState<'list' | 'conversation'>('list');
-  const isMobile = isCapacitor();
+  const isMobileViewport = useIsMobile();
+  const isMobile = isCapacitor() || isMobileViewport;
   const mainRef = useRef<HTMLElement | null>(null);
   const { data: messageThreads, isLoading: isLoadingMessageThreads } =
     useGetMessageThreadsQuery();

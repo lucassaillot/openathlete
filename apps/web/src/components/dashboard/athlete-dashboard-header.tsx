@@ -4,6 +4,7 @@ import { useTrainingLoadMetrics } from '@/api/training-load';
 import { TrainingLoadCalculationType } from '@/api/training-load/training-load.api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { m } from '@/paraglide/messages';
 import { getLocale } from '@/paraglide/runtime';
 import { isCapacitor } from '@/utils/capacitor';
@@ -22,7 +23,8 @@ interface AthleteDashboardHeaderProps {
 export function AthleteDashboardHeader({
   athleteId,
 }: AthleteDashboardHeaderProps) {
-  const isMobile = isCapacitor();
+  const isMobileViewport = useIsMobile();
+  const isMobile = isCapacitor() || isMobileViewport;
   const {
     data: upcomingCompetitionsData = [],
     isLoading: isLoadingCompetitions,
