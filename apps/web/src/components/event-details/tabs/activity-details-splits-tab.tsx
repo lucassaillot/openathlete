@@ -151,12 +151,15 @@ function computeSplits(stream: ActivityStream | undefined) {
   // as the backend's NormalizationProcessor default (NORMALIZATION_MIN_MOVING_SPEED_MS).
   const MIN_MOVING_SPEED_MS = 0.3;
   const movingT: number[] = new Array(t.length);
+  const intervalMoving: boolean[] = new Array(t.length).fill(true);
   movingT[0] = t[0];
   for (let i = 1; i < t.length; i++) {
     const dt = t[i] - t[i - 1];
     const dd = d[i] - d[i - 1];
     const v = dt > 0 ? dd / dt : 0;
-    movingT[i] = movingT[i - 1] + (dd > 0 && v >= MIN_MOVING_SPEED_MS ? dt : 0);
+    const moving = dd > 0 && v >= MIN_MOVING_SPEED_MS;
+    intervalMoving[i] = moving;
+    movingT[i] = movingT[i - 1] + (moving ? dt : 0);
   }
 
   const movingTimeAtDistance = (targetM: number) => {
@@ -220,10 +223,12 @@ function computeSplits(stream: ActivityStream | undefined) {
       descentM = down;
     }
 
-    // Time-weighted average GAP (m/s) over [Ts, Te]
+    // Moving-time-weighted average GAP (m/s) over [Ts, Te]: paused/near-
+    // stationary sub-intervals (per intervalMoving) don't contribute, same as
+    // durationSec above, so a stop doesn't drag the split's average GAP down.
     let gapMps: number | undefined = undefined;
     if (gap?.length === t.length) {
-      const total = Te - Ts;
+      const total = durationSec;
       if (total > 0) {
         let weighted = 0;
         // find first index where t[i] > Ts
@@ -234,7 +239,8 @@ function computeSplits(stream: ActivityStream | undefined) {
         while (currentTime < Te) {
           const nextTime = i < t.length ? Math.min(Te, t[i]) : Te;
           const dt = nextTime - currentTime;
-          if (dt > 0) weighted += (gap[prevIndex] ?? 0) * dt;
+          const moving = i < intervalMoving.length ? intervalMoving[i] : true;
+          if (dt > 0 && moving) weighted += (gap[prevIndex] ?? 0) * dt;
           currentTime = nextTime;
           if (i < t.length && t[i] <= Te) {
             prevIndex = i;

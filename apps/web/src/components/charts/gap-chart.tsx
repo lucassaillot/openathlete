@@ -41,8 +41,25 @@ export function GapChart({
       const x = distanceStream ? distanceStream[i] : time;
       return { gap, time, x };
     });
-    const smoothed = despikeAndEma(base.map((d) => d.gap));
-    return base.map((d, i) => ({ ...d, gap: smoothed[i] ?? d.gap }));
+
+    // Exclude paused/near-stationary samples so the graph doesn't dip toward
+    // zero during stops (e.g. a red light) - same threshold used elsewhere
+    // for "moving" detection (backend NormalizationProcessor default).
+    const MIN_MOVING_SPEED_MS = 0.3;
+    const moving =
+      distanceStream && timeStream
+        ? base.filter((_, i) => {
+            if (i === 0) return true;
+            const dt = timeStream[i] - timeStream[i - 1];
+            const dd = distanceStream[i] - distanceStream[i - 1];
+            const v = dt > 0 ? dd / dt : 0;
+            return v >= MIN_MOVING_SPEED_MS;
+          })
+        : base;
+    const source = moving.length > 1 ? moving : base;
+
+    const smoothed = despikeAndEma(source.map((d) => d.gap));
+    return source.map((d, i) => ({ ...d, gap: smoothed[i] ?? d.gap }));
   }, [gapStream, timeStream, distanceStream]);
 
   const minVal = useMemo(

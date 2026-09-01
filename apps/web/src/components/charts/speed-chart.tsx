@@ -66,8 +66,15 @@ export function SpeedChart({
       };
     });
 
-    const smoothed = despikeAndEma(rawData.map((d) => d.speed));
-    return rawData.map((d, i) => ({ ...d, speed: smoothed[i] ?? d.speed }));
+    // Exclude paused/near-stationary samples so the graph doesn't dip toward
+    // zero during stops (e.g. a red light) - same threshold used elsewhere
+    // for "moving" detection (backend NormalizationProcessor default).
+    const MIN_MOVING_SPEED_MS = 0.3;
+    const moving = rawData.filter((d) => d.speed >= MIN_MOVING_SPEED_MS);
+    const source = moving.length > 1 ? moving : rawData;
+
+    const smoothed = despikeAndEma(source.map((d) => d.speed));
+    return source.map((d, i) => ({ ...d, speed: smoothed[i] ?? d.speed }));
   }, [latLngStream, timeStream, distanceStream]);
 
   const minSpeed = useMemo(
