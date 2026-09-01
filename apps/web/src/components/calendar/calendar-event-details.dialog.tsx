@@ -83,12 +83,12 @@ export function CalendarEventDetailsDialog({
                   </Badge>
                 )}
             </div>
-            <div className="flex items-center gap-2 md:pr-4 md:-translate-y-4 w-full md:w-auto mt-2 md:mt-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:pr-4 md:-translate-y-4 w-full md:w-auto mt-2 md:mt-0">
               <Button
                 onClick={onEditEvent}
                 variant="outline"
                 size="sm"
-                className="w-full md:w-auto text-xs md:text-sm"
+                className="w-full sm:w-auto text-xs md:text-sm"
               >
                 {m.edit()}
               </Button>
@@ -96,7 +96,7 @@ export function CalendarEventDetailsDialog({
                 onClick={onDeleteEvent}
                 variant="outline"
                 size="sm"
-                className="w-full md:w-auto text-xs md:text-sm text-destructive hover:text-destructive"
+                className="w-full sm:w-auto text-xs md:text-sm text-destructive hover:text-destructive"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1" />
                 {m.delete_()}

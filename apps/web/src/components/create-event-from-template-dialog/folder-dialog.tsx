@@ -82,7 +82,7 @@ export function FolderDialog({
 
           <div className="space-y-2">
             <Label>{m.color()}</Label>
-            <div className="grid grid-cols-10 gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
               {CYCLE_COLORS.map((colorOption) => (
                 <button
                   key={colorOption.value}

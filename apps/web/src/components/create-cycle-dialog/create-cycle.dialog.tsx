@@ -199,7 +199,7 @@ export function CreateCycleDialog({ open, onClose, ...rest }: P) {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="color">{m.color()}</Label>
-            <div className="grid grid-cols-10 gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
               {CYCLE_COLORS.map((color) => (
                 <button
                   key={color.value}

@@ -231,7 +231,7 @@ export function TrainingZoneBulkEditor({
             className="p-4 border rounded-lg space-y-4 relative group"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 grid grid-cols-2 gap-4">
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor={`zone-${index}-name`}>{m.name()}</Label>
                   <Input
@@ -269,7 +269,7 @@ export function TrainingZoneBulkEditor({
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor={`zone-${index}-min`}>
                   {m.minimum()} ({getUnitLabel(type)})

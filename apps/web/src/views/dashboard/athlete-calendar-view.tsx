@@ -1,5 +1,7 @@
 import { useGetMyEventsQuery } from '@/api/event';
 import { Calendar } from '@/components/calendar/calendar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/utils/shadcn';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
@@ -8,6 +10,7 @@ interface P {
 }
 
 export function AthleteCalendarView({ athleteId }: P) {
+  const isMobile = useIsMobile();
   const [displayedMonth, setDisplayedMonth] = useState(new Date());
 
   const { startDate, endDate } = useMemo(() => {
@@ -47,7 +50,7 @@ export function AthleteCalendarView({ athleteId }: P) {
     return <Navigate to="/404" />;
   }
   return (
-    <div className="w-full p-4 md:p-8">
+    <div className={cn('w-full', isMobile ? 'p-0' : 'p-4 md:p-8')}>
       <Calendar
         events={data}
         athleteId={athleteId}
