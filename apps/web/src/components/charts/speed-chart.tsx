@@ -54,10 +54,20 @@ export function SpeedChart({
           Math.sin(dLng / 2);
 
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = earthRadius * c;
+      const haversineDistance = earthRadius * c;
       const time = timeStream ? timeStream[i] : i;
       const x = distanceStream ? distanceStream[i] : time;
       const timeDiff = timeStream ? timeStream[i] - timeStream[i - 1] : 1;
+      // Prefer the recorded cumulative-distance stream when available: raw
+      // GPS lat/lng deltas are noisy enough (satellite jitter) that a stop
+      // often still looks like movement, unlike the distance stream already
+      // used (successfully) for the splits and GAP chart's pause detection.
+      const distance = distanceStream
+        ? Math.max(
+            0,
+            distanceStream[i] - (distanceStream[i - 1] ?? distanceStream[i]),
+          )
+        : haversineDistance;
       const speed = distance / (timeDiff || 1);
       return {
         speed,

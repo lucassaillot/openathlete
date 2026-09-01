@@ -542,105 +542,167 @@ export class StravaProviderService
     this.logger.log(
       `Handling Strava webhook: objectId=${payload.object_id}, ownerId=${payload.owner_id}, aspectType=${payload.aspect_type}`,
     );
+
     if (
-      payload.object_type === 'activity' &&
-      payload.aspect_type === 'create' &&
-      payload.object_id &&
-      payload.owner_id
+      payload.object_type !== 'activity' ||
+      !payload.object_id ||
+      !payload.owner_id
     ) {
-      const activityId = this.tryNormalizeStravaActivityId(payload.object_id);
-      if (!activityId) {
-        // Webhook payload is untrusted; reject unexpected IDs to prevent request forgery / SSRF.
-        // Don't throw: webhook handlers should be resilient and return 200.
-        this.logger.warn(
-          `Invalid Strava webhook object_id: ${String(payload.object_id)}`,
-        );
-        return;
-      }
+      return;
+    }
 
-      // Find account by external_user_id (Strava athlete ID)
-      const account = await this.prisma.providerAccount.findFirst({
-        where: {
-          provider: ConnectorProvider.STRAVA,
-          externalUserId: payload.owner_id.toString(),
-          status: 'active',
-        },
-        include: {
-          athlete: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      if (!account || !account.athlete || !account.athlete.user) {
-        this.logger.warn(
-          `No active Strava account found for owner_id ${payload.owner_id}`,
-        );
-        return;
-      }
-
-      if (!account.importActivitiesEnabled) {
-        this.logger.debug(
-          `Import disabled for Strava account ${account.providerAccountId}, skipping webhook activity ${payload.object_id}`,
-        );
-        return;
-      }
-
-      // Check if activity already imported
-      const existingActivity = await this.prisma.eventActivity.findFirst({
-        where: {
-          externalId: activityId,
-        },
-      });
-
-      if (existingActivity) {
-        this.logger.debug(
-          `Activity ${payload.object_id} already imported, skipping`,
-        );
-        return;
-      }
-
-      // Fetch activity details from Strava
-      const activity =
-        await this.makeAuthenticatedRequest<StravaSummaryActivity>(
-          account,
-          async (accessToken) => {
-            const response = await axios.get<StravaSummaryActivity>(
-              this.getStravaActivityUrl(activityId),
-              {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                timeout: 15000, // 15 seconds timeout for activity details
-              },
-            );
-            return response.data;
-          },
-        );
-
-      const endDate = new Date(activity.start_date);
-      endDate.setSeconds(endDate.getSeconds() + activity.elapsed_time);
-
-      const importedActivity: ImportedActivity = {
-        externalId: activity.id.toString(),
-        name: activity.name,
-        startDate: new Date(activity.start_date),
-        endDate,
-        sport: mapStravaSportType(activity.type),
-        distance: activity.distance,
-        duration: activity.elapsed_time,
-        raw: activity,
-      };
-
-      await this.queueService.addActivityImportJob(
-        account,
-        importedActivity,
-        false,
+    const activityId = this.tryNormalizeStravaActivityId(payload.object_id);
+    if (!activityId) {
+      // Webhook payload is untrusted; reject unexpected IDs to prevent request forgery / SSRF.
+      // Don't throw: webhook handlers should be resilient and return 200.
+      this.logger.warn(
+        `Invalid Strava webhook object_id: ${String(payload.object_id)}`,
       );
+      return;
+    }
 
-      this.logger.log(`Queued activity ${activityId} from webhook for import`);
+    if (payload.aspect_type === 'create') {
+      await this.handleActivityCreatedWebhook(payload, activityId);
+      return;
+    }
+
+    if (payload.aspect_type === 'update') {
+      await this.handleActivityUpdatedWebhook(payload, activityId);
+    }
+  }
+
+  private async handleActivityCreatedWebhook(
+    payload: StravaWebhookPayload,
+    activityId: string,
+  ): Promise<void> {
+    // Find account by external_user_id (Strava athlete ID)
+    const account = await this.prisma.providerAccount.findFirst({
+      where: {
+        provider: ConnectorProvider.STRAVA,
+        externalUserId: payload.owner_id.toString(),
+        status: 'active',
+      },
+      include: {
+        athlete: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!account || !account.athlete || !account.athlete.user) {
+      this.logger.warn(
+        `No active Strava account found for owner_id ${payload.owner_id}`,
+      );
+      return;
+    }
+
+    if (!account.importActivitiesEnabled) {
+      this.logger.debug(
+        `Import disabled for Strava account ${account.providerAccountId}, skipping webhook activity ${payload.object_id}`,
+      );
+      return;
+    }
+
+    // Check if activity already imported
+    const existingActivity = await this.prisma.eventActivity.findFirst({
+      where: {
+        externalId: activityId,
+      },
+    });
+
+    if (existingActivity) {
+      this.logger.debug(
+        `Activity ${payload.object_id} already imported, skipping`,
+      );
+      return;
+    }
+
+    // Fetch activity details from Strava
+    const activity = await this.makeAuthenticatedRequest<StravaSummaryActivity>(
+      account,
+      async (accessToken) => {
+        const response = await axios.get<StravaSummaryActivity>(
+          this.getStravaActivityUrl(activityId),
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            timeout: 15000, // 15 seconds timeout for activity details
+          },
+        );
+        return response.data;
+      },
+    );
+
+    const endDate = new Date(activity.start_date);
+    endDate.setSeconds(endDate.getSeconds() + activity.elapsed_time);
+
+    const importedActivity: ImportedActivity = {
+      externalId: activity.id.toString(),
+      name: activity.name,
+      startDate: new Date(activity.start_date),
+      endDate,
+      sport: mapStravaSportType(activity.type),
+      distance: activity.distance,
+      duration: activity.elapsed_time,
+      raw: activity,
+    };
+
+    await this.queueService.addActivityImportJob(
+      account,
+      importedActivity,
+      false,
+    );
+
+    this.logger.log(`Queued activity ${activityId} from webhook for import`);
+  }
+
+  /**
+   * Handle an "update" webhook event for an already-imported activity: syncs
+   * the title/sport type changes made on Strava. An activity we haven't
+   * imported yet is left alone - an update alone shouldn't trigger a full
+   * import (that's what "create" and the manual full-import are for).
+   */
+  private async handleActivityUpdatedWebhook(
+    payload: StravaWebhookPayload,
+    activityId: string,
+  ): Promise<void> {
+    const existingActivity = await this.prisma.eventActivity.findFirst({
+      where: { externalId: activityId },
+      select: { eventActivityId: true, eventId: true },
+    });
+
+    if (!existingActivity) {
+      this.logger.debug(
+        `Update webhook for activity ${activityId} but it isn't imported, skipping`,
+      );
+      return;
+    }
+
+    const updates = payload.updates ?? {};
+
+    const title = updates.title;
+    if (typeof title === 'string' && title.length > 0) {
+      await this.prisma.event.update({
+        where: { eventId: existingActivity.eventId },
+        data: { name: title },
+      });
+      this.logger.log(
+        `Updated title of event ${existingActivity.eventId} from Strava webhook (activity ${activityId})`,
+      );
+    }
+
+    const type = updates.type;
+    if (typeof type === 'string' && type.length > 0) {
+      await this.prisma.eventActivity.update({
+        where: { eventActivityId: existingActivity.eventActivityId },
+        data: { sport: mapStravaSportType(type) },
+      });
+      this.logger.log(
+        `Updated sport of activity ${activityId} from Strava webhook`,
+      );
     }
   }
 }
