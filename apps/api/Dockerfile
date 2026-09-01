@@ -64,6 +64,7 @@ COPY --from=build /app/libs/database/package.json ./libs/database/package.json
 COPY --from=build /app/libs/database/prisma ./libs/database/prisma
 COPY --from=build /app/libs/database/prisma.config.js ./libs/database/prisma.config.js
 
+COPY apps/api/scripts /app/apps/api/scripts
 COPY apps/api/scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh \
   && chown -R openathlete:openathlete /app

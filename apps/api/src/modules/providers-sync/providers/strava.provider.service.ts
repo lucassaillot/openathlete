@@ -38,6 +38,7 @@ import {
   ImportedActivity,
   ProviderImportCapability,
 } from '../base/provider-import.interface';
+import { StravaWebhookPayload } from '../types/strava-webhook.types';
 
 @Injectable()
 export class StravaProviderService
@@ -537,15 +538,12 @@ export class StravaProviderService
   /**
    * Handle Strava webhook
    */
-  async handleWebhook(payload: {
-    object_id: number;
-    owner_id: number;
-    aspect_type: 'create' | 'delete';
-  }): Promise<void> {
+  async handleWebhook(payload: StravaWebhookPayload): Promise<void> {
     this.logger.log(
       `Handling Strava webhook: objectId=${payload.object_id}, ownerId=${payload.owner_id}, aspectType=${payload.aspect_type}`,
     );
     if (
+      payload.object_type === 'activity' &&
       payload.aspect_type === 'create' &&
       payload.object_id &&
       payload.owner_id

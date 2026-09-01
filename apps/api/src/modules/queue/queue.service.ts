@@ -6,6 +6,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ProviderAccount } from '@openathlete/database';
 
 import { ImportedActivity } from '../providers-sync/base/provider-import.interface';
+import { StravaWebhookPayload } from '../providers-sync/types/strava-webhook.types';
 
 export interface ActivityImportJobData {
   providerAccountId: number;
@@ -19,6 +20,10 @@ export interface ActivityProcessingJobData {
   bulkImport?: boolean;
 }
 
+export interface StravaWebhookJobData {
+  payload: StravaWebhookPayload;
+}
+
 @Injectable()
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
@@ -28,6 +33,8 @@ export class QueueService {
     private readonly activityImportQueue: Queue<ActivityImportJobData>,
     @InjectQueue('activity-processing')
     private readonly activityProcessingQueue: Queue<ActivityProcessingJobData>,
+    @InjectQueue('strava-webhook')
+    private readonly stravaWebhookQueue: Queue<StravaWebhookJobData>,
   ) {}
 
   private calculatePriority(startDate: string | Date): number {
@@ -194,15 +201,31 @@ export class QueueService {
     }
   }
 
+  async addStravaWebhookJob(payload: StravaWebhookPayload): Promise<void> {
+    const jobId = [
+      'strava',
+      payload.subscription_id,
+      payload.object_type,
+      payload.object_id,
+      payload.aspect_type,
+      payload.event_time,
+    ].join('-');
+
+    await this.stravaWebhookQueue.add('process', { payload }, { jobId });
+  }
+
   async getQueueStats() {
-    const [importStats, processingStats] = await Promise.all([
-      this.activityImportQueue.getJobCounts(),
-      this.activityProcessingQueue.getJobCounts(),
-    ]);
+    const [importStats, processingStats, stravaWebhookStats] =
+      await Promise.all([
+        this.activityImportQueue.getJobCounts(),
+        this.activityProcessingQueue.getJobCounts(),
+        this.stravaWebhookQueue.getJobCounts(),
+      ]);
 
     return {
       'activity-import': importStats,
       'activity-processing': processingStats,
+      'strava-webhook': stravaWebhookStats,
     };
   }
 }
