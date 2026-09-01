@@ -168,7 +168,7 @@ function LayoutContent({ children }: P) {
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      {!isMobile && !isCapacitor() && <AppSidebar />}
+      <AppSidebar />
 
       <SpaceConsumer>
         {isCapacitor() || isMobile ? (
