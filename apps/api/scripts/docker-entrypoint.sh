@@ -39,8 +39,24 @@ else
   log "Migrations completed successfully"
 fi
 
+log "Starting NestJS (node dist/main.js)"
+cd /app/apps/api
+
+# Start the API in the background: Strava's webhook verification (below)
+# calls back into this same server, so it must already be listening before
+# we ask Strava to create the subscription.
+if [ "$(id -u)" = "0" ]; then
+  su-exec openathlete node dist/main.js &
+else
+  node dist/main.js &
+fi
+API_PID=$!
+trap 'kill -TERM "$API_PID" 2>/dev/null' TERM INT
+
 if [ -n "$STRAVA_CLIENT_ID" ] && [ -n "$STRAVA_CLIENT_SECRET" ] && [ -n "$STRAVA_WEBHOOK_URL" ] && [ -n "$STRAVA_WEBHOOK_TOKEN" ]; then
   log "Ensuring Strava webhook subscription..."
+  # Give the API a moment to finish starting up and bind its port.
+  sleep 5
   if ! node /app/apps/api/scripts/ensure-strava-webhook.mjs; then
     log "WARNING: Failed to ensure Strava webhook subscription (continuing startup)"
   fi
@@ -48,11 +64,4 @@ else
   log "Strava webhook env vars not fully set, skipping webhook subscription check"
 fi
 
-log "Starting NestJS (node dist/main.js)"
-cd /app/apps/api
-
-if [ "$(id -u)" = "0" ]; then
-  exec su-exec openathlete node dist/main.js
-fi
-
-exec node dist/main.js
+wait "$API_PID"
