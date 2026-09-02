@@ -1,5 +1,6 @@
 import { useGetMyAthleteQuery } from '@/api/athlete';
 import { useGetLatestMetricsQuery } from '@/api/metric/metric.hooks';
+import { useGetTrainingZones } from '@/api/training-zone';
 import { RHFNumberWithUnit } from '@/components/hook-form/rhf-number-with-unit';
 import { RHFRpe } from '@/components/hook-form/rhf-rpe';
 import { RHFVelocityPace } from '@/components/hook-form/rhf-velocity-pace';
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { m } from '@/paraglide/messages';
 import { metricTypeLabelMap } from '@/utils/label-map/core/metric-type.label-map';
+import { trainingZoneTypeLabelMap } from '@/utils/label-map/core/training-zone-type.label-map';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import type { ControllerRenderProps } from 'react-hook-form';
@@ -32,9 +34,19 @@ import { z } from 'zod';
 import type { WorkoutStepTargetDto } from '@openathlete/shared';
 import {
   SPORT_TYPE,
+  TRAINING_ZONE_TYPE,
   WORKOUT_TARGET_TYPE,
+  formatTarget,
   getCompatibleMetrics,
 } from '@openathlete/shared';
+
+function getDefaultZoneTypeForSport(sport?: SPORT_TYPE): TRAINING_ZONE_TYPE {
+  if (sport === SPORT_TYPE.CYCLING) return TRAINING_ZONE_TYPE.POWER;
+  if (sport === SPORT_TYPE.RUNNING || sport === SPORT_TYPE.TRAIL_RUNNING) {
+    return TRAINING_ZONE_TYPE.PACE;
+  }
+  return TRAINING_ZONE_TYPE.HEARTRATE;
+}
 
 const TARGET_TYPES: { value: WORKOUT_TARGET_TYPE; getLabelFn: () => string }[] =
   [
@@ -74,6 +86,9 @@ const targetFormSchema = z.object({
   targetMax: z.number().nullable().optional(),
   targetValue: z.number().nullable().optional(),
   metricType: z.string().nullable().optional(),
+  // Transient UI-only field: which TrainingZone type (HEARTRATE/PACE/POWER)
+  // the zone picker below should list. Not part of the persisted DTO.
+  zoneType: z.nativeEnum(TRAINING_ZONE_TYPE).optional(),
 });
 
 type TargetFormValues = z.infer<typeof targetFormSchema>;
@@ -125,6 +140,7 @@ interface TargetFormProps {
   submitLabel?: string;
   cancelLabel?: string;
   sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 /**
@@ -138,11 +154,16 @@ export function TargetForm({
   submitLabel = m.target_form_add(),
   cancelLabel = m.target_form_cancel(),
   sport,
+  athleteId,
 }: TargetFormProps) {
   const { data: athlete } = useGetMyAthleteQuery();
   const { data: latestMetrics = {} } = useGetLatestMetricsQuery(
     athlete?.athleteId,
   );
+  const effectiveAthleteId = athleteId ?? athlete?.athleteId;
+  const { data: trainingZones } = useGetTrainingZones(effectiveAthleteId ?? 0, {
+    enabled: !!effectiveAthleteId,
+  });
 
   const [useRange, setUseRange] = useState(
     !!(initialValues?.targetMin || initialValues?.targetMax),
@@ -195,11 +216,33 @@ export function TargetForm({
           )
         : initialValues?.targetValue || null,
       metricType: initialMetricType,
+      zoneType: getDefaultZoneTypeForSport(sport),
     },
   });
 
   const selectedTargetType = form.watch('targetType');
   const selectedMetricType = form.watch('metricType');
+  const selectedZoneType = form.watch('zoneType');
+  const selectedZoneValue = form.watch('targetValue');
+
+  // When editing an existing ZONE target, correct the zone-type filter to
+  // match the actually-selected zone's real type once zones are loaded
+  // (the sport-based heuristic above is only a default for new targets).
+  useEffect(() => {
+    if (
+      trainingZones &&
+      initialValues?.targetType === WORKOUT_TARGET_TYPE.ZONE &&
+      initialValues?.targetValue
+    ) {
+      const zone = trainingZones.find(
+        (z) => z.trainingZoneId === initialValues.targetValue,
+      );
+      if (zone) {
+        form.setValue('zoneType', zone.type as TRAINING_ZONE_TYPE);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trainingZones]);
 
   // Get compatible metrics for the selected target type
   const compatibleMetrics = useMemo(() => {
@@ -233,9 +276,12 @@ export function TargetForm({
       );
     }
 
-    // Clear unused fields based on range toggle and type
+    // Clear unused fields based on range toggle and type. `zoneType` is a
+    // transient UI-only filter (the chosen zone's id already carries its
+    // own type) and is never sent to the backend.
+    const { zoneType: _zoneType, ...rest } = values;
     const cleanedValues = {
-      ...values,
+      ...rest,
       targetMin: showRange ? finalMin : null,
       targetMax: showRange ? finalMax : null,
       targetValue: !showRange || isZoneType ? finalValue : null,
@@ -342,13 +388,65 @@ export function TargetForm({
           </div>
         )}
 
+        {/* Zone Type - which kind of TrainingZone to pick from */}
+        {isZoneType && (
+          <FormField
+            control={form.control}
+            name="zoneType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{m.target_form_zone_type()}</FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.setValue('targetValue', null);
+                  }}
+                  value={field.value || TRAINING_ZONE_TYPE.HEARTRATE}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.values(TRAINING_ZONE_TYPE).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {trainingZoneTypeLabelMap[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         {/* Value Inputs */}
         {isZoneType ? (
-          <RHFZoneSelector
-            name="targetValue"
-            label={m.target_form_single_value()}
-            sport={sport}
-          />
+          <div className="space-y-2">
+            <RHFZoneSelector
+              name="targetValue"
+              label={m.target_form_single_value()}
+              sport={sport}
+              zoneType={selectedZoneType}
+              athleteId={effectiveAthleteId}
+            />
+            {selectedZoneValue != null && trainingZones && (
+              <p className="text-sm text-muted-foreground">
+                {formatTarget(
+                  {
+                    targetType: WORKOUT_TARGET_TYPE.ZONE,
+                    targetValue: selectedZoneValue,
+                  },
+                  undefined,
+                  undefined,
+                  trainingZones,
+                  sport,
+                )}
+              </p>
+            )}
+          </div>
         ) : selectedTargetType === 'PACE' ? (
           showRange ? (
             <div className="grid grid-cols-1 gap-4">

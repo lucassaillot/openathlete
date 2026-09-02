@@ -1,6 +1,6 @@
 import { Prisma, SportType } from '@openathlete/database';
 import {
-  TrainingZone,
+  type TrainingZoneWithValues,
   type WorkoutDto,
   type WorkoutStepDto,
   type WorkoutStepTargetDto,
@@ -216,7 +216,7 @@ export function formatGoalSummary(
 export function describeWorkoutStructure(
   workout: WorkoutDto | null,
   zoneLookup: Map<number, ZoneSummary>,
-  trainingZones: TrainingZone[],
+  trainingZones: TrainingZoneWithValues[],
 ): string {
   if (!workout?.steps?.length) {
     return 'No structured workout.';
@@ -233,7 +233,7 @@ function describeStep(
   step: WorkoutStepDto,
   zoneLookup: Map<number, ZoneSummary>,
   depth: number,
-  trainingZones: TrainingZone[],
+  trainingZones: TrainingZoneWithValues[],
 ): string {
   const indent = '  '.repeat(depth);
   const parts: string[] = [
@@ -275,7 +275,7 @@ function describeStep(
 function describeTargets(
   targets: WorkoutStepTargetDto[],
   zoneLookup: Map<number, ZoneSummary>,
-  trainingZones: TrainingZone[],
+  trainingZones: TrainingZoneWithValues[],
 ): string | undefined {
   if (!targets.length) {
     return undefined;
@@ -291,7 +291,7 @@ function describeTargets(
 function describeTarget(
   target: WorkoutStepTargetDto,
   zoneLookup: Map<number, ZoneSummary>,
-  trainingZones: TrainingZone[],
+  trainingZones: TrainingZoneWithValues[],
 ): string | undefined {
   if (target.targetType === 'ZONE' && target.targetValue) {
     const zoneInfo = zoneLookup.get(target.targetValue);
@@ -574,7 +574,7 @@ export async function fetchFewShotExamples(
 export function formatFewShotExamples(
   examples: Awaited<ReturnType<typeof fetchFewShotExamples>>,
   zoneLookup: Map<number, ZoneSummary>,
-  trainingZones: TrainingZone[],
+  trainingZones: TrainingZoneWithValues[],
 ): string {
   if (examples.length === 0) {
     return '';

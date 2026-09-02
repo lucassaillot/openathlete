@@ -88,6 +88,7 @@ interface StepFormProps {
   submitLabel?: string;
   cancelLabel?: string;
   sport?: keyof typeof SPORT_TYPE;
+  athleteId?: number;
 }
 
 export function StepForm({
@@ -97,6 +98,7 @@ export function StepForm({
   submitLabel = m.step_form_save(),
   cancelLabel = m.step_form_cancel(),
   sport = 'RUNNING',
+  athleteId,
 }: StepFormProps) {
   const [targets, setTargets] = useState<TargetWithId[]>(
     initialValues?.targets?.map((t: WorkoutStepTargetDto, idx: number) => ({
@@ -340,6 +342,7 @@ export function StepForm({
                       : m.step_form_add_target()
                   }
                   sport={SPORT_TYPE[sport]}
+                  athleteId={athleteId}
                 />
               </DialogContent>
             </Dialog>
@@ -365,6 +368,7 @@ export function StepForm({
                         } as unknown as WorkoutStepTargetDto
                       }
                       sport={SPORT_TYPE[sport]}
+                      athleteId={athleteId}
                     />
                   </button>
                   <button

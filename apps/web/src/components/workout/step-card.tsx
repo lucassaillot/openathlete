@@ -11,6 +11,7 @@ import { getStepTypeColor, getStepTypeLabel } from '@/utils/workout';
 import { Edit2, MoreVertical, Trash2 } from 'lucide-react';
 
 import type {
+  SPORT_TYPE,
   WorkoutStepDto as WorkoutStep,
   WorkoutStepTargetDto,
 } from '@openathlete/shared';
@@ -29,6 +30,8 @@ interface StepCardProps {
   isReadOnly?: boolean;
   variant?: 'default' | 'compact' | 'inRepeat';
   className?: string;
+  sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 export function StepCard({
@@ -41,6 +44,8 @@ export function StepCard({
   isReadOnly = false,
   variant = 'default',
   className,
+  sport,
+  athleteId,
 }: StepCardProps) {
   const colors = getStepTypeColor(step.stepType);
   const label = getStepTypeLabel(step.stepType);
@@ -99,7 +104,12 @@ export function StepCard({
                   <div className="flex gap-1 flex-wrap">
                     {step.targets.map(
                       (target: WorkoutStepTargetDto, idx: number) => (
-                        <TargetBadge key={idx} target={target} />
+                        <TargetBadge
+                          key={idx}
+                          target={target}
+                          sport={sport}
+                          athleteId={athleteId}
+                        />
                       ),
                     )}
                   </div>

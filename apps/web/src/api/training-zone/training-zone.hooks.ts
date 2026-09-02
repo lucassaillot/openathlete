@@ -20,12 +20,13 @@ export const useGetTrainingZones = (
   athleteId: number,
   opt?: QueryOptions<
     Awaited<ReturnType<typeof TrainingZoneAPI.getAllForAthlete>>
-  >,
+  > & { enabled?: boolean },
 ) =>
   useQuery({
     ...opt,
     queryFn: () => TrainingZoneAPI.getAllForAthlete(athleteId),
     queryKey: [trainingZoneKeys.getAllForAthlete, athleteId],
+    enabled: opt?.enabled ?? !!athleteId,
   });
 
 function useInvalidateTrainingZoneQueries() {

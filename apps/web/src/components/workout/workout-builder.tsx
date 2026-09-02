@@ -24,6 +24,7 @@ import { StepList } from './step-list';
 interface WorkoutBuilderProps {
   workout?: WorkoutDto | null;
   sport: SPORT_TYPE;
+  athleteId?: number;
   hideMetadataForm?: boolean;
   hideActions?: boolean;
   onStepsChange?: (steps: WorkoutStepDto[]) => void;
@@ -36,6 +37,7 @@ type DialogState =
 export function WorkoutBuilder({
   workout,
   sport,
+  athleteId,
   onStepsChange,
 }: WorkoutBuilderProps) {
   const [steps, setSteps] = useState<WorkoutStepDto[]>(workout?.steps || []);
@@ -346,6 +348,8 @@ export function WorkoutBuilder({
             onAddChildStep={handleAddChildStep}
             onEditChildStep={handleEditChildStep}
             onDeleteChildStep={handleDeleteChildStep}
+            sport={sport}
+            athleteId={athleteId}
           />
         )}
       </div>
@@ -378,6 +382,7 @@ export function WorkoutBuilder({
                 : undefined
             }
             sport={sport}
+            athleteId={athleteId}
             onSubmit={handleStepSubmit}
             onCancel={() => setDialogState({ type: 'none' })}
             submitLabel={
