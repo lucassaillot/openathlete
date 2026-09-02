@@ -211,6 +211,7 @@ export function WorkoutSection({
           hideActions={true}
           onStepsChange={handleStepsChange}
           sport={sportValue ?? SPORT_TYPE.RUNNING}
+          athleteId={athleteId}
         />
       </div>
     </div>

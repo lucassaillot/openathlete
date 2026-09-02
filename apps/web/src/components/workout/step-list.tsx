@@ -17,7 +17,10 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 
-import type { WorkoutStepDto as WorkoutStep } from '@openathlete/shared';
+import type {
+  SPORT_TYPE,
+  WorkoutStepDto as WorkoutStep,
+} from '@openathlete/shared';
 
 import { RepeatBlockInline } from './repeat-block-inline';
 import { StepCard } from './step-card';
@@ -34,6 +37,8 @@ interface StepListProps {
   ) => void;
   onEditChildStep?: (parentStepId: number, childStep: WorkoutStep) => void;
   onDeleteChildStep?: (parentStepId: number, childStepId: number) => void;
+  sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 interface SortableStepItemProps {
@@ -48,6 +53,8 @@ interface SortableStepItemProps {
   ) => void;
   onEditChildStep?: (parentStepId: number, childStep: WorkoutStep) => void;
   onDeleteChildStep?: (parentStepId: number, childStepId: number) => void;
+  sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 function SortableStepItem({
@@ -59,6 +66,8 @@ function SortableStepItem({
   onAddChildStep,
   onEditChildStep,
   onDeleteChildStep,
+  sport,
+  athleteId,
 }: SortableStepItemProps) {
   const {
     attributes,
@@ -101,6 +110,8 @@ function SortableStepItem({
             onAddChildStep={onAddChildStep || (() => {})}
             onEditChildStep={onEditChildStep || (() => {})}
             onDeleteChildStep={onDeleteChildStep || (() => {})}
+            sport={sport}
+            athleteId={athleteId}
           />
         ) : (
           <StepCard
@@ -108,6 +119,8 @@ function SortableStepItem({
             index={index}
             onEdit={onEdit}
             onDelete={onDelete}
+            sport={sport}
+            athleteId={athleteId}
           />
         )}
       </div>
@@ -124,6 +137,8 @@ export function StepList({
   onAddChildStep,
   onEditChildStep,
   onDeleteChildStep,
+  sport,
+  athleteId,
 }: StepListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -186,6 +201,8 @@ export function StepList({
               onAddChildStep={onAddChildStep}
               onEditChildStep={onEditChildStep}
               onDeleteChildStep={onDeleteChildStep}
+              sport={sport}
+              athleteId={athleteId}
             />
           ))}
         </div>

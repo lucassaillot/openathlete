@@ -1,4 +1,5 @@
 import { useGetMyAthleteQuery } from '@/api/athlete';
+import { useGetTrainingZones as useGetTrainingZonesForAthlete } from '@/api/training-zone';
 import { m } from '@/paraglide/messages';
 import { useMemo } from 'react';
 
@@ -47,15 +48,24 @@ const DEFAULT_TRAINING_ZONES = [
   },
 ];
 
-export function useTrainingZones(type: TRAINING_ZONE_TYPE, sport?: SPORT_TYPE) {
-  const { data: athlete } = useGetMyAthleteQuery();
+export function useTrainingZones(
+  type: TRAINING_ZONE_TYPE,
+  sport?: SPORT_TYPE,
+  athleteId?: number,
+) {
+  const { data: athlete } = useGetMyAthleteQuery({ enabled: !athleteId });
+  const { data: athleteZones } = useGetTrainingZonesForAthlete(athleteId ?? 0, {
+    enabled: !!athleteId,
+  });
+
+  const allZones = athleteId ? athleteZones : athlete?.trainingZones;
 
   const trainingZones = useMemo(
     () =>
-      athlete?.trainingZones
-        .filter((zone) => zone.type === type)
+      allZones
+        ?.filter((zone) => zone.type === type)
         .sort((a, b) => a.index - b.index),
-    [athlete, type],
+    [allZones, type],
   );
 
   const finalTrainingZones = useMemo(() => {

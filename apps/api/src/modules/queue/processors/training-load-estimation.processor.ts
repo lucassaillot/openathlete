@@ -3,7 +3,10 @@ import { Job } from 'bullmq';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger, Optional, forwardRef } from '@nestjs/common';
 
-import { TrainingZone, mapPrismaWorkoutToDto } from '@openathlete/shared';
+import {
+  TrainingZoneWithValues,
+  mapPrismaWorkoutToDto,
+} from '@openathlete/shared';
 
 import { trimpEstimationAgent } from 'src/mastra/agents';
 
@@ -129,7 +132,7 @@ export class TrainingLoadEstimationProcessor extends WorkerHost {
       const workoutStructure = describeWorkoutStructure(
         workoutDto,
         zoneLookup,
-        zones as unknown as TrainingZone[],
+        zones as unknown as TrainingZoneWithValues[],
       );
 
       // Fetch few-shot examples from past similar sessions
@@ -143,7 +146,7 @@ export class TrainingLoadEstimationProcessor extends WorkerHost {
       const fewShotSection = formatFewShotExamples(
         fewShotExamples,
         zoneLookup,
-        zones as unknown as TrainingZone[],
+        zones as unknown as TrainingZoneWithValues[],
       );
 
       const prompt = [

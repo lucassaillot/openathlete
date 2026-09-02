@@ -1,20 +1,50 @@
-import { TrainingZone } from '../entities';
+import { TrainingZone, TrainingZoneValue } from '../entities';
 import { WorkoutStepTargetDto } from '../types';
+import { SPORT_TYPE } from '../types/misc';
 import { formatSpeed } from './numeric-stats.formatter';
+import { formatPaceLabel } from './pace-format.util';
 import { getTargetIntensity } from './target-intensity';
+
+export type TrainingZoneWithValues = TrainingZone & {
+  values: TrainingZoneValue[];
+};
+
+function formatZoneRange(
+  zone: TrainingZoneWithValues,
+  sport?: SPORT_TYPE,
+): string | null {
+  const value =
+    zone.values.find(
+      (v) => v.sports.length === 0 || (sport && v.sports.includes(sport)),
+    ) ?? zone.values[0];
+  if (!value) return null;
+
+  switch (zone.type) {
+    case 'PACE':
+      return `${formatPaceLabel(value.min)} - ${formatPaceLabel(value.max)} /km`;
+    case 'POWER':
+      return `${value.min} - ${value.max} W`;
+    case 'HEARTRATE':
+    default:
+      return `${value.min} - ${value.max} bpm`;
+  }
+}
 
 /**
  * Format a workout target for display
  * @param target - Target object with type, unit, and values
  * @param getMetricLabel - Optional function to get metric label (for i18n)
  * @param metrics - Optional record of metric types to their values for calculating absolute values
+ * @param trainingZones - The athlete's training zones (with values), used to resolve ZONE targets
+ * @param sport - The training's sport, used to pick the right per-sport zone value
  * @returns Human-readable formatted target
  */
 export function formatTarget(
   target: WorkoutStepTargetDto,
   getMetricLabel?: (metricType: string) => string,
   metrics?: Record<string, { value: number } | number>,
-  trainingZones?: TrainingZone[],
+  trainingZones?: TrainingZoneWithValues[],
+  sport?: SPORT_TYPE,
 ): string {
   const { targetType, targetMin, targetMax, targetValue, metricType } = target;
 
@@ -41,7 +71,8 @@ export function formatTarget(
   ) {
     const zone = trainingZones?.find((z) => z.trainingZoneId === targetValue);
     if (zone) {
-      return zone.name;
+      const range = formatZoneRange(zone, sport);
+      return range ? `${zone.name} — ${range}` : zone.name;
     }
     return `Zone ${targetValue}`;
   }

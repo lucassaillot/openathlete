@@ -16,14 +16,12 @@ import {
   TRAINING_ZONE_TYPE,
   TrainingZone,
   TrainingZoneValue,
+  decimalMinutesToMinSec,
+  minSecToDecimalMinutes,
 } from '@openathlete/shared';
 
 import { ColorPicker } from './color-picker';
 import { MultiSportSelector } from './multi-sport-selector';
-import {
-  decimalMinutesToMinSec,
-  minSecToDecimalMinutes,
-} from './pace-format.util';
 
 interface ZoneConfig {
   id?: number; // existing zone ID or undefined for new zones

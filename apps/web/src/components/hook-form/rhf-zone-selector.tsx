@@ -22,20 +22,7 @@ type Props = Omit<ComponentProps<'input'>, 'onChange'> & {
   onChange?: (value: number | undefined) => void;
   sport?: keyof typeof SPORT_TYPE;
   zoneType?: TRAINING_ZONE_TYPE;
-};
-
-// Determine zone type based on sport
-const getZoneTypeForSport = (
-  _?: keyof typeof SPORT_TYPE,
-): TRAINING_ZONE_TYPE => {
-  // if (_sport === 'CYCLING') {
-  //   return TRAINING_ZONE_TYPE.POWER;
-  // }
-  // if (_sport === 'RUNNING' || _sport === 'TRAIL_RUNNING') {
-  //   return TRAINING_ZONE_TYPE.PACE;
-  // }
-  // // Default to heart rate for other sports
-  return TRAINING_ZONE_TYPE.HEARTRATE;
+  athleteId?: number;
 };
 
 export const RHFZoneSelector = ({
@@ -45,14 +32,13 @@ export const RHFZoneSelector = ({
   onChange,
   sport,
   zoneType,
+  athleteId,
   ...other
 }: Props) => {
   const { control } = useFormContext();
-  const actualZoneType =
-    zoneType ||
-    (sport ? getZoneTypeForSport(sport) : TRAINING_ZONE_TYPE.HEARTRATE);
+  const actualZoneType = zoneType || TRAINING_ZONE_TYPE.HEARTRATE;
   const sportValue = sport ? SPORT_TYPE[sport] : undefined;
-  const zones = useTrainingZones(actualZoneType, sportValue);
+  const zones = useTrainingZones(actualZoneType, sportValue, athleteId);
 
   return (
     <div className="grid gap-3">

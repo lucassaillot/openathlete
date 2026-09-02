@@ -531,6 +531,7 @@
   "target_form_type_cadence": "Cadence",
   "target_form_type_weight": "Weight",
   "target_form_type_zone": "Training Zone",
+  "target_form_zone_type": "Zone type",
   "target_form_type_rpe": "RPE",
   "target_form_use_range": "Use range (min/max) instead of single value",
   "target_form_min_value": "Min Value",

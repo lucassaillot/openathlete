@@ -15,9 +15,8 @@ import {
   TRAINING_ZONE_TYPE,
   TrainingZone,
   TrainingZoneValue,
+  formatPaceLabel,
 } from '@openathlete/shared';
-
-import { formatPaceLabel } from './pace-format.util';
 
 interface TrainingZoneTableProps {
   zones: (TrainingZone & { values: TrainingZoneValue[] })[];

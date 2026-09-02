@@ -10,7 +10,9 @@ import { AthleteAPI } from './athlete.api';
 import { athleteKeys } from './athlete.keys';
 
 export const useGetMyAthleteQuery = (
-  opt?: QueryOptions<Awaited<ReturnType<typeof AthleteAPI.getMyAthlete>>>,
+  opt?: QueryOptions<Awaited<ReturnType<typeof AthleteAPI.getMyAthlete>>> & {
+    enabled?: boolean;
+  },
 ) =>
   useQuery({
     ...opt,

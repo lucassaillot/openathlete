@@ -29,7 +29,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type WorkoutStepDto as WorkoutStep } from '@openathlete/shared';
+import {
+  type SPORT_TYPE,
+  type WorkoutStepDto as WorkoutStep,
+} from '@openathlete/shared';
 
 import { StepCard } from './step-card';
 import { StepForm } from './step-form';
@@ -44,6 +47,8 @@ interface RepeatBlockInlineProps {
   ) => void;
   onEditChildStep: (parentStepId: number, childStep: WorkoutStep) => void;
   onDeleteChildStep: (parentStepId: number, childStepId: number) => void;
+  sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 interface SortableChildStepProps {
@@ -51,6 +56,8 @@ interface SortableChildStepProps {
   index: number;
   onEdit: () => void;
   onDelete: () => void;
+  sport?: SPORT_TYPE;
+  athleteId?: number;
 }
 
 function SortableChildStep({
@@ -58,6 +65,8 @@ function SortableChildStep({
   index,
   onEdit,
   onDelete,
+  sport,
+  athleteId,
 }: SortableChildStepProps) {
   // Ensure step has a valid ID - this should never be undefined at this point
   const stepId = step.workoutStepId;
@@ -101,6 +110,8 @@ function SortableChildStep({
           index={index}
           onEdit={onEdit}
           onDelete={onDelete}
+          sport={sport}
+          athleteId={athleteId}
         />
       </div>
     </div>
@@ -114,6 +125,8 @@ export function RepeatBlockInline({
   onAddChildStep,
   onEditChildStep,
   onDeleteChildStep,
+  sport,
+  athleteId,
 }: RepeatBlockInlineProps) {
   const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
   const [editingChildStep, setEditingChildStep] = useState<WorkoutStep | null>(
@@ -324,6 +337,8 @@ export function RepeatBlockInline({
                             childStep.workoutStepId!,
                           )
                         }
+                        sport={sport}
+                        athleteId={athleteId}
                       />
                     ),
                   )}
@@ -374,6 +389,8 @@ export function RepeatBlockInline({
               setEditingChildStep(null);
             }}
             initialValues={editingChildStep || undefined}
+            sport={sport}
+            athleteId={athleteId}
           />
         </DialogContent>
       </Dialog>

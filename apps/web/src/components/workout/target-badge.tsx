@@ -1,5 +1,6 @@
 import { useGetMyAthleteQuery } from '@/api/athlete';
 import { useGetLatestMetricsQuery } from '@/api/metric/metric.hooks';
+import { useGetTrainingZones } from '@/api/training-zone';
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +20,7 @@ interface TargetBadgeProps {
   className?: string;
   showTooltip?: boolean;
   sport?: SPORT_TYPE;
+  athleteId?: number;
   showAbsoluteValues?: boolean;
 }
 
@@ -26,28 +28,18 @@ export function TargetBadge({
   target,
   className,
   showTooltip = true,
+  sport,
+  athleteId,
   showAbsoluteValues = false,
 }: TargetBadgeProps) {
-  const { data: athlete } = useGetMyAthleteQuery();
+  const { data: athlete } = useGetMyAthleteQuery({ enabled: !athleteId });
+  const effectiveAthleteId = athleteId ?? athlete?.athleteId;
+  const { data: trainingZones } = useGetTrainingZones(effectiveAthleteId ?? 0, {
+    enabled: !!effectiveAthleteId,
+  });
   const { data: latestMetrics = {} } = useGetLatestMetricsQuery(
-    showAbsoluteValues ? athlete?.athleteId : undefined,
+    showAbsoluteValues ? effectiveAthleteId : undefined,
   );
-
-  // Get zone name if target is a ZONE type
-  // Since zone IDs are unique, we can search across all zone types
-  const zoneName = useMemo(() => {
-    if (
-      target.targetType === 'ZONE' &&
-      target.targetValue &&
-      athlete?.trainingZones
-    ) {
-      const zone = athlete.trainingZones.find(
-        (z) => z.trainingZoneId === target.targetValue,
-      );
-      return zone?.name;
-    }
-    return null;
-  }, [target, athlete]);
 
   // Convert metrics format from Record<string, AthleteMetric> to Record<string, { value: number }>
   const metricsForFormat = useMemo(() => {
@@ -61,9 +53,6 @@ export function TargetBadge({
   }, [latestMetrics]);
 
   const formatted = useMemo(() => {
-    if (target.targetType === 'ZONE' && zoneName) {
-      return zoneName;
-    }
     return formatTarget(
       target,
       (metricType) => {
@@ -73,15 +62,10 @@ export function TargetBadge({
         );
       },
       showAbsoluteValues ? metricsForFormat : undefined,
-      athlete?.trainingZones || [],
+      trainingZones || [],
+      sport,
     );
-  }, [
-    target,
-    zoneName,
-    metricsForFormat,
-    showAbsoluteValues,
-    athlete?.trainingZones,
-  ]);
+  }, [target, metricsForFormat, showAbsoluteValues, trainingZones, sport]);
 
   const label = getTargetTypeLabel(target.targetType);
 
