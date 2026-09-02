@@ -278,7 +278,7 @@ export function RepeatBlockInline({
     <>
       <Card className="border-l-4 border-primary/40 p-2">
         <div className="p-2 space-y-1.5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-primary">
                 {m.workout_step_repeat()}
