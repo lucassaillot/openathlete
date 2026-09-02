@@ -461,6 +461,7 @@ export function TargetForm({
                 <RHFVelocityPace
                   name="targetMin"
                   label={m.target_form_min_value()}
+                  defaultUnit="min_per_km"
                 />
               )}
               {hasMetric ? (
@@ -474,6 +475,7 @@ export function TargetForm({
                 <RHFVelocityPace
                   name="targetMax"
                   label={m.target_form_max_value()}
+                  defaultUnit="min_per_km"
                 />
               )}
             </div>
@@ -488,6 +490,7 @@ export function TargetForm({
             <RHFVelocityPace
               name="targetValue"
               label={m.target_form_single_value()}
+              defaultUnit="min_per_km"
             />
           )
         ) : selectedTargetType === 'HEARTRATE' ? (

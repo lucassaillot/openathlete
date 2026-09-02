@@ -83,8 +83,8 @@ function DurationFieldAdapter({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-y-2 w-full">
-      <div className="flex items-center flex-1 min-w-[120px]">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full">
+      <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
         <Input
           type="number"
           min={0}
@@ -97,7 +97,7 @@ function DurationFieldAdapter({
           {...other}
           className={cn(
             other.className,
-            'rounded-br-none rounded-tr-none flex-1',
+            'rounded-br-none rounded-tr-none flex-1 min-w-0',
             error && 'border-red-500',
           )}
         />
@@ -105,7 +105,7 @@ function DurationFieldAdapter({
           <span className="text-md text-gray-500">{m.hours()}</span>
         </div>
       </div>
-      <div className="flex items-center flex-1 min-w-[120px]">
+      <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
         <Input
           type="number"
           min={0}
@@ -119,7 +119,7 @@ function DurationFieldAdapter({
           {...other}
           className={cn(
             other.className,
-            'rounded-none border-l-0 flex-1',
+            'rounded-none border-l-0 flex-1 min-w-0',
             error && 'border-red-500',
           )}
         />
@@ -133,7 +133,7 @@ function DurationFieldAdapter({
         </div>
       </div>
       {showSeconds && (
-        <div className="flex items-center flex-1 min-w-[120px]">
+        <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
           <Input
             type="number"
             min={0}
@@ -147,7 +147,7 @@ function DurationFieldAdapter({
             {...other}
             className={cn(
               other.className,
-              'rounded-none border-l-0 flex-1',
+              'rounded-none border-l-0 flex-1 min-w-0',
               error && 'border-red-500',
             )}
           />
