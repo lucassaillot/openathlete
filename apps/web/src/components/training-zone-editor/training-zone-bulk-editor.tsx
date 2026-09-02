@@ -153,28 +153,39 @@ export function TrainingZoneBulkEditor({
     const newZones = [...zones];
     newZones[index] = { ...newZones[index], [field]: value };
 
-    // Smart adjustment: if max changes, align next zone's min to the exact
-    // same value (zones touch at the boundary rather than being offset by a
-    // step — e.g. 6:00 and 6:00 is allowed, not forced to 6:00/5:54).
-    if (field === 'max' && index < zones.length - 1) {
+    // Smart adjustment: keep adjacent zones touching at the exact same
+    // boundary value (no forced offset — e.g. 6:00 next to 6:00 is fine).
+    //
+    // Which field is shared with which neighbor depends on whether values
+    // rise or fall with the zone index: HEARTRATE/POWER zones get *harder*
+    // (higher numbers) as the index increases, so zone[i].max touches
+    // zone[i+1].min. PACE zones get *faster* (lower min/km numbers) as the
+    // index increases, so it's the opposite: zone[i].min touches
+    // zone[i+1].max.
+    const descending = type === TRAINING_ZONE_TYPE.PACE;
+    const fieldSharedWithNext = descending ? 'min' : 'max';
+    const neighborFieldForNext = descending ? 'max' : 'min';
+    const fieldSharedWithPrev = descending ? 'max' : 'min';
+    const neighborFieldForPrev = descending ? 'min' : 'max';
+
+    if (field === fieldSharedWithNext && index < zones.length - 1) {
       const numValue =
         typeof value === 'number' ? value : parseFloat(value as string);
       if (!Number.isNaN(numValue)) {
         newZones[index + 1] = {
           ...newZones[index + 1],
-          min: numValue,
+          [neighborFieldForNext]: numValue,
         };
       }
     }
 
-    // Smart adjustment: if min changes, align previous zone's max the same way
-    if (field === 'min' && index > 0) {
+    if (field === fieldSharedWithPrev && index > 0) {
       const numValue =
         typeof value === 'number' ? value : parseFloat(value as string);
       if (!Number.isNaN(numValue)) {
         newZones[index - 1] = {
           ...newZones[index - 1],
-          max: numValue,
+          [neighborFieldForPrev]: numValue,
         };
       }
     }
