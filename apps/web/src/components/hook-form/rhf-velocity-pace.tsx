@@ -25,6 +25,7 @@ type Props = Omit<ComponentProps<'input'>, 'onChange'> & {
   label?: string;
   value?: number;
   onChange?: (value: number | undefined) => void;
+  defaultUnit?: VelocityUnit;
 };
 
 // Convert m/s to km/h
@@ -57,13 +58,15 @@ function VelocityPaceFieldAdapter({
   field,
   error,
   onChange,
+  defaultUnit = 'km_per_h',
   ...other
 }: {
   field: ControllerRenderProps<Record<string, unknown>, string>;
   error?: FieldError;
   onChange?: (value: number | undefined) => void;
+  defaultUnit?: VelocityUnit;
 } & Omit<ComponentProps<'input'>, 'onChange'>) {
-  const [unit, setUnit] = useState<VelocityUnit>('km_per_h');
+  const [unit, setUnit] = useState<VelocityUnit>(defaultUnit);
   const [valueInput, setValueInput] = useState<string>('');
   const [paceMinutes, setPaceMinutes] = useState<string>('');
   const [paceSeconds, setPaceSeconds] = useState<string>('');
@@ -175,10 +178,10 @@ function VelocityPaceFieldAdapter({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-y-2 w-full">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full">
       {unit === 'min_per_km' ? (
-        <div className="flex flex-wrap items-center flex-1 gap-y-2">
-          <div className="flex items-center flex-1 min-w-[130px]">
+        <div className="flex flex-col sm:flex-row gap-2 flex-1 sm:min-w-[280px]">
+          <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <Input
               type="number"
               min={0}
@@ -191,7 +194,7 @@ function VelocityPaceFieldAdapter({
               {...other}
               className={cn(
                 other.className,
-                'rounded-br-none rounded-tr-none flex-1',
+                'rounded-br-none rounded-tr-none flex-1 min-w-0',
                 error && 'border-red-500',
               )}
             />
@@ -199,7 +202,7 @@ function VelocityPaceFieldAdapter({
               <span className="text-md text-gray-500">{m.minutes()}</span>
             </div>
           </div>
-          <div className="flex items-center flex-1 min-w-[130px]">
+          <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <Input
               type="number"
               min={0}
@@ -213,11 +216,11 @@ function VelocityPaceFieldAdapter({
               {...other}
               className={cn(
                 other.className,
-                'rounded-none border-l-0 flex-1',
+                'rounded-none border-l-0 flex-1 min-w-0',
                 error && 'border-red-500',
               )}
             />
-            <div className="rounded-l-none border border-l-0 shadow-xs py-1.25 px-3 text-base shrink-0 border-r-0">
+            <div className="rounded-l-none rounded-r-md border border-l-0 shadow-xs py-1.25 px-3 text-base shrink-0">
               <span className="text-md text-gray-500">{m.unit_seconds()}</span>
             </div>
           </div>
@@ -236,13 +239,13 @@ function VelocityPaceFieldAdapter({
           {...other}
           className={cn(
             other.className,
-            'rounded-r-none border-r-0 flex-1 min-w-[100px]',
+            'flex-1 min-w-0 w-full sm:w-auto',
             error && 'border-red-500',
           )}
         />
       )}
       <Select value={unit} onValueChange={handleUnitChange}>
-        <SelectTrigger className="w-32 rounded-l-none shrink-0">
+        <SelectTrigger className="w-full sm:w-32 shrink-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -31,9 +31,13 @@ export function TrainingZoneEditor({
         value={selectedType}
         onValueChange={(value) => setSelectedType(value as TRAINING_ZONE_TYPE)}
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 h-auto">
           {Object.values(TRAINING_ZONE_TYPE).map((type) => (
-            <TabsTrigger key={type} value={type}>
+            <TabsTrigger
+              key={type}
+              value={type}
+              className="h-auto whitespace-normal text-center text-xs leading-tight py-1.5 sm:text-sm"
+            >
               {trainingZoneTypeLabelMap[type]}
             </TabsTrigger>
           ))}
