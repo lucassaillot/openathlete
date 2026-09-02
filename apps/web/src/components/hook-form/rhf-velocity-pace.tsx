@@ -175,10 +175,10 @@ function VelocityPaceFieldAdapter({
   };
 
   return (
-    <div className="flex items-center w-full">
+    <div className="flex flex-wrap items-center gap-y-2 w-full">
       {unit === 'min_per_km' ? (
-        <div className="flex items-center flex-1">
-          <div className="flex items-center flex-1">
+        <div className="flex flex-wrap items-center flex-1 gap-y-2">
+          <div className="flex items-center flex-1 min-w-[130px]">
             <Input
               type="number"
               min={0}
@@ -199,7 +199,7 @@ function VelocityPaceFieldAdapter({
               <span className="text-md text-gray-500">{m.minutes()}</span>
             </div>
           </div>
-          <div className="flex items-center flex-1">
+          <div className="flex items-center flex-1 min-w-[130px]">
             <Input
               type="number"
               min={0}
@@ -236,7 +236,7 @@ function VelocityPaceFieldAdapter({
           {...other}
           className={cn(
             other.className,
-            'rounded-r-none border-r-0 flex-1',
+            'rounded-r-none border-r-0 flex-1 min-w-[100px]',
             error && 'border-red-500',
           )}
         />

@@ -153,29 +153,28 @@ export function TrainingZoneBulkEditor({
     const newZones = [...zones];
     newZones[index] = { ...newZones[index], [field]: value };
 
-    // Get step value for this type
-    const step = getStepForType(type);
-
-    // Smart adjustment: if max changes, adjust next zone's min
+    // Smart adjustment: if max changes, align next zone's min to the exact
+    // same value (zones touch at the boundary rather than being offset by a
+    // step — e.g. 6:00 and 6:00 is allowed, not forced to 6:00/5:54).
     if (field === 'max' && index < zones.length - 1) {
       const numValue =
         typeof value === 'number' ? value : parseFloat(value as string);
       if (!Number.isNaN(numValue)) {
         newZones[index + 1] = {
           ...newZones[index + 1],
-          min: numValue + step,
+          min: numValue,
         };
       }
     }
 
-    // Smart adjustment: if min changes, adjust previous zone's max
+    // Smart adjustment: if min changes, align previous zone's max the same way
     if (field === 'min' && index > 0) {
       const numValue =
         typeof value === 'number' ? value : parseFloat(value as string);
       if (!Number.isNaN(numValue)) {
         newZones[index - 1] = {
           ...newZones[index - 1],
-          max: numValue - step,
+          max: numValue,
         };
       }
     }

@@ -61,7 +61,9 @@ export const RHFZoneSelector = ({
                 onChange?.(numValue);
               }}
             >
-              <SelectTrigger className={cn(error && 'border-red-500')}>
+              <SelectTrigger
+                className={cn('w-full', error && 'border-red-500')}
+              >
                 <SelectValue
                   placeholder={m.target_form_training_zone_placeholder()}
                 />
