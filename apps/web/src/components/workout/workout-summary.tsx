@@ -39,7 +39,7 @@ export function WorkoutSummary({
         key={step.workoutStepId || index}
         className={`${isChild ? 'border-l-2 border-muted' : ''}`}
       >
-        <div className="flex flex-col sm:flex-row items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
+        <div className="flex flex-row items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
               {isChild ? `${index + 1}` : `${m.step()} ${index + 1}`}
@@ -51,8 +51,8 @@ export function WorkoutSummary({
           </div>
 
           <div className="flex-1 space-y-1 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <span className="font-medium text-sm break-words">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+              <span className="font-medium text-sm break-words min-w-0">
                 {getStepTypeLabel(step.stepType)}{' '}
                 {step.name ? `- ${step.name}` : ''}
               </span>
@@ -63,7 +63,7 @@ export function WorkoutSummary({
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {!step.repeatBlock && (
                 <DurationDisplay
                   className="text-sm text-muted-foreground flex-shrink-0"
