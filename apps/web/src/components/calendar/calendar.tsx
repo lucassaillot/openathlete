@@ -8,6 +8,7 @@ import {
 } from '@/api/event';
 import { useUseEventTemplateMutation } from '@/api/event-template';
 import { eventKeys } from '@/api/event/event.keys';
+import { useGetInjuriesQuery } from '@/api/injury';
 import { useWeeklyLoadSummaryQuery } from '@/api/training-load';
 import { trainingLoadKeys } from '@/api/training-load/training-load.keys';
 import { useCalendarData } from '@/components/calendar/hooks/use-calendar-data';
@@ -41,6 +42,7 @@ import { ConfirmAction } from '../confirm-action';
 import { CreateCycleDialog } from '../create-cycle-dialog';
 import { CreateEventDialog } from '../create-event-dialog';
 import { CreateEventFromTemplateDialog } from '../create-event-from-template-dialog/create-event-from-template.dialog';
+import { InjuryFormDialog } from '../injury/injury-form-dialog';
 import { CalendarBody } from './calendar-body';
 import { CalendarEventDetailsDialog } from './calendar-event-details.dialog';
 import { CalendarHeader } from './calendar-header';
@@ -51,6 +53,7 @@ import { EventClipboardProvider } from './contexts/event-clipboard-context';
 import { EventContextMenuProvider } from './contexts/event-context-menu-context';
 import { useSharedDnd } from './contexts/shared-dnd-context';
 import { CycleDetailsDialog } from './cycle-details.dialog';
+import { InjuryDetailsDialog } from './injury-details.dialog';
 import { CalendarContextType, SummaryType } from './types/calendar-context';
 import { COLORED_BY } from './types/filter';
 import { getWeekEnd, getWeekKey, getWeekStart } from './utils/week';
@@ -74,6 +77,7 @@ export function Calendar({
   const isMobile = useIsMobile();
   const calendarData = useCalendarData({ events });
   const { data: cycles } = useGetMyCyclesQuery(undefined, athleteId);
+  const { data: injuries } = useGetInjuriesQuery(athleteId);
   const { hasAccess: hasAIAccess } = useFeatureAccess(
     FeatureName.AI_GENERATION,
   );
@@ -310,6 +314,8 @@ export function Calendar({
   const [viewCycleDialog, setViewCycleDialog] = useState<
     Cycle['cycleId'] | null
   >(null);
+  const [editInjuryDialog, setEditInjuryDialog] = useState<number | null>(null);
+  const [viewInjuryDialog, setViewInjuryDialog] = useState<number | null>(null);
   const [dragSelection, setDragSelection] = useState<{
     startDate: Date;
     endDate: Date;
@@ -425,6 +431,9 @@ export function Calendar({
       editCycle: (cycleId) => setEditCycleDialog(cycleId),
       viewCycle: (cycleId) => setViewCycleDialog(cycleId),
       updateCycleDates,
+      injuries: injuries || [],
+      editInjury: (athleteInjuryId) => setEditInjuryDialog(athleteInjuryId),
+      viewInjury: (athleteInjuryId) => setViewInjuryDialog(athleteInjuryId),
       dragSelection,
       setDragSelection,
       cycleResize,
@@ -446,6 +455,7 @@ export function Calendar({
       calendarData.displayedMonth,
       calendarData.events,
       cycles,
+      injuries,
       dragSelection,
       cycleResize,
       filter,
@@ -757,6 +767,26 @@ export function Calendar({
               onEditCycle={(cycleId) => {
                 setViewCycleDialog(null);
                 setEditCycleDialog(cycleId);
+              }}
+            />
+            <InjuryFormDialog
+              key={`edit-injury-${editInjuryDialog}`}
+              open={editInjuryDialog !== null}
+              onClose={() => setEditInjuryDialog(null)}
+              athleteId={athleteId}
+              injury={(injuries || []).find(
+                (injury) => injury.athleteInjuryId === editInjuryDialog,
+              )}
+            />
+            <InjuryDetailsDialog
+              open={viewInjuryDialog !== null}
+              onClose={() => setViewInjuryDialog(null)}
+              injury={(injuries || []).find(
+                (injury) => injury.athleteInjuryId === viewInjuryDialog,
+              )}
+              onEditInjury={(athleteInjuryId) => {
+                setViewInjuryDialog(null);
+                setEditInjuryDialog(athleteInjuryId);
               }}
             />
           </CalendarContext.Provider>

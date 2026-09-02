@@ -8,5 +8,6 @@ export { RHFDuration } from './rhf-duration';
 export { RHFDistance } from './rhf-distance';
 export { RHFCheckbox } from './rhf-checkbox';
 export { RHFRpe } from './rhf-rpe';
+export { RHFPainScore } from './rhf-pain-score';
 export { RHFElevation } from './rhf-elevation';
 export { RHFMultiSportSelector } from './rhf-multi-sport-selector';

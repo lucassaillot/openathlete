@@ -100,6 +100,9 @@ export const routes = {
   },
   injury: {
     getInjuries: '/injury',
+    create: '/injury',
+    update: (athleteInjuryId: number) => `/injury/${athleteInjuryId}`,
+    delete: (athleteInjuryId: number) => `/injury/${athleteInjuryId}`,
   },
   provider: {
     getOAuthUri: (provider: ConnectorProvider) =>

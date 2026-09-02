@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
 import {
+  AthleteInjury,
   CalendarWeekLoadSummary,
   Cycle,
   EVENT_TYPE,
@@ -47,6 +48,10 @@ export type CalendarContextType = {
   setDragSelection: (
     selection: { startDate: Date; endDate: Date } | null,
   ) => void;
+  // Injury management
+  injuries: AthleteInjury[];
+  viewInjury: (athleteInjuryId: AthleteInjury['athleteInjuryId']) => void;
+  editInjury: (athleteInjuryId: AthleteInjury['athleteInjuryId']) => void;
   // Cycle resize state
   cycleResize: {
     cycleId: number;
