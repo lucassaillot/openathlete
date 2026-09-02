@@ -15,12 +15,14 @@ import { CalendarDay } from './calendar-day';
 import { CalendarWeekSummary } from './calendar-week-summary';
 import { useCalendarContext } from './hooks/use-calendar-context';
 import { calculateCyclesForDay } from './utils/cycle-day-layout';
+import { calculateInjuriesForDay } from './utils/injury-day-layout';
 
 export function CalendarBody() {
   const {
     displayedWeeks,
     events,
     cycles,
+    injuries,
     summaryType,
     setSummaryType,
     cycleResize,
@@ -102,6 +104,7 @@ export function CalendarBody() {
                     ),
                 )}
                 cycleSegments={calculateCyclesForDay(displayedCycles, day)}
+                injurySegments={calculateInjuriesForDay(injuries, day)}
               />
             ))}
             {/* Summary column - hidden on mobile, shown on desktop */}

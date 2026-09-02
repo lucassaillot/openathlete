@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "athlete_injury" ADD COLUMN "start_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN "end_date" TIMESTAMP(3);

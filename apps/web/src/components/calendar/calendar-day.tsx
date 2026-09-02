@@ -25,17 +25,25 @@ import { SparklesIcon } from '../ui/sparkles-icon';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { CalendarCycleSegment } from './calendar-cycle-segment';
 import { CalendarEvent } from './calendar-event';
+import { CalendarInjurySegment } from './calendar-injury-segment';
 import { useEventClipboard } from './contexts/event-clipboard-context';
 import { useCalendarContext } from './hooks/use-calendar-context';
 import { CycleDaySegment } from './utils/cycle-day-layout';
+import { InjuryDaySegment } from './utils/injury-day-layout';
 
 interface P {
   day: Date;
   events: Event[];
   cycleSegments?: CycleDaySegment[];
+  injurySegments?: InjuryDaySegment[];
 }
 
-export function CalendarDay({ day, events, cycleSegments = [] }: P) {
+export function CalendarDay({
+  day,
+  events,
+  cycleSegments = [],
+  injurySegments = [],
+}: P) {
   const {
     displayedMonth,
     createEvent,
@@ -206,6 +214,23 @@ export function CalendarDay({ day, events, cycleSegments = [] }: P) {
               {cycleSegments.map((segment, idx) => (
                 <CalendarCycleSegment
                   key={`${segment.cycle.cycleId}-${idx}`}
+                  segment={segment}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Injuries display - positioned for cross-cell rendering */}
+          {injurySegments.length > 0 && (
+            <div
+              className="relative pb-1"
+              style={{
+                height: `${Math.max(...injurySegments.map((s) => s.rowIndex + 1)) * 22}px`,
+              }}
+            >
+              {injurySegments.map((segment, idx) => (
+                <CalendarInjurySegment
+                  key={`${segment.injury.athleteInjuryId}-${idx}`}
                   segment={segment}
                 />
               ))}

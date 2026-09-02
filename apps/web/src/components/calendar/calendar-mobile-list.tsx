@@ -10,6 +10,7 @@ import { CalendarMobileScrollToToday } from './calendar-mobile-scroll-to-today';
 import { CalendarMobileWeekHeader } from './calendar-mobile-week-header';
 import { useCalendarContext } from './hooks/use-calendar-context';
 import { calculateCyclesForDay } from './utils/cycle-day-layout';
+import { calculateInjuriesForDay } from './utils/injury-day-layout';
 
 interface P {
   isLoading?: boolean;
@@ -20,7 +21,7 @@ type ListItem =
   | { type: 'day'; day: Date; dayIndex: number };
 
 export function CalendarMobileList({ isLoading }: P) {
-  const { displayedWeeks, events, cycles, displayedMonth } =
+  const { displayedWeeks, events, cycles, injuries, displayedMonth } =
     useCalendarContext();
 
   const parentRef = useRef<HTMLDivElement>(null);
@@ -85,20 +86,33 @@ export function CalendarMobileList({ isLoading }: P) {
           ),
       );
       const cycleSegments = calculateCyclesForDay(cycles, item.day);
+      const injurySegments = calculateInjuriesForDay(injuries, item.day);
       const dayHeaderHeight = 56;
       let cycleHeight = 0;
       if (cycleSegments.length > 0) {
         cycleHeight = 48;
+      }
+      let injuryHeight = 0;
+      if (injurySegments.length > 0) {
+        injuryHeight = 48;
       }
       let eventHeight = 0;
       if (dayEvents.length > 0) {
         eventHeight = 16 + dayEvents.length * 40 + (dayEvents.length - 1) * 8;
       }
       const emptyStateHeight =
-        dayEvents.length === 0 && cycleSegments.length === 0 ? 52 : 0;
+        dayEvents.length === 0 &&
+        cycleSegments.length === 0 &&
+        injurySegments.length === 0
+          ? 52
+          : 0;
 
       const calculatedHeight =
-        dayHeaderHeight + cycleHeight + eventHeight + emptyStateHeight;
+        dayHeaderHeight +
+        cycleHeight +
+        injuryHeight +
+        eventHeight +
+        emptyStateHeight;
 
       return Math.max(calculatedHeight, 56);
     },
@@ -238,6 +252,7 @@ export function CalendarMobileList({ isLoading }: P) {
     isLoading,
     events.length,
     cycles.length,
+    injuries.length,
   ]);
 
   const handleScrollToToday = () => {
@@ -351,6 +366,7 @@ export function CalendarMobileList({ isLoading }: P) {
               ),
           );
           const cycleSegments = calculateCyclesForDay(cycles, item.day);
+          const injurySegments = calculateInjuriesForDay(injuries, item.day);
 
           return (
             <div
@@ -368,6 +384,7 @@ export function CalendarMobileList({ isLoading }: P) {
                 day={item.day}
                 events={dayEvents}
                 cycleSegments={cycleSegments}
+                injurySegments={injurySegments}
                 isToday={isToday}
                 isCurrentMonth={isCurrentMonth}
               />

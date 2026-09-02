@@ -51,6 +51,11 @@ model AthleteInjury {
   context   String
   /// Injury status: WORSENING, IMPROVING, STABLE, or RESOLVED
   status    InjuryStatus
+  /// Date the injury started
+  startDate DateTime     @default(now()) @map("start_date")
+  /// Date the injury was resolved. Null means the injury is still ongoing
+  /// (calendar rendering should treat it as extending to "today").
+  endDate   DateTime?    @map("end_date")
 
   // relationships
   athlete          Athlete        @relation(fields: [athleteId], references: [athleteId])
