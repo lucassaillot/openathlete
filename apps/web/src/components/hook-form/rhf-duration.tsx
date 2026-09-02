@@ -83,8 +83,8 @@ function DurationFieldAdapter({
   };
 
   return (
-    <div className="flex items-center w-full">
-      <div className="flex items-center flex-1">
+    <div className="flex flex-wrap items-center gap-y-2 w-full">
+      <div className="flex items-center flex-1 min-w-[120px]">
         <Input
           type="number"
           min={0}
@@ -105,7 +105,7 @@ function DurationFieldAdapter({
           <span className="text-md text-gray-500">{m.hours()}</span>
         </div>
       </div>
-      <div className="flex items-center flex-1">
+      <div className="flex items-center flex-1 min-w-[120px]">
         <Input
           type="number"
           min={0}
@@ -133,7 +133,7 @@ function DurationFieldAdapter({
         </div>
       </div>
       {showSeconds && (
-        <div className="flex items-center flex-1">
+        <div className="flex items-center flex-1 min-w-[120px]">
           <Input
             type="number"
             min={0}

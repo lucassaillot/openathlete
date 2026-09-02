@@ -96,6 +96,7 @@ export function EventFormFields({
             name="goalDuration"
             label={m.goal_duration()}
             disabled={hasStepsWithDuration}
+            showSeconds={true}
             onChange={(value) => {
               if (!hasStepsWithDuration && startDateValue) {
                 const start = new Date(startDateValue);
