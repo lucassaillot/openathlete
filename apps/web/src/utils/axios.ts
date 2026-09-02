@@ -168,6 +168,15 @@ export const routes = {
     rejectInvitation: (invitationId: number) =>
       `/coach/invitations/${invitationId}/reject`,
   },
+  trainingZone: {
+    getAllForAthlete: (athleteId: number) =>
+      `/training-zone/athlete/${athleteId}`,
+    create: '/training-zone',
+    update: (trainingZoneId: number) => `/training-zone/${trainingZoneId}`,
+    delete: (trainingZoneId: number) => `/training-zone/${trainingZoneId}`,
+    replaceForType: (athleteId: number, type: string) =>
+      `/training-zone/athlete/${athleteId}/type/${type}`,
+  },
   cycle: {
     create: '/cycle',
     update: (cycleId: number) => `/cycle/${cycleId}`,

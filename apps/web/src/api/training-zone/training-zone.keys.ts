@@ -4,4 +4,5 @@ export const trainingZoneKeys = {
   create: 'TrainingZoneAPI.create',
   update: 'TrainingZoneAPI.update',
   delete: 'TrainingZoneAPI.delete',
+  replaceForType: 'TrainingZoneAPI.replaceForType',
 } as const;

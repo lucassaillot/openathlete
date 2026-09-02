@@ -6,7 +6,11 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { UpdateTrainingZoneDto } from '@openathlete/shared';
+import {
+  ReplaceTrainingZoneItemDto,
+  TRAINING_ZONE_TYPE,
+  UpdateTrainingZoneDto,
+} from '@openathlete/shared';
 
 import { athleteKeys } from '../athlete/athlete.keys';
 import { TrainingZoneAPI } from './training-zone.api';
@@ -24,6 +28,21 @@ export const useGetTrainingZones = (
     queryKey: [trainingZoneKeys.getAllForAthlete, athleteId],
   });
 
+function useInvalidateTrainingZoneQueries() {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({
+      queryKey: [trainingZoneKeys.getAllForAthlete],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [athleteKeys.getMyAthlete],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [athleteKeys.getCoachedAthletes],
+    });
+  };
+}
+
 export const useCreateTrainingZone = (
   opt?: MutationOptions<
     Awaited<ReturnType<typeof TrainingZoneAPI.create>>,
@@ -31,19 +50,14 @@ export const useCreateTrainingZone = (
     Parameters<typeof TrainingZoneAPI.create>[0]
   >,
 ) => {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateTrainingZoneQueries();
   return useMutation({
     ...opt,
     mutationFn: TrainingZoneAPI.create,
     onSuccess: (data, variables, onMutateResult, context) => {
       if (opt?.onSuccess)
         opt.onSuccess(data, variables, onMutateResult, context);
-      queryClient.invalidateQueries({
-        queryKey: [trainingZoneKeys.getAllForAthlete],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [athleteKeys.getMyAthlete],
-      });
+      invalidate();
     },
   });
 };
@@ -55,7 +69,7 @@ export const useUpdateTrainingZone = (
     { trainingZoneId: number; body: UpdateTrainingZoneDto }
   >,
 ) => {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateTrainingZoneQueries();
   return useMutation({
     ...opt,
     mutationFn: ({ trainingZoneId, body }) =>
@@ -63,12 +77,7 @@ export const useUpdateTrainingZone = (
     onSuccess: (data, variables, onMutateResult, context) => {
       if (opt?.onSuccess)
         opt.onSuccess(data, variables, onMutateResult, context);
-      queryClient.invalidateQueries({
-        queryKey: [trainingZoneKeys.getAllForAthlete],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [athleteKeys.getMyAthlete],
-      });
+      invalidate();
     },
   });
 };
@@ -80,19 +89,38 @@ export const useDeleteTrainingZone = (
     number
   >,
 ) => {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidateTrainingZoneQueries();
   return useMutation({
     ...opt,
     mutationFn: TrainingZoneAPI.delete,
     onSuccess: (data, variables, onMutateResult, context) => {
       if (opt?.onSuccess)
         opt.onSuccess(data, variables, onMutateResult, context);
-      queryClient.invalidateQueries({
-        queryKey: [trainingZoneKeys.getAllForAthlete],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [athleteKeys.getMyAthlete],
-      });
+      invalidate();
+    },
+  });
+};
+
+export const useReplaceTrainingZonesForType = (
+  opt?: MutationOptions<
+    Awaited<ReturnType<typeof TrainingZoneAPI.replaceForType>>,
+    Error,
+    {
+      athleteId: number;
+      type: TRAINING_ZONE_TYPE;
+      zones: ReplaceTrainingZoneItemDto[];
+    }
+  >,
+) => {
+  const invalidate = useInvalidateTrainingZoneQueries();
+  return useMutation({
+    ...opt,
+    mutationFn: ({ athleteId, type, zones }) =>
+      TrainingZoneAPI.replaceForType(athleteId, type, zones),
+    onSuccess: (data, variables, onMutateResult, context) => {
+      if (opt?.onSuccess)
+        opt.onSuccess(data, variables, onMutateResult, context);
+      invalidate();
     },
   });
 };

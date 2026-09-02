@@ -12,9 +12,12 @@ import { useMemo } from 'react';
 
 import {
   SPORT_TYPE,
+  TRAINING_ZONE_TYPE,
   TrainingZone,
   TrainingZoneValue,
 } from '@openathlete/shared';
+
+import { formatPaceLabel } from './pace-format.util';
 
 interface TrainingZoneTableProps {
   zones: (TrainingZone & { values: TrainingZoneValue[] })[];
@@ -90,6 +93,7 @@ export function TrainingZoneTable({ zones }: TrainingZoneTableProps) {
                     const isLastZone =
                       config.zones.length === zones.length &&
                       idx === config.zones.length - 1;
+                    const isPace = item.zone.type === TRAINING_ZONE_TYPE.PACE;
                     return (
                       <TableRow key={idx}>
                         <TableCell className="font-medium">
@@ -100,10 +104,14 @@ export function TrainingZoneTable({ zones }: TrainingZoneTableProps) {
                           {item.zone.description}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {item.value.min}
+                          {isPace
+                            ? formatPaceLabel(item.value.min)
+                            : item.value.min}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {item.value.max}
+                          {isPace
+                            ? formatPaceLabel(item.value.max)
+                            : item.value.max}
                           {isLastZone && (
                             <span className="text-xs text-muted-foreground ml-1">
                               +
