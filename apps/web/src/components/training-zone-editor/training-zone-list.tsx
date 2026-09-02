@@ -1,5 +1,7 @@
-import { useGetMyAthleteQuery } from '@/api/athlete';
-import { useDeleteTrainingZone } from '@/api/training-zone';
+import {
+  useDeleteTrainingZone,
+  useGetTrainingZones,
+} from '@/api/training-zone';
 import { LoadingScreen } from '@/components/loading-screen';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,20 +25,21 @@ interface TrainingZoneListProps {
 }
 
 export function TrainingZoneList({ athleteId, type }: TrainingZoneListProps) {
-  const { data: athlete, isLoading: athleteLoading } = useGetMyAthleteQuery();
+  const { data: allZones, isLoading: zonesLoading } =
+    useGetTrainingZones(athleteId);
   const [editMode, setEditMode] = useState(false);
 
   const deleteZone = useDeleteTrainingZone();
 
   const zones = useMemo(() => {
     return (
-      athlete?.trainingZones
-        .filter((z) => z.type === type)
+      allZones
+        ?.filter((z) => z.type === type)
         .sort((a, b) => a.index - b.index) || []
     );
-  }, [athlete, type]);
+  }, [allZones, type]);
 
-  if (athleteLoading || !athlete) return <LoadingScreen />;
+  if (zonesLoading || !allZones) return <LoadingScreen />;
 
   return (
     <div className="space-y-4">

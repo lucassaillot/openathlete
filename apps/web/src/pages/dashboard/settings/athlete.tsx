@@ -1,4 +1,5 @@
 import { SessionValidationSettingsCard } from '@/components/session-validation-settings-card';
+import { TrainingZoneEditor } from '@/components/training-zone-editor';
 import { useAthleteInfo } from '@/hooks/use-athlete-info';
 import { m } from '@/paraglide/messages';
 import { useParams } from 'react-router-dom';
@@ -23,6 +24,8 @@ export function AthleteSettingsPage() {
       <h1 className="text-2xl font-semibold">{pageTitle}</h1>
 
       <SessionValidationSettingsCard athleteId={parseInt(athleteId, 10)} />
+
+      <TrainingZoneEditor athleteId={parseInt(athleteId, 10)} />
     </div>
   );
 }

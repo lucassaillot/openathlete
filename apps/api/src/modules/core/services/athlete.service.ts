@@ -85,28 +85,29 @@ export class AthleteService {
     ];
 
     const allSports = Object.values(SportType) as SportType[];
-    for (let i = 0; i < DEFAULT_HR_ZONES.length; i++) {
-      const z = DEFAULT_HR_ZONES[i];
-      await this.prisma.trainingZone.create({
-        data: {
-          name: z.name,
-          description: z.description,
-          index: i,
-          type: 'HEARTRATE',
-          color: z.color,
-          athleteId: athleteId,
-          values: {
-            create: [
-              {
-                min: z.min,
-                max: z.max,
-                sports: allSports,
-              },
-            ],
+    await this.prisma.$transaction(
+      DEFAULT_HR_ZONES.map((z, i) =>
+        this.prisma.trainingZone.create({
+          data: {
+            name: z.name,
+            description: z.description,
+            index: i,
+            type: 'HEARTRATE',
+            color: z.color,
+            athleteId: athleteId,
+            values: {
+              create: [
+                {
+                  min: z.min,
+                  max: z.max,
+                  sports: allSports,
+                },
+              ],
+            },
           },
-        },
-      });
-    }
+        }),
+      ),
+    );
   }
 
   async getAthleteById(id: Athlete['athleteId'], user: AuthUser) {

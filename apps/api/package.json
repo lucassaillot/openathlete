@@ -15,7 +15,9 @@
     "format": "prettier --check \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "tsc:check": "tsc --noEmit",
-    "strava:webhook:ensure": "node scripts/ensure-strava-webhook.mjs"
+    "strava:webhook:ensure": "node scripts/ensure-strava-webhook.mjs",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.47",
@@ -111,6 +113,9 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    },
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

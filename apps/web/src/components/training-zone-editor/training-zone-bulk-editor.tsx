@@ -1,17 +1,17 @@
-import {
-  useCreateTrainingZone,
-  useDeleteTrainingZone,
-  useUpdateTrainingZone,
-} from '@/api/training-zone';
+import { useReplaceTrainingZonesForType } from '@/api/training-zone';
+import { ConfirmAction } from '@/components/confirm-action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { m } from '@/paraglide/messages';
-import { Plus, Trash2 } from 'lucide-react';
+import { getErrorMessage } from '@/utils/axios';
+import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import {
+  ReplaceTrainingZoneItemDto,
   SPORT_TYPE,
   TRAINING_ZONE_TYPE,
   TrainingZone,
@@ -20,6 +20,10 @@ import {
 
 import { ColorPicker } from './color-picker';
 import { MultiSportSelector } from './multi-sport-selector';
+import {
+  decimalMinutesToMinSec,
+  minSecToDecimalMinutes,
+} from './pace-format.util';
 
 interface ZoneConfig {
   id?: number; // existing zone ID or undefined for new zones
@@ -84,11 +88,11 @@ export function TrainingZoneBulkEditor({
   onComplete,
 }: TrainingZoneBulkEditorProps) {
   const [zones, setZones] = useState<ZoneConfig[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
+  const [zoneIndexPendingDelete, setZoneIndexPendingDelete] = useState<
+    number | null
+  >(null);
 
-  const createZone = useCreateTrainingZone();
-  const updateZone = useUpdateTrainingZone();
-  const deleteZone = useDeleteTrainingZone();
+  const replaceZones = useReplaceTrainingZonesForType();
 
   // Initialize zones from existing data or create defaults
   useEffect(() => {
@@ -128,6 +132,18 @@ export function TrainingZoneBulkEditor({
 
   const handleRemoveZone = (index: number) => {
     const newZones = zones.filter((_, i) => i !== index);
+    setZones(newZones);
+    setZoneIndexPendingDelete(null);
+  };
+
+  const handleMoveZone = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= zones.length) return;
+    const newZones = [...zones];
+    [newZones[index], newZones[targetIndex]] = [
+      newZones[targetIndex],
+      newZones[index],
+    ];
     setZones(newZones);
   };
 
@@ -170,55 +186,19 @@ export function TrainingZoneBulkEditor({
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
+    const payload: ReplaceTrainingZoneItemDto[] = zones.map((zone) => ({
+      trainingZoneId: zone.id,
+      name: zone.name,
+      description: zone.description,
+      color: zone.color,
+      values: [{ min: zone.min, max: zone.max, sports: zone.sports }],
+    }));
+
     try {
-      // Identify zones to delete (existing zones not in current list)
-      const currentIds = zones.map((z) => z.id).filter(Boolean);
-      const zonesToDelete = existingZones.filter(
-        (ez) => !currentIds.includes(ez.trainingZoneId),
-      );
-
-      // Delete removed zones
-      for (const zone of zonesToDelete) {
-        await deleteZone.mutateAsync(zone.trainingZoneId);
-      }
-
-      // Create or update zones
-      for (let i = 0; i < zones.length; i++) {
-        const zone = zones[i];
-        if (zone.id) {
-          // Update existing
-          await updateZone.mutateAsync({
-            trainingZoneId: zone.id,
-            body: {
-              name: zone.name,
-              description: zone.description,
-              min: zone.min,
-              max: zone.max,
-              color: zone.color,
-              sports: zone.sports,
-            },
-          });
-        } else {
-          // Create new
-          await createZone.mutateAsync({
-            athleteId,
-            name: zone.name,
-            description: zone.description,
-            type,
-            min: zone.min,
-            max: zone.max,
-            color: zone.color,
-            sports: zone.sports,
-          });
-        }
-      }
-
+      await replaceZones.mutateAsync({ athleteId, type, zones: payload });
       onComplete();
     } catch (error) {
-      console.error('Error saving zones:', error);
-    } finally {
-      setIsSaving(false);
+      toast.error(getErrorMessage(error, m.failed_to_save_training_zones()));
     }
   };
 
@@ -257,50 +237,108 @@ export function TrainingZoneBulkEditor({
                   />
                 </div>
               </div>
-              {zones.length > 1 && (
+              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleRemoveZone(index)}
+                  disabled={index === 0}
+                  onClick={() => handleMoveZone(index, -1)}
+                  type="button"
+                  aria-label={m.move_up()}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <ArrowUp className="h-4 w-4" />
                 </Button>
-              )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={index === zones.length - 1}
+                  onClick={() => handleMoveZone(index, 1)}
+                  type="button"
+                  aria-label={m.move_down()}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+                {zones.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => setZoneIndexPendingDelete(index)}
+                    type="button"
+                    aria-label={m.delete_zone()}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor={`zone-${index}-min`}>
-                  {m.minimum()} ({getUnitLabel(type)})
-                </Label>
-                <Input
-                  id={`zone-${index}-min`}
-                  type="number"
-                  step={getStepForType(type)}
-                  value={zone.min}
-                  onChange={(e) =>
-                    handleZoneChange(index, 'min', parseFloat(e.target.value))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`zone-${index}-max`}>
-                  {m.maximum()} ({getUnitLabel(type)})
-                </Label>
-                <Input
-                  id={`zone-${index}-max`}
-                  type="number"
-                  step={getStepForType(type)}
-                  value={zone.max}
-                  onChange={(e) =>
-                    handleZoneChange(index, 'max', parseFloat(e.target.value))
-                  }
-                  placeholder={
-                    index === zones.length - 1 ? m.maximum_or_more() : undefined
-                  }
-                />
-              </div>
+              {type === TRAINING_ZONE_TYPE.PACE ? (
+                <>
+                  <PaceMinMaxInput
+                    id={`zone-${index}-min`}
+                    label={`${m.minimum()} (${m.per_km()})`}
+                    value={zone.min}
+                    onChange={(value) => handleZoneChange(index, 'min', value)}
+                  />
+                  <PaceMinMaxInput
+                    id={`zone-${index}-max`}
+                    label={`${m.maximum()} (${m.per_km()})`}
+                    value={zone.max}
+                    onChange={(value) => handleZoneChange(index, 'max', value)}
+                    placeholder={
+                      index === zones.length - 1
+                        ? m.maximum_or_more()
+                        : undefined
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor={`zone-${index}-min`}>
+                      {m.minimum()} ({getUnitLabel(type)})
+                    </Label>
+                    <Input
+                      id={`zone-${index}-min`}
+                      type="number"
+                      step={getStepForType(type)}
+                      value={zone.min}
+                      onChange={(e) =>
+                        handleZoneChange(
+                          index,
+                          'min',
+                          parseFloat(e.target.value),
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`zone-${index}-max`}>
+                      {m.maximum()} ({getUnitLabel(type)})
+                    </Label>
+                    <Input
+                      id={`zone-${index}-max`}
+                      type="number"
+                      step={getStepForType(type)}
+                      value={zone.max}
+                      onChange={(e) =>
+                        handleZoneChange(
+                          index,
+                          'max',
+                          parseFloat(e.target.value),
+                        )
+                      }
+                      placeholder={
+                        index === zones.length - 1
+                          ? m.maximum_or_more()
+                          : undefined
+                      }
+                    />
+                  </div>
+                </>
+              )}
               <div className="space-y-2">
                 <Label htmlFor={`zone-${index}-color`}>{m.color()}</Label>
                 <ColorPicker
@@ -337,9 +375,81 @@ export function TrainingZoneBulkEditor({
         <Button variant="outline" onClick={onComplete} type="button">
           {m.cancel()}
         </Button>
-        <Button onClick={handleSave} isLoading={isSaving} type="button">
+        <Button
+          onClick={handleSave}
+          isLoading={replaceZones.isPending}
+          type="button"
+        >
           {m.save()}
         </Button>
+      </div>
+
+      <ConfirmAction
+        open={zoneIndexPendingDelete !== null}
+        onClose={() => setZoneIndexPendingDelete(null)}
+        onConfirm={() => {
+          if (zoneIndexPendingDelete !== null) {
+            handleRemoveZone(zoneIndexPendingDelete);
+          }
+        }}
+        title={m.delete_zone()}
+        message={m.confirm_delete_zone()}
+      />
+    </div>
+  );
+}
+
+function PaceMinMaxInput({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  placeholder?: string;
+}) {
+  const { minutes, seconds } = decimalMinutesToMinSec(value);
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="flex items-center gap-1">
+        <Input
+          id={id}
+          type="number"
+          min={0}
+          value={minutes}
+          placeholder={placeholder}
+          onChange={(e) =>
+            onChange(
+              minSecToDecimalMinutes(
+                parseInt(e.target.value, 10) || 0,
+                seconds,
+              ),
+            )
+          }
+          className="w-16"
+        />
+        <span className="text-muted-foreground">:</span>
+        <Input
+          type="number"
+          min={0}
+          max={59}
+          value={seconds}
+          onChange={(e) =>
+            onChange(
+              minSecToDecimalMinutes(
+                minutes,
+                parseInt(e.target.value, 10) || 0,
+              ),
+            )
+          }
+          className="w-16"
+        />
       </div>
     </div>
   );

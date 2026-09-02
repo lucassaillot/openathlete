@@ -1,6 +1,7 @@
 import { ZodValidationPipe } from 'nestjs-zod';
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,6 +10,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,8 +26,11 @@ import {
 import { SportType, TrainingZoneType } from '@openathlete/database';
 import {
   CreateTrainingZoneDto,
+  ReplaceTrainingZonesDto,
   UpdateTrainingZoneDto,
   createTrainingZoneDtoSchema,
+  replaceTrainingZonesDtoSchema,
+  updateTrainingZoneDtoSchema,
 } from '@openathlete/shared';
 
 import { JwtUser, UserTypeGuard } from 'src/modules/auth';
@@ -168,32 +173,40 @@ export class TrainingZoneController {
           description: 'Type of training zone',
           example: 'HEARTRATE',
         },
-        min: {
-          type: 'number',
-          description:
-            'Minimum value for the zone. Unit depends on type: bpm for HEARTRATE, watts for POWER, m/s for PACE',
-          example: 120,
-        },
-        max: {
-          type: 'number',
-          description:
-            'Maximum value for the zone. Unit depends on type: bpm for HEARTRATE, watts for POWER, m/s for PACE',
-          example: 140,
-        },
         color: {
           type: 'string',
           description: 'Color code for the zone (hex or CSS color)',
           example: '#00FF00',
         },
-        sports: {
+        values: {
           type: 'array',
-          items: {
-            type: 'string',
-            enum: Object.values(SportType),
-          },
-          description: 'Array of sports this zone applies to',
-          example: ['RUNNING', 'TRAIL_RUNNING'],
+          description:
+            'Zone values (min, max, sports). Each value must satisfy min < max.',
           minItems: 1,
+          items: {
+            type: 'object',
+            properties: {
+              min: {
+                type: 'number',
+                description:
+                  'Minimum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, min/km for PACE',
+                example: 120,
+              },
+              max: {
+                type: 'number',
+                description:
+                  'Maximum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, min/km for PACE',
+                example: 140,
+              },
+              sports: {
+                type: 'array',
+                items: { type: 'string', enum: Object.values(SportType) },
+                description: 'Sports this value applies to',
+                example: ['RUNNING', 'TRAIL_RUNNING'],
+                minItems: 1,
+              },
+            },
+          },
         },
         athleteId: {
           type: 'number',
@@ -201,7 +214,7 @@ export class TrainingZoneController {
           example: 1,
         },
       },
-      required: ['name', 'type', 'min', 'max', 'color', 'sports', 'athleteId'],
+      required: ['name', 'type', 'color', 'values', 'athleteId'],
     },
   })
   @ApiResponse({
@@ -248,6 +261,11 @@ export class TrainingZoneController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - min >= max on a value, or the value overlaps an existing zone of the same type for a shared sport',
+  })
+  @ApiResponse({
     status: 401,
     description: 'Unauthorized - invalid or missing authentication token',
   })
@@ -273,7 +291,7 @@ export class TrainingZoneController {
   @ApiOperation({
     summary: 'Update a training zone',
     description:
-      'Updates an existing training zone. Only the zone owner (athlete or their coach) can update it. Currently updates only the first zone value. The type can be changed, but this should be done carefully as it affects how the zone is used. Uses CASL authorization to verify that the user has update access to the athlete.',
+      "Updates an existing training zone. Only the zone owner (athlete or their coach) can update it. The submitted values entirely replace the zone's existing values. The zone type and index cannot be changed here (index is managed by the bulk replace endpoint). Uses CASL authorization to verify that the user has update access to the athlete.",
   })
   @ApiParam({
     name: 'trainingZoneId',
@@ -298,40 +316,43 @@ export class TrainingZoneController {
           description: 'Updated zone description',
           example: 'Updated easy recovery pace',
         },
-        type: {
-          type: 'string',
-          enum: Object.values(TrainingZoneType),
-          description: 'Updated zone type (optional)',
-          example: 'HEARTRATE',
-        },
-        min: {
-          type: 'number',
-          description:
-            'Updated minimum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, m/s for PACE',
-          example: 115,
-        },
-        max: {
-          type: 'number',
-          description:
-            'Updated maximum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, m/s for PACE',
-          example: 135,
-        },
         color: {
           type: 'string',
           description: 'Updated color code',
           example: '#00FF00',
         },
-        sports: {
+        values: {
           type: 'array',
+          description:
+            'Updated zone values (min, max, sports). Replaces all existing values for this zone. Each value must satisfy min < max.',
+          minItems: 1,
           items: {
-            type: 'string',
-            enum: Object.values(SportType),
+            type: 'object',
+            properties: {
+              min: {
+                type: 'number',
+                description:
+                  'Updated minimum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, min/km for PACE',
+                example: 115,
+              },
+              max: {
+                type: 'number',
+                description:
+                  'Updated maximum value. Unit depends on type: bpm for HEARTRATE, watts for POWER, min/km for PACE',
+                example: 135,
+              },
+              sports: {
+                type: 'array',
+                items: { type: 'string', enum: Object.values(SportType) },
+                description: 'Updated array of sports',
+                example: ['RUNNING'],
+                minItems: 1,
+              },
+            },
           },
-          description: 'Updated array of sports',
-          example: ['RUNNING'],
         },
       },
-      required: ['name', 'min', 'max', 'color', 'sports'],
+      required: ['name', 'color', 'values'],
     },
   })
   @ApiResponse({
@@ -381,13 +402,19 @@ export class TrainingZoneController {
     description: 'Forbidden - user does not have update access to this athlete',
   })
   @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - min >= max on a value, or the value overlaps an existing zone of the same type for a shared sport',
+  })
+  @ApiResponse({
     status: 404,
     description: 'Not found - training zone or athlete not found',
   })
   async update(
     @JwtUser() user: AuthUser,
     @Param('trainingZoneId', ParseIntPipe) trainingZoneId: number,
-    @Body() dto: UpdateTrainingZoneDto,
+    @Body(new ZodValidationPipe(updateTrainingZoneDtoSchema))
+    dto: UpdateTrainingZoneDto,
   ) {
     return this.trainingZoneService.update(user, trainingZoneId, dto);
   }
@@ -433,5 +460,108 @@ export class TrainingZoneController {
     @Param('trainingZoneId', ParseIntPipe) trainingZoneId: number,
   ) {
     return this.trainingZoneService.delete(user, trainingZoneId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
+  @ApiBearerAuth()
+  @Put('athlete/:athleteId/type/:type')
+  @ApiOperation({
+    summary: 'Replace all training zones of a given type for an athlete',
+    description:
+      'Atomically replaces every training zone of the given type for an athlete in a single request: zones present in the payload with a trainingZoneId are updated (their values are replaced), zones without a trainingZoneId are created, and existing zones of this type absent from the payload are deleted (cascading their values). The zone index is reassigned from the order of the submitted array. The whole operation runs in a single Prisma transaction. Uses CASL authorization to verify that the user has update access to the athlete.',
+  })
+  @ApiParam({
+    name: 'athleteId',
+    type: Number,
+    description: 'ID of the athlete whose zones are being replaced',
+    example: 1,
+  })
+  @ApiParam({
+    name: 'type',
+    enum: Object.values(TrainingZoneType),
+    description: 'Type of training zone to replace',
+    example: 'HEARTRATE',
+  })
+  @ApiBody({
+    description: 'Full list of zones for this type, in display order',
+    schema: {
+      type: 'object',
+      properties: {
+        zones: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            properties: {
+              trainingZoneId: {
+                type: 'number',
+                description: 'Omit to create a new zone',
+                example: 1,
+              },
+              name: { type: 'string', minLength: 1, example: 'Zone 1' },
+              description: { type: 'string', example: 'Recovery' },
+              color: { type: 'string', example: '#9CA3AF' },
+              values: {
+                type: 'array',
+                minItems: 1,
+                items: {
+                  type: 'object',
+                  properties: {
+                    min: { type: 'number', example: 0 },
+                    max: { type: 'number', example: 131 },
+                    sports: {
+                      type: 'array',
+                      items: { type: 'string', enum: Object.values(SportType) },
+                      example: ['RUNNING'],
+                      minItems: 1,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      required: ['zones'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'The full, up-to-date list of zones for this type, ordered by index',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Bad request - invalid zone type, min >= max on a value, two submitted zones overlap for a shared sport, or a trainingZoneId does not belong to this athlete/type',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid or missing authentication token',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - user does not have update access to this athlete',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not found - athlete not found',
+  })
+  replaceForType(
+    @JwtUser() user: AuthUser,
+    @Param('athleteId', ParseIntPipe) athleteId: number,
+    @Param('type') type: string,
+    @Body(new ZodValidationPipe(replaceTrainingZonesDtoSchema))
+    dto: ReplaceTrainingZonesDto,
+  ) {
+    if (!Object.values(TrainingZoneType).includes(type as TrainingZoneType)) {
+      throw new BadRequestException(`Invalid training zone type: ${type}`);
+    }
+    return this.trainingZoneService.replaceForType(
+      user,
+      athleteId,
+      type as TrainingZoneType,
+      dto,
+    );
   }
 }
