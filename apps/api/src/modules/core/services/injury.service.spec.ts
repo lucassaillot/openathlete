@@ -160,6 +160,25 @@ describe('InjuryService', () => {
       );
     });
 
+    it('automatically closes an injury created as resolved', async () => {
+      prisma.athlete.findUnique.mockResolvedValue({ athleteId: 10 });
+      abilities.getFor.mockResolvedValue(makeAbility(true));
+      prisma.athleteInjury.create.mockResolvedValue({
+        athleteInjuryId: 3,
+        ...validDto,
+        status: INJURY_STATUS.RESOLVED,
+        endDate: new Date(),
+      });
+
+      await service.create(COACH_USER, {
+        ...validDto,
+        status: INJURY_STATUS.RESOLVED,
+      });
+
+      const callArg = prisma.athleteInjury.create.mock.calls[0][0];
+      expect(callArg.data.endDate).toBeInstanceOf(Date);
+    });
+
     it('throws NotFoundException when the athlete does not exist', async () => {
       prisma.athlete.findUnique.mockResolvedValue(null);
 
@@ -251,6 +270,27 @@ describe('InjuryService', () => {
       prisma.athleteInjury.update.mockResolvedValue({});
 
       await service.update(COACH_USER, 1, { status: INJURY_STATUS.RESOLVED });
+
+      const callArg = prisma.athleteInjury.update.mock.calls[0][0];
+      expect(callArg.data.endDate).toBeInstanceOf(Date);
+    });
+
+    it('automatically sets endDate when marked resolved with an explicit null endDate', async () => {
+      prisma.athleteInjury.findUnique.mockResolvedValue({
+        athleteInjuryId: 1,
+        athleteId: 10,
+        status: 'STABLE',
+        startDate: new Date('2026-09-01'),
+        endDate: null,
+      });
+      prisma.athlete.findUnique.mockResolvedValue({ athleteId: 10 });
+      abilities.getFor.mockResolvedValue(makeAbility(true));
+      prisma.athleteInjury.update.mockResolvedValue({});
+
+      await service.update(COACH_USER, 1, {
+        status: INJURY_STATUS.RESOLVED,
+        endDate: null,
+      });
 
       const callArg = prisma.athleteInjury.update.mock.calls[0][0];
       expect(callArg.data.endDate).toBeInstanceOf(Date);

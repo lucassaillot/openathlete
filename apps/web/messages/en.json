@@ -409,7 +409,7 @@
   "add_metric": "Add Metric",
   "edit_metric": "Edit Metric",
   "injury_logs": "Injury Logs",
-  "injury_logs_description": "This is a log of injuries. The date indicates the last time the athlete mentioned this injury.",
+  "injury_logs_description": "Track and manage the athlete's injuries.",
   "no_injuries_found": "No injuries found",
   "location": "Location",
   "pain_score": "Pain Score",

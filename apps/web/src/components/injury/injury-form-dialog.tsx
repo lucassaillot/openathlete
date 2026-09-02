@@ -20,6 +20,7 @@ import { m } from '@/paraglide/messages';
 import { getErrorMessage } from '@/utils/axios';
 import { injuryStatusLabelMap } from '@/utils/label-map/core';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -33,15 +34,20 @@ interface P {
   injury?: AthleteInjury;
 }
 
-const injuryFormSchema = z.object({
-  location: z.string().min(1),
-  painScore: z.number().min(0).max(1),
-  status: z.nativeEnum(INJURY_STATUS),
-  context: z.string().optional(),
-  startDate: z.string(),
-  ongoing: z.boolean(),
-  endDate: z.string().optional(),
-});
+const injuryFormSchema = z
+  .object({
+    location: z.string().min(1),
+    painScore: z.number().min(0).max(1),
+    status: z.nativeEnum(INJURY_STATUS),
+    context: z.string().optional(),
+    startDate: z.string(),
+    ongoing: z.boolean(),
+    endDate: z.string().optional(),
+  })
+  .refine((data) => data.status !== INJURY_STATUS.RESOLVED || !data.ongoing, {
+    path: ['ongoing'],
+    message: 'A resolved injury cannot be ongoing',
+  });
 
 type InjuryFormValues = z.infer<typeof injuryFormSchema>;
 
@@ -100,10 +106,21 @@ export function InjuryFormDialog({ open, onClose, athleteId, injury }: P) {
         },
   });
 
-  const { handleSubmit, watch } = methods;
+  const { handleSubmit, setValue, watch } = methods;
   const ongoing = watch('ongoing');
+  const status = watch('status');
   const startDateValue = watch('startDate');
   const endDateValue = watch('endDate');
+
+  useEffect(() => {
+    if (status !== INJURY_STATUS.RESOLVED) return;
+    if (ongoing) setValue('ongoing', false, { shouldValidate: true });
+    if (!endDateValue) {
+      setValue('endDate', formatDateForInput(new Date()), {
+        shouldValidate: true,
+      });
+    }
+  }, [endDateValue, ongoing, setValue, status]);
 
   const onSubmit = handleSubmit((data) => {
     const body = {
