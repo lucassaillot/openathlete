@@ -4,6 +4,7 @@ import {
   useGetLatestMetricsQuery,
 } from '@/api/metric';
 import { InjuryLogsTable } from '@/components/metrics/injury-logs-table';
+import { InjuryFormDialog } from '@/components/injury/injury-form-dialog';
 import { MetricCard } from '@/components/metrics/metric-card';
 import { MetricChart } from '@/components/metrics/metric-chart';
 import { MetricForm } from '@/components/metrics/metric-form';
@@ -34,6 +35,7 @@ interface P {
 
 export function MetricsView({ athleteId }: P) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isInjuryDialogOpen, setIsInjuryDialogOpen] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<{
     type: METRIC_TYPE;
     data: AthleteMetric | null;
@@ -58,6 +60,10 @@ export function MetricsView({ athleteId }: P) {
   const handleAddNewMetric = useCallback(() => {
     setSelectedMetric(null);
     setIsDialogOpen(true);
+  }, []);
+
+  const handleAddInjury = useCallback(() => {
+    setIsInjuryDialogOpen(true);
   }, []);
 
   const handleSubmit = async (values: CreateMetricDto) => {
@@ -134,8 +140,13 @@ export function MetricsView({ athleteId }: P) {
         icon: Plus,
         onClick: handleAddNewMetric,
       },
+      {
+        label: m.add_injury(),
+        icon: Plus,
+        onClick: handleAddInjury,
+      },
     ],
-    [handleAddNewMetric],
+    [handleAddInjury, handleAddNewMetric],
   );
 
   useSetPageActions(actions);
@@ -283,7 +294,13 @@ export function MetricsView({ athleteId }: P) {
       </Card>
 
       {/* Injury Logs Section */}
-      <InjuryLogsTable athleteId={athleteId} />
+      <InjuryLogsTable athleteId={athleteId} onAdd={handleAddInjury} />
+
+      <InjuryFormDialog
+        open={isInjuryDialogOpen}
+        onClose={() => setIsInjuryDialogOpen(false)}
+        athleteId={athleteId}
+      />
 
       {/* Dialog for adding/editing metric */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

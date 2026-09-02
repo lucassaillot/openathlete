@@ -409,7 +409,7 @@
   "add_metric": "Aggiungi metrica",
   "edit_metric": "Modifica metrica",
   "injury_logs": "Registro infortuni",
-  "injury_logs_description": "Questo è un registro degli infortuni. La data indica l'ultima volta che l'atleta ha menzionato questo infortunio.",
+  "injury_logs_description": "Monitora e gestisci gli infortuni dell'atleta.",
   "no_injuries_found": "Nessun infortunio trovato",
   "location": "Posizione",
   "pain_score": "Punteggio dolore",

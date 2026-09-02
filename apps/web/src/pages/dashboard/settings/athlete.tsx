@@ -1,4 +1,3 @@
-import { InjuriesCard } from '@/components/injury/injuries-card';
 import { SessionValidationSettingsCard } from '@/components/session-validation-settings-card';
 import { TrainingZoneEditor } from '@/components/training-zone-editor';
 import { useAthleteInfo } from '@/hooks/use-athlete-info';
@@ -27,8 +26,6 @@ export function AthleteSettingsPage() {
       <SessionValidationSettingsCard athleteId={parseInt(athleteId, 10)} />
 
       <TrainingZoneEditor athleteId={parseInt(athleteId, 10)} />
-
-      <InjuriesCard athleteId={parseInt(athleteId, 10)} />
     </div>
   );
 }

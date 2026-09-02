@@ -105,6 +105,16 @@ export class InjuryService {
       throw new ForbiddenException('Not allowed to update this athlete');
     }
 
+    const endDate =
+      dto.status === INJURY_STATUS.RESOLVED && !dto.endDate
+        ? new Date()
+        : (dto.endDate ?? null);
+    if (endDate && dto.startDate > endDate) {
+      throw new BadRequestException(
+        'startDate must be before or equal to endDate',
+      );
+    }
+
     const injury = await this.prisma.athleteInjury.create({
       data: {
         athleteId: dto.athleteId,
@@ -113,7 +123,7 @@ export class InjuryService {
         context: dto.context,
         status: dto.status,
         startDate: dto.startDate,
-        endDate: dto.endDate ?? null,
+        endDate,
       },
     });
 
@@ -142,11 +152,11 @@ export class InjuryService {
     let finalEndDate =
       dto.endDate !== undefined ? dto.endDate : existing.endDate;
 
-    // Marking an injury as resolved without explicitly providing an end
-    // date automatically closes it as of today.
+    // A resolved injury must always have an end date, including when the
+    // caller explicitly sends null.
     if (
       dto.status === INJURY_STATUS.RESOLVED &&
-      dto.endDate === undefined &&
+      !dto.endDate &&
       !existing.endDate
     ) {
       finalEndDate = new Date();
