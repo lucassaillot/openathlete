@@ -359,10 +359,7 @@ export function WorkoutBuilder({
           if (!open) setDialogState({ type: 'none' });
         }}
       >
-        <DialogContent
-          mobileFullscreen
-          className="sm:max-w-2xl max-h-[90vh] overflow-y-auto"
-        >
+        <DialogContent mobileFullscreen className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {dialogState.type === 'step' && dialogState.editing

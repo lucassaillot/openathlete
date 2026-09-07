@@ -40,7 +40,8 @@ export function ConfirmAction({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent onKeyDown={handleKeyDown}>
+      {/* oa-responsive-ok: small yes/no confirm, a full-screen takeover would be heavy-handed for two lines of text and two buttons */}
+      <DialogContent mobileFullscreen={false} onKeyDown={handleKeyDown}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

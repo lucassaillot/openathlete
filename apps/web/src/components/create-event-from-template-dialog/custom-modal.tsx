@@ -28,9 +28,9 @@ export function CustomModal({ open, onClose, title, children }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
-      <div className="relative z-10 bg-background rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col mx-4 border border-border">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="relative z-10 flex min-w-0 w-[calc(100%-2rem)] max-w-5xl max-h-[calc(100dvh-2.5rem)] flex-col rounded-lg border border-border bg-background shadow-xl">
+        <div className="flex flex-shrink-0 items-center justify-between gap-2 border-b border-border p-4">
+          <h2 className="min-w-0 truncate text-lg font-semibold">{title}</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -42,7 +42,9 @@ export function CustomModal({ open, onClose, title, children }: Props) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="min-w-0 flex-1 overflow-x-clip overflow-y-auto p-6">
+          {children}
+        </div>
       </div>
     </div>
   );

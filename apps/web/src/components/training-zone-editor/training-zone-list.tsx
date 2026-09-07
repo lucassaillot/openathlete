@@ -55,7 +55,7 @@ export function TrainingZoneList({ athleteId, type }: TrainingZoneListProps) {
               {zones.length === 0 ? m.create_zones() : m.edit_zones()}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
               <DialogTitle>
                 {zones.length === 0 ? m.create_zones() : m.edit_zones()}
