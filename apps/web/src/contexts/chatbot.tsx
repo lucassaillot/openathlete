@@ -77,6 +77,27 @@ const DEFAULT_BUBBLE_POSITION: BubblePosition = {
 const DEFAULT_CHAT_WIDTH = 450;
 const DEFAULT_CHAT_SIDE: 'left' | 'right' = 'left';
 
+// Shared with chat-window.tsx's drag-resize handle, so a width picked by
+// dragging and one restored from localStorage on a narrower screen are
+// bounded the same way.
+export const MIN_CHAT_WIDTH = 320;
+
+/**
+ * A `chatWidth` persisted from a wide monitor has no relation to the
+ * viewport it's being restored into — without this, opening the app on a
+ * laptop after resizing the chat to 800px on an ultrawide left the panel
+ * wider than the window itself (or positioned partly off-screen, since
+ * chat-window.tsx positions it via `window.innerWidth - chatWidth -
+ * margins`).
+ */
+export function clampChatWidth(width: number): number {
+  if (typeof window === 'undefined') {
+    return Math.max(MIN_CHAT_WIDTH, width);
+  }
+  const maxWidth = Math.max(MIN_CHAT_WIDTH, window.innerWidth - 48);
+  return Math.min(Math.max(width, MIN_CHAT_WIDTH), maxWidth);
+}
+
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -115,7 +136,8 @@ export function ChatbotProvider({ children }: { children: React.ReactNode }) {
 
   const [chatWidth, setChatWidthState] = useState<number>(() => {
     const stored = localStorage.getItem(STORAGE_KEYS.CHAT_WIDTH);
-    return stored ? Number.parseInt(stored, 10) : DEFAULT_CHAT_WIDTH;
+    const initial = stored ? Number.parseInt(stored, 10) : DEFAULT_CHAT_WIDTH;
+    return clampChatWidth(initial);
   });
 
   const [chatSide, setChatSideState] = useState<'left' | 'right'>(() => {
@@ -167,8 +189,26 @@ export function ChatbotProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setChatWidth = useCallback((width: number) => {
-    setChatWidthState(width);
-    localStorage.setItem(STORAGE_KEYS.CHAT_WIDTH, width.toString());
+    const clamped = clampChatWidth(width);
+    setChatWidthState(clamped);
+    localStorage.setItem(STORAGE_KEYS.CHAT_WIDTH, clamped.toString());
+  }, []);
+
+  // Re-clamp on resize too — a width that fit fine gets stuck at whatever
+  // it was otherwise (this only reads state on resize, it doesn't need to
+  // re-run when chatWidth itself changes).
+  useEffect(() => {
+    const handleResize = () => {
+      setChatWidthState((current) => {
+        const clamped = clampChatWidth(current);
+        if (clamped !== current) {
+          localStorage.setItem(STORAGE_KEYS.CHAT_WIDTH, clamped.toString());
+        }
+        return clamped;
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const setChatSide = useCallback((side: 'left' | 'right') => {

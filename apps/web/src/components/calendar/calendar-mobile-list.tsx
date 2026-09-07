@@ -294,10 +294,13 @@ export function CalendarMobileList({ isLoading }: P) {
         // `minHeight` floor either — one used to force this list taller
         // than the actual available space on short screens (iPhone SE),
         // producing a double scroll (this list plus the page around it).
+        // Header/navbar heights come from the shared tokens in
+        // theme/index.css instead of a bare `56px`/`64px`, so this stays
+        // correct if either one's own height ever changes.
         height:
-          'calc(100dvh - 56px - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          'calc(100dvh - var(--mobile-header-height) - var(--mobile-navbar-height))',
         maxHeight:
-          'calc(100dvh - 56px - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          'calc(100dvh - var(--mobile-header-height) - var(--mobile-navbar-height))',
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
       }}

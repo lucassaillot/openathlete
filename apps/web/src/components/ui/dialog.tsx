@@ -84,13 +84,13 @@ function DialogContent({
             'top-[50%] left-[50%] max-w-[calc(100%-2rem)] max-h-[calc(100dvh-2.5rem)] translate-x-[-50%] translate-y-[-50%] rounded-lg p-6 sm:max-w-lg',
           // Full-screen sheet below the desktop breakpoint
           fullscreen &&
-            'inset-0 h-[100dvh] w-full rounded-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:top-[50%] lg:left-[50%] lg:h-auto lg:max-h-[calc(100dvh-2.5rem)] lg:w-auto lg:translate-x-[-50%] lg:translate-y-[-50%] lg:rounded-lg lg:p-6 lg:pb-6',
+            'inset-0 h-[100dvh] w-full rounded-none p-4 pt-[max(1rem,var(--sat))] pb-[max(1rem,var(--sab))] lg:top-[50%] lg:left-[50%] lg:h-auto lg:max-h-[calc(100dvh-2.5rem)] lg:w-auto lg:translate-x-[-50%] lg:translate-y-[-50%] lg:rounded-lg lg:p-6 lg:pb-6 lg:pt-6',
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 rounded-full p-2.5 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 z-10">
+        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-[max(0.75rem,var(--sat))] right-3 rounded-full p-2.5 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 z-10">
           <XIcon />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

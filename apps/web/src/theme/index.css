@@ -5,15 +5,49 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Safe area insets on Android only: plugin/native inject --safe-area-inset-* or env(). iOS uses @capacitor/status-bar (setOverlaysWebView false). */
+/*
+ * Safe-area insets as CSS custom properties (--sat/--sar/--sab/--sal),
+ * consumed explicitly wherever something actually needs to avoid a notch,
+ * status bar, or home indicator — a header's own top padding, a fixed
+ * navbar's own bottom padding, a `calc()` height that accounts for one of
+ * those. This used to be a blanket padding on <html> instead, which broke
+ * in two ways: `position: fixed` descendants (the navbar, full-screen
+ * dialogs) are positioned against the viewport and don't inherit an
+ * ancestor's padding at all, so they ignored it; and a `min-h-dvh`
+ * descendant (already the full viewport height) plus <html>'s own inset
+ * padding on top of that added up to taller than the viewport, causing a
+ * vertical overflow on Android.
+ *
+ * Defaults to the standard `env()` values everywhere (iOS's home
+ * indicator inset included — iOS only needs @capacitor/status-bar for the
+ * *top* inset, see below). On Android, prefer the value the
+ * @capacitor-community/safe-area plugin injects, falling back to env().
+ */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* iOS handles the top inset via @capacitor/status-bar (setOverlaysWebView
+ * false) instead — the WebView never renders under the status bar there,
+ * so no --sat is needed. Android renders edge-to-edge and needs all four. */
 html[data-capacitor-platform='android'] {
-  padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
-  padding-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
-  padding-bottom: var(
-    --safe-area-inset-bottom,
-    env(safe-area-inset-bottom, 0px)
-  );
-  padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sar: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --sal: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+}
+
+/* The mobile header's rendered height (see MobileHeader): its base 3.5rem
+ * (h-14) plus whatever top inset it adds on Android. Anything that
+ * computes "100dvh minus the header" (the mobile calendar list, the
+ * messages thread view) should subtract this instead of a bare `56px`,
+ * or it silently undercounts the header's real height on Android. */
+:root {
+  --mobile-header-height: calc(3.5rem + var(--sat));
+  --mobile-navbar-height: calc(4rem + var(--sab));
 }
 
 :root {

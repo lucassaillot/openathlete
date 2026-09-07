@@ -135,8 +135,10 @@ export function MessagesPage() {
       'main[class*="overflow-y-auto"]',
     ) as HTMLElement;
 
+    // Kept in sync with the wrapper div's class list in
+    // components/mobile/mobile-layout.tsx (min-h-dvh, not min-h-screen).
     const layoutContainer = document.querySelector(
-      'div.flex.min-h-screen.flex-col',
+      'div.flex.min-h-dvh.flex-col',
     );
     const layoutHeader = layoutContainer?.querySelector(
       'header[class*="sticky"]',
@@ -364,10 +366,14 @@ export function MessagesPage() {
       <div
         className="flex bg-background flex-col overflow-hidden"
         style={{
+          // Shares --mobile-header-height with the mobile calendar list;
+          // fixes a real bug too — `8px- env(...)` (no space before the
+          // `-`) is invalid CSS `calc()` syntax, so `maxHeight` here was
+          // silently ignored entirely before this fix.
           height:
-            'calc(100dvh - 56px - 8px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+            'calc(100dvh - var(--mobile-header-height) - 8px - env(safe-area-inset-bottom))',
           maxHeight:
-            'calc(100dvh - 56px - 8px- env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+            'calc(100dvh - var(--mobile-header-height) - 8px - env(safe-area-inset-bottom))',
         }}
         data-message-header
       >

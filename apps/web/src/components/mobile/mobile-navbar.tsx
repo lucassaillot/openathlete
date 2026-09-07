@@ -36,7 +36,7 @@ export function MobileNavbar() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ paddingBottom: 'var(--sab)' }}
     >
       <div className="grid grid-cols-3">
         {navItems.map((item) => {
@@ -47,8 +47,11 @@ export function MobileNavbar() {
             <Button
               key={item.path}
               variant="ghost"
+              // `px-1` overrides the default size variant's `px-4` — on a
+              // 320px phone, 3 columns of ~107px each minus 32px of
+              // padding left "Calendrier" with no room to render.
               className={cn(
-                'flex h-16 flex-col items-center justify-center gap-1 rounded-none',
+                'flex h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-none px-1',
                 isActive && 'bg-muted',
               )}
               onClick={() => navigate(item.path)}
@@ -56,7 +59,7 @@ export function MobileNavbar() {
               <Icon className={cn('h-5 w-5', isActive && 'text-primary')} />
               <span
                 className={cn(
-                  'text-xs',
+                  'w-full truncate text-center text-[11px]',
                   isActive
                     ? 'font-semibold text-primary'
                     : 'text-muted-foreground',
