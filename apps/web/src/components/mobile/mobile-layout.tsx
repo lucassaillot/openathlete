@@ -173,7 +173,7 @@ export function MobileLayout({
   const content = (
     <PageActionsProvider>
       <ActionsSetter actions={actions} />
-      <div className="flex min-h-screen flex-col w-full">
+      <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
         <MobileHeader
           title={pageTitle}
           showBack={
@@ -186,7 +186,11 @@ export function MobileLayout({
         <main
           className={cn(
             'flex-1 overflow-y-auto',
-            showNavbar && 'pb-16', // Add padding for navbar
+            // The navbar's own height is 4rem (h-16) *plus* whatever
+            // safe-area inset it adds on top for the home indicator —
+            // reserving a flat `pb-16` here left the last bit of scrollable
+            // content tucked under that extra inset on iPhones.
+            showNavbar && 'pb-[calc(4rem+var(--sab))]',
           )}
         >
           {shouldAnimateTransition ? (

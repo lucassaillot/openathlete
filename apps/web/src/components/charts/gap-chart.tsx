@@ -169,7 +169,7 @@ export function GapChart({
           content={
             <ChartTooltipContent
               formatter={(value) => (
-                <div className="flex min-w-[130px] items-center text-xs text-muted-foreground gap-2">
+                <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground sm:min-w-[130px]">
                   {m.gap()}
                   <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                     {formatSpeed(Number(value), config.speedUnit)}

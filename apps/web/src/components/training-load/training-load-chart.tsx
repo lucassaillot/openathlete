@@ -14,14 +14,7 @@ import { getLocale } from '@/paraglide/runtime';
 import { getDateFnsLocale } from '@/utils/locales';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
-import {
-  Area,
-  ComposedChart,
-  Line,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 
 interface TrainingLoadChartProps {
   startDate?: Date;
@@ -127,105 +120,99 @@ export function TrainingLoadChart({
                   color: 'hsl(var(--chart-3))',
                 },
               }}
-              className="h-[450px] w-full"
+              className="h-[280px] w-full md:h-[450px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={chartData}
-                  margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
-                >
-                  <XAxis
-                    dataKey="date"
-                    type="number"
-                    domain={['dataMin', 'dataMax']}
-                    tickFormatter={(value) => {
-                      try {
-                        const timestamp =
-                          typeof value === 'number' ? value : Number(value);
-                        if (Number.isNaN(timestamp)) return '';
-                        return format(new Date(timestamp), 'dd MMM', {
-                          locale: dateFnsLocale,
-                        });
-                      } catch (error) {
-                        console.error('Error formatting tick:', value, error);
-                        return '';
-                      }
-                    }}
-                    scale="time"
-                    stroke="hsl(var(--border))"
-                  />
-                  <YAxis stroke="hsl(var(--border))" />
-
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) => {
-                          try {
-                            const timestamp =
-                              typeof value === 'number' ? value : Number(value);
-                            if (Number.isNaN(timestamp)) return String(value);
-                            return format(new Date(timestamp), 'dd MMMM yyyy', {
-                              locale: dateFnsLocale,
-                            });
-                          } catch (error) {
-                            console.error(
-                              'Error formatting date:',
-                              value,
-                              error,
-                            );
-                            return String(value);
-                          }
-                        }}
-                        formatter={(value, name) => {
-                          const label =
-                            name === 'load'
-                              ? m.load()
-                              : name === 'ctl'
-                                ? m.fitness_ctl()
-                                : name === 'atl'
-                                  ? m.fatigue_atl()
-                                  : name === 'tsb'
-                                    ? m.tsb_balance()
-                                    : name;
-                          return [
-                            `${(value as number).toFixed(1)}`,
-                            label as string,
-                          ];
-                        }}
-                      />
+              <ComposedChart
+                data={chartData}
+                margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(value) => {
+                    try {
+                      const timestamp =
+                        typeof value === 'number' ? value : Number(value);
+                      if (Number.isNaN(timestamp)) return '';
+                      return format(new Date(timestamp), 'dd MMM', {
+                        locale: dateFnsLocale,
+                      });
+                    } catch (error) {
+                      console.error('Error formatting tick:', value, error);
+                      return '';
                     }
-                  />
+                  }}
+                  scale="time"
+                  stroke="hsl(var(--border))"
+                />
+                <YAxis stroke="hsl(var(--border))" />
 
-                  <Area
-                    type="linear"
-                    dataKey="load"
-                    stroke="none"
-                    fill="#a855f7"
-                    fillOpacity={0.2}
-                    name="load"
-                  />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) => {
+                        try {
+                          const timestamp =
+                            typeof value === 'number' ? value : Number(value);
+                          if (Number.isNaN(timestamp)) return String(value);
+                          return format(new Date(timestamp), 'dd MMMM yyyy', {
+                            locale: dateFnsLocale,
+                          });
+                        } catch (error) {
+                          console.error('Error formatting date:', value, error);
+                          return String(value);
+                        }
+                      }}
+                      formatter={(value, name) => {
+                        const label =
+                          name === 'load'
+                            ? m.load()
+                            : name === 'ctl'
+                              ? m.fitness_ctl()
+                              : name === 'atl'
+                                ? m.fatigue_atl()
+                                : name === 'tsb'
+                                  ? m.tsb_balance()
+                                  : name;
+                        return [
+                          `${(value as number).toFixed(1)}`,
+                          label as string,
+                        ];
+                      }}
+                    />
+                  }
+                />
 
-                  <Line
-                    type="linear"
-                    dataKey="ctl"
-                    stroke="#3b82f6"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6 }}
-                    name="ctl"
-                  />
+                <Area
+                  type="linear"
+                  dataKey="load"
+                  stroke="none"
+                  fill="#a855f7"
+                  fillOpacity={0.2}
+                  name="load"
+                />
 
-                  <Line
-                    type="linear"
-                    dataKey="atl"
-                    stroke="#f97316"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6 }}
-                    name="atl"
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
+                <Line
+                  type="linear"
+                  dataKey="ctl"
+                  stroke="#3b82f6"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                  name="ctl"
+                />
+
+                <Line
+                  type="linear"
+                  dataKey="atl"
+                  stroke="#f97316"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                  name="atl"
+                />
+              </ComposedChart>
             </ChartContainer>
           </div>
         ) : (

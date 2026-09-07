@@ -289,11 +289,18 @@ export function CalendarMobileList({ isLoading }: P) {
       className="w-full overflow-auto bg-background scrollbar-hide relative"
       style={{
         contain: 'strict',
+        // `dvh` (not `vh`) so iOS Safari's collapsing URL bar doesn't
+        // leave a gap or force a second, outer scroll; no hardcoded
+        // `minHeight` floor either — one used to force this list taller
+        // than the actual available space on short screens (iPhone SE),
+        // producing a double scroll (this list plus the page around it).
+        // Header/navbar heights come from the shared tokens in
+        // theme/index.css instead of a bare `56px`/`64px`, so this stays
+        // correct if either one's own height ever changes.
         height:
-          'calc(100vh - 56px - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-        minHeight: '500px',
+          'calc(100dvh - var(--mobile-header-height) - var(--mobile-navbar-height))',
         maxHeight:
-          'calc(100vh - 56px - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          'calc(100dvh - var(--mobile-header-height) - var(--mobile-navbar-height))',
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
       }}
@@ -339,12 +346,13 @@ export function CalendarMobileList({ isLoading }: P) {
             return (
               <div
                 key={`week-${item.weekIndex}`}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   width: '100%',
-                  height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
@@ -371,12 +379,13 @@ export function CalendarMobileList({ isLoading }: P) {
           return (
             <div
               key={`day-${item.dayIndex}`}
+              data-index={virtualItem.index}
+              ref={virtualizer.measureElement}
               style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 width: '100%',
-                height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >

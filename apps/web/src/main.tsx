@@ -7,6 +7,7 @@ import './theme/index.css';
 import { isCapacitor } from './utils/capacitor';
 import { initChunkLoadRecovery } from './utils/chunk-recovery';
 import { initErrorMonitoring } from './utils/error-monitoring';
+import { initOverflowGuard } from './utils/overflow-guard';
 import { initStatusBar } from './utils/status-bar';
 
 posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
@@ -27,6 +28,10 @@ if (isCapacitor()) {
 initErrorMonitoring();
 initStatusBar();
 initChunkLoadRecovery();
+
+if (import.meta.env.DEV) {
+  initOverflowGuard();
+}
 
 if ('serviceWorker' in navigator && !isCapacitor()) {
   window.addEventListener('load', () => {

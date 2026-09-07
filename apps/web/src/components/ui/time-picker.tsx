@@ -99,6 +99,7 @@ export const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
         id={id || picker}
         name={name || picker}
         className={cn(
+          // oa-responsive-ok: fixed-width digit box (hour/min/sec), intentionally uniform like an OTP input
           'w-[48px] text-center font-mono text-base tabular-nums caret-transparent focus:bg-accent focus:text-accent-foreground [&::-webkit-inner-spin-button]:appearance-none',
           className,
         )}

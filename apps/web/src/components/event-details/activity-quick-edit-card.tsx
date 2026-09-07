@@ -87,7 +87,7 @@ export function ActivityQuickEditCard({
   };
 
   return (
-    <Card className="flex flex-col col-span-2 sm:col-span-1">
+    <Card className="flex flex-col sm:col-span-1">
       <CardHeader>
         <CardTitle>{m.quick_edit()}</CardTitle>
       </CardHeader>

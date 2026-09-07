@@ -37,6 +37,23 @@ function getComplianceBadgeClass(compliance: number): string {
   return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
 }
 
+// Tailwind's arbitrary-value classes (`grid-cols-[...]`) have to be
+// static, literal strings for its build-time scanner to pick them up, so
+// this can't just be interpolated into a className — it's shared as a
+// `gridTemplateColumns` inline style instead, applied to both the header
+// row and the body row (they used to each carry their own 240px_200px_...
+// literal, independently, and only stay in sync by whoever edits one
+// remembering to edit the other). The first column's width is also read
+// from here for the sticky-column shadow divider below, instead of a
+// magic `239px` (= 240px - 1px border) that would silently drift out of
+// sync the same way.
+const TABLE_COLUMN_WIDTHS_PX = [
+  240, 200, 140, 140, 140, 140, 140, 140, 140, 140,
+];
+const TABLE_GRID_TEMPLATE_COLUMNS = TABLE_COLUMN_WIDTHS_PX.map(
+  (w) => `${w}px`,
+).join(' ');
+
 function HeaderText({
   children,
   className,
@@ -46,6 +63,7 @@ function HeaderText({
 }) {
   return (
     <span
+      // oa-responsive-ok: header for the fixed-width, deliberately scrollable table below — always a short, static, translated label, never user data
       className={`whitespace-nowrap text-sm font-medium ${className ?? ''}`}
     >
       {children}
@@ -153,41 +171,47 @@ export function CoachDashboardView() {
                   {row.email}
                 </p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.planned_sessions()}
                     </span>
-                    <span>{row.plannedSessions}</span>
+                    <span className="shrink-0">{row.plannedSessions}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.completed_sessions()}
                     </span>
-                    <span>{row.completedSessions}</span>
+                    <span className="shrink-0">{row.completedSessions}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.planned_time()}
                     </span>
-                    <span>{formatSeconds(row.plannedTime)}</span>
+                    <span className="shrink-0">
+                      {formatSeconds(row.plannedTime)}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.completed_time()}
                     </span>
-                    <span>{formatSeconds(row.completedTime)}</span>
+                    <span className="shrink-0">
+                      {formatSeconds(row.completedTime)}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.completed_distance()}
                     </span>
-                    <span>{formatMeters(row.completedDistance)}</span>
+                    <span className="shrink-0">
+                      {formatMeters(row.completedDistance)}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
+                  <div className="flex min-w-0 justify-between gap-2">
+                    <span className="min-w-0 truncate text-muted-foreground">
                       {m.last_activity()}
                     </span>
-                    <span>
+                    <span className="shrink-0">
                       {row.lastActivityAt
                         ? new Date(row.lastActivityAt).toLocaleDateString()
                         : '-'}
@@ -209,10 +233,22 @@ export function CoachDashboardView() {
         </div>
       ) : (
         <div className="border-t rounded-none bg-background flex-1 min-h-0 flex flex-col relative">
-          <div className="absolute left-[239px] top-0 bottom-0 w-4 pointer-events-none bg-gradient-to-r from-black/6 to-transparent dark:from-white/10 z-[45] border-l" />
+          <div
+            className="absolute top-0 bottom-0 w-4 pointer-events-none bg-gradient-to-r from-black/6 to-transparent dark:from-white/10 z-[45] border-l"
+            style={{ left: TABLE_COLUMN_WIDTHS_PX[0] - 1 }}
+          />
           <div className="flex-1 min-h-0 overflow-x-auto relative">
-            <div className="relative min-w-[1560px] flex flex-col h-full">
-              <div className="sticky top-0 z-[25] bg-background grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px] border-b shrink-0">
+            {/* oa-responsive-ok: dense data table, deliberately wider than the viewport, scrolls within its own container */}
+            <div
+              className="relative flex flex-col h-full"
+              style={{
+                minWidth: TABLE_COLUMN_WIDTHS_PX.reduce((a, b) => a + b, 0),
+              }}
+            >
+              <div
+                className="sticky top-0 z-[25] bg-background grid border-b shrink-0"
+                style={{ gridTemplateColumns: TABLE_GRID_TEMPLATE_COLUMNS }}
+              >
                 <div className="sticky left-0 z-[35] bg-background border-r pl-4 pr-2 h-10 flex items-center font-medium">
                   <HeaderText>{m.name()}</HeaderText>
                 </div>
@@ -246,7 +282,10 @@ export function CoachDashboardView() {
               </div>
 
               <div className="flex-1 min-h-0">
-                <div className="grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px]">
+                <div
+                  className="grid"
+                  style={{ gridTemplateColumns: TABLE_GRID_TEMPLATE_COLUMNS }}
+                >
                   {isLoading && (
                     <>
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -275,14 +314,14 @@ export function CoachDashboardView() {
                       return (
                         <div key={row.athleteId} className="contents group">
                           <div className="sticky left-0 z-[30] bg-background border-r border-b pl-4 pr-2 h-[57px] flex items-center font-medium group-hover:bg-accent">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <span className="min-w-0 truncate text-sm">
                                 {row.firstName} {row.lastName}
                               </span>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7"
+                                className="h-7 w-7 flex-shrink-0"
                                 onClick={() =>
                                   nav(
                                     getPath(['dashboard', 'calendar']) +

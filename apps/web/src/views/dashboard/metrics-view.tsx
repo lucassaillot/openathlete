@@ -3,8 +3,8 @@ import {
   useCreateMetricMutation,
   useGetLatestMetricsQuery,
 } from '@/api/metric';
-import { InjuryLogsTable } from '@/components/metrics/injury-logs-table';
 import { InjuryFormDialog } from '@/components/injury/injury-form-dialog';
+import { InjuryLogsTable } from '@/components/metrics/injury-logs-table';
 import { MetricCard } from '@/components/metrics/metric-card';
 import { MetricChart } from '@/components/metrics/metric-chart';
 import { MetricForm } from '@/components/metrics/metric-form';

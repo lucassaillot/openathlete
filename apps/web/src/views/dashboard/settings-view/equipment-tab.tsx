@@ -124,8 +124,10 @@ export function EquipmentTab() {
             {equipment.map((item) => (
               <Card key={item.equipmentId}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-lg">{item.name}</CardTitle>
-                  <div className="flex items-center space-x-2">
+                  <CardTitle className="min-w-0 truncate text-lg">
+                    {item.name}
+                  </CardTitle>
+                  <div className="flex flex-shrink-0 items-center space-x-2">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -164,11 +166,11 @@ export function EquipmentTab() {
                         {(item.totalDistance / 1000).toFixed(1)} km
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="shrink-0 text-sm text-muted-foreground">
                         {m.sports()}
                       </span>
-                      <span className="text-sm font-medium">
+                      <span className="min-w-0 break-words text-right text-sm font-medium">
                         {item.sports
                           .map((sport) => sportTypeLabelMap[sport])
                           .join(', ')}

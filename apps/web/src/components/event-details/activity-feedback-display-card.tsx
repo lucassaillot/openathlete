@@ -14,7 +14,7 @@ export function ActivityFeedbackDisplayCard({ event }: P) {
       q.answerText !== null && q.answerText !== '',
   );
   return (
-    <Card className="flex flex-col col-span-2 sm:col-span-1">
+    <Card className="flex flex-col sm:col-span-1">
       <CardHeader>
         <CardTitle>{m.activity_feedback_completed_via_questions()}</CardTitle>
       </CardHeader>

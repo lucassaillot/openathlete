@@ -1,21 +1,9 @@
-import * as React from 'react';
-
-const MOBILE_BREAKPOINT = 768;
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(
-    undefined,
-  );
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    mql.addEventListener('change', onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
-
-  return !!isMobile;
-}
+/**
+ * Back-compat re-export. The real implementation lives in
+ * `use-breakpoint.ts`, which replaces the old single 768px split with a
+ * 4-tier system (see that file for details) — `useIsMobile` now flips at
+ * 1024px instead of 768px, so a tablet in portrait consistently gets the
+ * compact/mobile treatment instead of the old, badly-broken in-between
+ * desktop-grid rendering.
+ */
+export { useIsMobile } from './use-breakpoint';

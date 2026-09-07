@@ -78,7 +78,13 @@ export function SettingsView() {
           </Select>
         ) : (
           <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-            <TabsList className="w-max md:w-auto flex-nowrap md:flex-wrap min-w-full md:min-w-0">
+            {/* This only ever renders at >= lg (see the `isMobile`
+               branch above, now gated at 1024px), where `md:` (768px)
+               is always active — so `flex-wrap`/`min-w-0` are the
+               permanent state here, not a fallback. `h-auto` (the base
+               `TabsList` is a fixed `h-9`) so a second wrapped row of
+               tabs isn't clipped by that fixed height. */}
+            <TabsList className="h-auto w-auto min-w-0 flex-wrap">
               {sections.map((section) => (
                 <TabsTrigger key={section.value} value={section.value}>
                   {section.label}

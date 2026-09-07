@@ -47,7 +47,14 @@ export function MobileHeader({ title, showBack, onBack }: MobileHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-2 border-b bg-background px-4">
+    <header
+      className="sticky top-0 z-50 flex min-h-14 items-center gap-2 border-b bg-background px-4"
+      // The header's own height grows on Android to include the
+      // status bar inset instead of relying on an ancestor's padding
+      // (see --sat in theme/index.css) — `min-h-14` (not `h-14`) so
+      // this padding can actually make the box taller.
+      style={{ paddingTop: 'var(--sat)' }}
+    >
       {shouldShowBack ? (
         <Button
           variant="ghost"

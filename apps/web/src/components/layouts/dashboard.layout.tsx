@@ -8,7 +8,7 @@ import {
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
-  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -76,6 +76,7 @@ function LayoutContent({ children }: P) {
             </div>
 
             <div className="flex flex-col min-w-0">
+              {/* oa-responsive-ok: fixed-size DragOverlay preview card, not a content container */}
               <span className="font-medium text-sm truncate max-w-[180px]">
                 {event?.name}
               </span>
@@ -105,6 +106,7 @@ function LayoutContent({ children }: P) {
             </div>
 
             <div className="flex flex-col min-w-0">
+              {/* oa-responsive-ok: fixed-size DragOverlay preview card, not a content container */}
               <span className="font-medium text-sm truncate max-w-[180px]">
                 {activeData.folder.name}
               </span>
@@ -131,6 +133,7 @@ function LayoutContent({ children }: P) {
       const isNote = event.type === EVENT_TYPE.NOTE;
 
       return (
+        // oa-responsive-ok: fixed-size DragOverlay preview card, not a content container
         <div className="bg-card px-3 py-2.5 rounded-xl shadow-2xl border border-border/50 cursor-grabbing animate-in zoom-in-95 duration-150 max-w-[240px]">
           <div className="flex items-center gap-2.5">
             <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
@@ -165,7 +168,9 @@ function LayoutContent({ children }: P) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin}
+      // `rectIntersection` (not `pointerWithin`) — more tolerant of
+      // a slightly-off drop when dragging over a day cell.
+      collisionDetection={rectIntersection}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
@@ -176,9 +181,9 @@ function LayoutContent({ children }: P) {
           <MobileLayout>{children}</MobileLayout>
         ) : (
           <>
-            <div className="flex w-full">
+            <div className="flex w-full min-w-0">
               <TemplateLibrarySidebar />
-              <SidebarInset className="flex-1">{children}</SidebarInset>
+              <SidebarInset className="min-w-0 flex-1">{children}</SidebarInset>
             </div>
 
             <ChatBubble />

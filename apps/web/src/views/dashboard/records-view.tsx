@@ -41,20 +41,23 @@ export function RecordsView({ athleteId }: P) {
 
   return (
     <div className="w-full p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <h1 className="text-2xl font-semibold col-span-2 md:block hidden">
+      <h1 className="text-2xl font-semibold md:col-span-2 md:block hidden">
         {pageTitle}
       </h1>
-      <Card className="col-span-2">
+      <Card className="md:col-span-2">
         <CardContent>
           <SportSelect selected={sport} onChange={handleChangeSportFilter} />
         </CardContent>
       </Card>
-      <Card className="col-span-2">
+      <Card className="md:col-span-2">
         <CardContent>
           {isLoadingRecords ? (
-            <SkeletonChart className="h-[500px]" />
+            <SkeletonChart className="h-[280px] md:h-[500px]" />
           ) : records && records.length > 0 ? (
-            <RecordsChart records={records} className="h-[500px]" />
+            <RecordsChart
+              records={records}
+              className="h-[280px] md:h-[500px]"
+            />
           ) : (
             <h1 className="text-2xl font-semibold">
               {m.no_records_found({ sport: sport ? m.for_this_sport() : '' })}

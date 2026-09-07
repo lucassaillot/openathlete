@@ -119,7 +119,7 @@ export function MultiSportSelector({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {value.length === ALL_SPORTS.length ? (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" wrap className="gap-1">
               {m.all_sports()}
               <button
                 type="button"
@@ -131,7 +131,7 @@ export function MultiSportSelector({
             </Badge>
           ) : (
             value.map((sport) => (
-              <Badge key={sport} variant="secondary" className="gap-1">
+              <Badge key={sport} variant="secondary" wrap className="gap-1">
                 {sportTypeLabelMap[sport]}
                 <button
                   type="button"

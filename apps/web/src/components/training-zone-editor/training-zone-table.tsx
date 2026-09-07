@@ -65,7 +65,7 @@ export function TrainingZoneTable({ zones }: TrainingZoneTableProps) {
 
         return (
           <div key={configIdx} className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground">
+            <h3 className="break-words text-sm font-semibold text-muted-foreground">
               {sportsLabel}
             </h3>
             <Table>

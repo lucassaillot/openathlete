@@ -1,7 +1,9 @@
-import { useDuplicateEventMutation } from '@/api/event';
+import { useDuplicateEventMutation, useUpdateEventMutation } from '@/api/event';
 import { useCreateEventTemplateMutation } from '@/api/event-template';
 import { useIsEventValidated } from '@/hooks/use-event-validation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { m } from '@/paraglide/messages';
+import { getLocale } from '@/paraglide/runtime';
 import { AnalyticsEvent } from '@/utils/analytics-events';
 import {
   getEventTypeColor,
@@ -9,10 +11,12 @@ import {
   getLowSaturatedRpeColor,
   getSportColor,
 } from '@/utils/color';
+import { getDateFnsLocale } from '@/utils/locales';
 import { cn } from '@/utils/shadcn';
 import { useDraggable } from '@dnd-kit/core';
 import {
   ActivityIcon,
+  CalendarDays,
   Copy,
   Edit2,
   FileText,
@@ -20,7 +24,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -33,6 +37,7 @@ import {
 
 import { SportIcon } from '../sport-icon/sport-icon';
 import { Button } from '../ui/button';
+import { Calendar } from '../ui/calendar';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -40,6 +45,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '../ui/context-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,6 +113,8 @@ function EventSecondLine({ event }: { event: Event }) {
 
 export function CalendarEvent({ event, wrapped }: P) {
   const posthog = usePostHog();
+  const isMobileViewport = useIsMobile();
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: event.eventId,
     data: {
@@ -137,9 +145,40 @@ export function CalendarEvent({ event, wrapped }: P) {
       toast.success(m.template_saved_successfully());
     },
   });
+  const updateEventMutation = useUpdateEventMutation({
+    onError: () => {
+      toast.error(m.failed_to_move_event());
+    },
+  });
   const isValidated = useIsEventValidated(event, athleteId);
   const { copyEvent } = useEventClipboard();
   const { isAnyContextMenuOpen, setContextMenuOpen } = useEventContextMenu();
+
+  // Moving an event via drag & drop needs a drop target under the
+  // pointer, and the mobile list view has none — dragging there would
+  // just fight the list's own touch scrolling for no payoff. This menu
+  // item is the mobile equivalent: same date-changing mutation as drag,
+  // reached through a date picker instead of a drag gesture.
+  const handleMoveToDate = (newDate: Date | undefined) => {
+    if (!newDate) return;
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+    startDate.setFullYear(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newDate.getDate(),
+    );
+    endDate.setFullYear(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newDate.getDate(),
+    );
+    updateEventMutation.mutate({
+      eventId: event.eventId,
+      body: { startDate, endDate },
+    });
+    setIsMoveDialogOpen(false);
+  };
 
   const eventColor = useMemo(() => {
     switch (coloredBy || COLORED_BY.TYPE) {
@@ -166,7 +205,10 @@ export function CalendarEvent({ event, wrapped }: P) {
     }
   }, [event, coloredBy]);
 
-  const draggable = event.type !== EVENT_TYPE.ACTIVITY && !wrapped;
+  // Drag & drop stays a desktop-only affordance (see handleMoveToDate
+  // above for the mobile equivalent).
+  const draggable =
+    event.type !== EVENT_TYPE.ACTIVITY && !wrapped && !isMobileViewport;
   const relatedEvents = allEvents.filter(
     (e) =>
       (e.type === EVENT_TYPE.TRAINING || e.type === EVENT_TYPE.COMPETITION) &&
@@ -191,6 +233,7 @@ export function CalendarEvent({ event, wrapped }: P) {
                 wrapped ? 'border-2' : '',
                 !isValidated ? 'opacity-60' : '',
                 isDragging ? 'opacity-30' : '',
+                draggable ? 'touch-none' : '',
               )}
               ref={draggable ? setNodeRef : undefined}
               {...(draggable ? { ...listeners, ...attributes } : {})}
@@ -263,7 +306,8 @@ export function CalendarEvent({ event, wrapped }: P) {
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute top-0.5 right-0.5 h-6 w-6 rounded-full shadow-sm border border-border/50 opacity-80 hover:opacity-100"
+                // Larger tap target in the mobile list (roomier rows, touch input); back to the compact 24px size in the desktop grid where columns are narrow.
+                className="absolute top-0.5 right-0.5 h-8 w-8 rounded-full shadow-sm border border-border/50 opacity-80 hover:opacity-100 lg:h-6 lg:w-6"
                 onClick={(e) => e.stopPropagation()}
                 aria-label={m.actions()}
               >
@@ -282,6 +326,16 @@ export function CalendarEvent({ event, wrapped }: P) {
                 <Edit2 className="w-4 h-4 mr-2" />
                 {m.edit()}
               </DropdownMenuItem>
+              {event.type !== EVENT_TYPE.ACTIVITY && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsMoveDialogOpen(true);
+                  }}
+                >
+                  <CalendarDays className="w-4 h-4 mr-2" />
+                  {m.move_to_date()}
+                </DropdownMenuItem>
+              )}
               {event.type === EVENT_TYPE.TRAINING && (
                 <DropdownMenuItem
                   onClick={() => {
@@ -340,6 +394,17 @@ export function CalendarEvent({ event, wrapped }: P) {
             <Edit2 className="w-4 h-4 mr-2" />
             {m.edit()}
           </ContextMenuItem>
+          {event.type !== EVENT_TYPE.ACTIVITY && (
+            <ContextMenuItem
+              onClick={(e) => {
+                setIsMoveDialogOpen(true);
+                e.stopPropagation();
+              }}
+            >
+              <CalendarDays className="w-4 h-4 mr-2" />
+              {m.move_to_date()}
+            </ContextMenuItem>
+          )}
           {event.type === EVENT_TYPE.TRAINING && (
             <ContextMenuItem
               onClick={(e) => {
@@ -389,6 +454,26 @@ export function CalendarEvent({ event, wrapped }: P) {
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
+
+      <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
+        <DialogContent className="sm:max-w-fit">
+          <DialogHeader>
+            <DialogTitle>{m.move_event_dialog_title()}</DialogTitle>
+          </DialogHeader>
+          <p className="min-w-0 break-words text-sm text-muted-foreground">
+            {m.move_event_dialog_description({ name: event.name })}
+          </p>
+          <Calendar
+            mode="single"
+            selected={event.startDate}
+            onSelect={handleMoveToDate}
+            locale={getDateFnsLocale(getLocale())}
+            weekStartsOn={1}
+            initialFocus
+            className="mx-auto"
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

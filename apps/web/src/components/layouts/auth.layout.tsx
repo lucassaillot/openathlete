@@ -10,7 +10,13 @@ interface P {
 export function AuthLayout({ children }: P) {
   const websiteUrl = import.meta.env.VITE_WEBSITE_URL || '/';
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
+    // Explicit safe-area padding on this root (not ambient <html>
+    // padding, removed in theme/index.css — see the comment there)
+    // since this page can render full-screen on Android.
+    <div
+      className="grid min-h-svh lg:grid-cols-2"
+      style={{ paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)' }}
+    >
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-1 justify-start gap-2">

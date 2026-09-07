@@ -1,6 +1,7 @@
 import { useGetMyAthleteQuery } from '@/api/athlete';
 import { useGetLatestMetricsQuery } from '@/api/metric/metric.hooks';
 import { useGetTrainingZones } from '@/api/training-zone';
+import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -70,15 +71,19 @@ export function TargetBadge({
   const label = getTargetTypeLabel(target.targetType);
 
   const badge = (
-    <span
+    // `wrap` because `formatted` is the longest free-form text the app
+    // renders in a badge (e.g. "85% - 90% de FC Max - 162 - 172 bpm") — it
+    // should wrap onto 2 lines rather than overflow or get cut off.
+    <Badge
+      variant="secondary"
+      wrap
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+        'rounded-full border-transparent bg-blue-100 px-2.5 py-0.5 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
         className,
       )}
     >
       {formatted}
-    </span>
+    </Badge>
   );
 
   if (!showTooltip) {
