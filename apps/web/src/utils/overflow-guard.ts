@@ -74,7 +74,7 @@ function scan() {
     if (el.scrollWidth - el.clientWidth > TOLERANCE_PX) {
       if (!hasOptedIntoScroll(el)) {
         alreadyWarned.add(el);
-        console.warn(
+        console.error(
           `[overflow-guard] scroller — ${describe(el)} content is ${
             el.scrollWidth - el.clientWidth
           }px wider than its box (no ancestor within 3 hops opts into overflow-x). Path: ${path(el)}`,
@@ -85,9 +85,12 @@ function scan() {
     }
 
     // Case 2: element pokes past the right edge of the viewport itself.
-    if (rect.right - viewportWidth > TOLERANCE_PX && rect.left < viewportWidth) {
+    if (
+      rect.right - viewportWidth > TOLERANCE_PX &&
+      rect.left < viewportWidth
+    ) {
       alreadyWarned.add(el);
-      console.warn(
+      console.error(
         `[overflow-guard] poke — ${describe(el)} extends ${Math.round(
           rect.right - viewportWidth,
         )}px past the viewport's right edge. Path: ${path(el)}`,
@@ -125,7 +128,7 @@ export function initOverflowGuard(): void {
   resizeObserver = new ResizeObserver(schedule);
   resizeObserver.observe(document.body);
 
-  console.info(
+  console.error(
     '[overflow-guard] active (dev only) — watching for horizontal overflow. ' +
       'Warnings below point at the element responsible.',
   );

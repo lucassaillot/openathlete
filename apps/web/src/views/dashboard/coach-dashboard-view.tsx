@@ -47,7 +47,9 @@ function getComplianceBadgeClass(compliance: number): string {
 // from here for the sticky-column shadow divider below, instead of a
 // magic `239px` (= 240px - 1px border) that would silently drift out of
 // sync the same way.
-const TABLE_COLUMN_WIDTHS_PX = [240, 200, 140, 140, 140, 140, 140, 140, 140, 140];
+const TABLE_COLUMN_WIDTHS_PX = [
+  240, 200, 140, 140, 140, 140, 140, 140, 140, 140,
+];
 const TABLE_GRID_TEMPLATE_COLUMNS = TABLE_COLUMN_WIDTHS_PX.map(
   (w) => `${w}px`,
 ).join(' ');

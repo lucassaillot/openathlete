@@ -14,13 +14,7 @@ import { getLocale } from '@/paraglide/runtime';
 import { getDateFnsLocale } from '@/utils/locales';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
-import {
-  Area,
-  ComposedChart,
-  Line,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 
 interface TrainingLoadChartProps {
   startDate?: Date;
@@ -166,11 +160,7 @@ export function TrainingLoadChart({
                             locale: dateFnsLocale,
                           });
                         } catch (error) {
-                          console.error(
-                            'Error formatting date:',
-                            value,
-                            error,
-                          );
+                          console.error('Error formatting date:', value, error);
                           return String(value);
                         }
                       }}

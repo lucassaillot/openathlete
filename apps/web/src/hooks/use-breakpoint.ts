@@ -44,9 +44,8 @@ function readBreakpoint(): Breakpoint {
  * desktop layout on phones.
  */
 export function useBreakpoint(): Breakpoint {
-  const [breakpoint, setBreakpoint] = React.useState<Breakpoint>(
-    readBreakpoint,
-  );
+  const [breakpoint, setBreakpoint] =
+    React.useState<Breakpoint>(readBreakpoint);
 
   React.useEffect(() => {
     const queries = [

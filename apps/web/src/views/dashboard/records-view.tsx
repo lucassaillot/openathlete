@@ -54,7 +54,10 @@ export function RecordsView({ athleteId }: P) {
           {isLoadingRecords ? (
             <SkeletonChart className="h-[280px] md:h-[500px]" />
           ) : records && records.length > 0 ? (
-            <RecordsChart records={records} className="h-[280px] md:h-[500px]" />
+            <RecordsChart
+              records={records}
+              className="h-[280px] md:h-[500px]"
+            />
           ) : (
             <h1 className="text-2xl font-semibold">
               {m.no_records_found({ sport: sport ? m.for_this_sport() : '' })}

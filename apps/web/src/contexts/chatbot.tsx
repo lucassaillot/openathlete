@@ -90,6 +90,7 @@ export const MIN_CHAT_WIDTH = 320;
  * chat-window.tsx positions it via `window.innerWidth - chatWidth -
  * margins`).
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function clampChatWidth(width: number): number {
   if (typeof window === 'undefined') {
     return Math.max(MIN_CHAT_WIDTH, width);
