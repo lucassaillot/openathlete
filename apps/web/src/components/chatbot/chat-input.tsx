@@ -49,6 +49,7 @@ export function ChatInput({ onSendMessage, isStreaming }: ChatInputProps) {
         onClick={handleSubmit}
         disabled={!message.trim() || isStreaming}
         size="icon"
+        // oa-responsive-ok: fixed square send button, always icon-sized
         className="h-[60px] w-[60px] flex-shrink-0"
       >
         {isStreaming ? <Loader size="sm" /> : <Send className="h-5 w-5" />}

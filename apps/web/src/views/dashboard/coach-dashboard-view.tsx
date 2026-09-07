@@ -211,6 +211,7 @@ export function CoachDashboardView() {
         <div className="border-t rounded-none bg-background flex-1 min-h-0 flex flex-col relative">
           <div className="absolute left-[239px] top-0 bottom-0 w-4 pointer-events-none bg-gradient-to-r from-black/6 to-transparent dark:from-white/10 z-[45] border-l" />
           <div className="flex-1 min-h-0 overflow-x-auto relative">
+            {/* oa-responsive-ok: dense data table, deliberately wider than the viewport, scrolls within its own container */}
             <div className="relative min-w-[1560px] flex flex-col h-full">
               <div className="sticky top-0 z-[25] bg-background grid grid-cols-[240px_200px_140px_140px_140px_140px_140px_140px_140px_140px] border-b shrink-0">
                 <div className="sticky left-0 z-[35] bg-background border-r pl-4 pr-2 h-10 flex items-center font-medium">

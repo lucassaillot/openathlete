@@ -178,6 +178,13 @@ html[data-capacitor-platform='android'] {
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    /* Never let a stray overflowing child create page-level horizontal
+     * scroll. `clip` (not `hidden`) avoids creating a new scroll container,
+     * so `position: sticky` descendants keep working. */
+    overflow-x: clip;
+  }
   body {
     @apply bg-background text-foreground;
   }
