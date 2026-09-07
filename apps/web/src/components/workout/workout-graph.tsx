@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { m } from '@/paraglide/messages';
+import { cn } from '@/utils/shadcn';
 import { formatDuration, getStepTypeLabel } from '@/utils/workout';
 import { useMemo } from 'react';
 
@@ -806,10 +807,10 @@ export function WorkoutGraph({
   }
 
   return (
-    <div className={className}>
-      <div className="w-full overflow-hidden">
+    <div className={cn('min-w-0', className)}>
+      <div className="w-full min-w-0 overflow-hidden">
         <div
-          className="flex items-end gap-px py-2 w-full"
+          className="flex w-full min-w-0 items-end py-2"
           style={{ height: `${containerHeight}px` }}
         >
           {segments.map((segment, index) => {
@@ -818,7 +819,14 @@ export function WorkoutGraph({
             return (
               <div
                 key={`${segment.step.workoutStepId || index}-${segment.startTime}`}
-                className="h-full"
+                // No flex `gap` here: with a lot of segments (a repeated
+                // block can flatten into 40-90 of them) even a 1px gap
+                // adds up to tens of pixels beyond the 100% the widths
+                // already sum to, silently clipping the last bars. A
+                // background-colored right border stays inside each
+                // segment's own percentage width instead (border-box
+                // sizing), so the total never exceeds 100%.
+                className="h-full border-r border-background last:border-r-0"
                 style={{
                   width: `${widthPercent}%`,
                   minWidth: '1px',

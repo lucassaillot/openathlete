@@ -152,12 +152,9 @@ export function TrainingCompetitionDetails({ event }: P) {
               <CardTitle>{m.description()}</CardTitle>
             </CardHeader>
             <CardContent>
-              {event.description.split('\n').map((part) => (
-                <>
-                  {part}
-                  <br />
-                </>
-              ))}
+              <p className="min-w-0 whitespace-pre-wrap break-words text-sm">
+                {event.description}
+              </p>
             </CardContent>
           </Card>
         )}

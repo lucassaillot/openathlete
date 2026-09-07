@@ -291,7 +291,7 @@ export function RepeatBlockInline({
                   min="1"
                   value={step.repeatBlock.repetitions}
                   onChange={(e) => handleRepetitionsChange(e.target.value)}
-                  className="w-16 h-8 text-sm"
+                  className="h-8 w-14 text-sm sm:w-16"
                 />
               </div>
             </div>
@@ -346,7 +346,7 @@ export function RepeatBlockInline({
               </DndContext>
             )}
           </div>
-          <div className="ml-6 pl-3">
+          <div className="ml-2 pl-3">
             <Button
               type="button"
               variant="outline"

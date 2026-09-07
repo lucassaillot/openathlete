@@ -39,41 +39,56 @@ export function WorkoutSummary({
         key={step.workoutStepId || index}
         className={`${isChild ? 'border-l-2 border-muted' : ''}`}
       >
-        <div className="flex flex-row items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/40">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+        <div className="flex flex-col gap-2 rounded-lg bg-gray-50 p-2 dark:bg-gray-900/40 sm:flex-row sm:items-start sm:gap-3 sm:p-3">
+          <div className="flex min-w-0 items-center gap-2 sm:flex-shrink-0">
+            <span className="shrink-0 text-sm font-medium text-muted-foreground">
               {isChild ? `${index + 1}` : `${m.step()} ${index + 1}`}
             </span>
             <TypeIcon
               stepType={step.stepType}
-              className="h-8 w-8 flex-shrink-0"
+              className="h-6 w-6 flex-shrink-0 sm:h-8 sm:w-8"
             />
+            {/* On mobile the step title moves up here, next to the icon,
+                so the icon+index block doesn't sit alone on its own line */}
+            <span className="min-w-0 truncate text-sm font-medium sm:hidden">
+              {getStepTypeLabel(step.stepType)}
+              {step.name ? ` - ${step.name}` : ''}
+            </span>
           </div>
 
-          <div className="flex-1 space-y-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-              <span className="font-medium text-sm break-words min-w-0">
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="hidden flex-wrap items-center gap-1 sm:flex sm:gap-2">
+              <span className="min-w-0 break-words text-sm font-medium">
                 {getStepTypeLabel(step.stepType)}{' '}
                 {step.name ? `- ${step.name}` : ''}
               </span>
               {step.exerciseName && (
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                <span className="min-w-0 break-words text-sm text-muted-foreground">
                   • {step.exerciseName}
                 </span>
               )}
             </div>
+            {/* Exercise name gets its own line on mobile since it no
+                longer shares a row with the (now hidden-until-sm) title
+                above — free-form user text, so it wraps rather than
+                forcing the row wider. */}
+            {step.exerciseName && (
+              <p className="min-w-0 break-words text-sm text-muted-foreground sm:hidden">
+                • {step.exerciseName}
+              </p>
+            )}
 
             <div className="flex flex-wrap items-center gap-2">
               {!step.repeatBlock && (
                 <DurationDisplay
-                  className="text-sm text-muted-foreground flex-shrink-0"
+                  className="shrink-0 text-sm text-muted-foreground"
                   durationType={step.durationType}
                   durationValue={step.durationValue}
                 />
               )}
 
               {step.targets && step.targets.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex min-w-0 flex-wrap gap-2">
                   {step.targets.map(
                     (target: WorkoutStepTargetDto, idx: number) => (
                       <TargetBadge
@@ -90,14 +105,14 @@ export function WorkoutSummary({
             </div>
 
             {step.notes && (
-              <p className="text-sm text-muted-foreground italic">
+              <p className="min-w-0 break-words text-sm text-muted-foreground italic">
                 {step.notes}
               </p>
             )}
 
             {isRepeat && step.repeatBlock && (
-              <div className="mt-3 p-3 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-900">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="mt-3 min-w-0 rounded-lg border border-violet-200 bg-violet-50 p-2 dark:border-violet-900 dark:bg-violet-950/20 sm:p-3">
+                <div className="mb-3 flex items-center gap-2">
                   <span className="text-sm font-semibold text-violet-900 dark:text-violet-100">
                     {m.workout_repetitions({
                       count: step.repeatBlock.repetitions,

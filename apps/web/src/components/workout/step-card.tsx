@@ -66,8 +66,13 @@ export function StepCard({
         className,
       )}
     >
-      <div className="flex flex-row items-start gap-3 p-3">
-        <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex flex-wrap items-start gap-3 p-3 sm:flex-nowrap">
+        {/* `order` (not DOM order) controls placement so the same markup
+            works on both layouts: mobile puts the index/icon and the menu
+            on one line (order-1/order-2) with the content forced onto its
+            own line below via `basis-full`; desktop keeps the original
+            index → content → menu order in a single row. */}
+        <div className="order-1 flex flex-shrink-0 items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
             {index}
           </div>
@@ -75,7 +80,7 @@ export function StepCard({
           <TypeIcon stepType={step.stepType} />
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="order-3 min-w-0 flex-1 basis-full sm:order-2 sm:basis-auto">
           <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             <span className="text-sm font-medium text-muted-foreground">
               {label}
@@ -118,7 +123,7 @@ export function StepCard({
         </div>
 
         {!isReadOnly && (
-          <div className="flex-shrink-0">
+          <div className="order-2 flex-shrink-0 sm:order-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
