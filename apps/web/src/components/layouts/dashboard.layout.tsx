@@ -8,7 +8,7 @@ import {
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
-  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -168,7 +168,9 @@ function LayoutContent({ children }: P) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin}
+      // `rectIntersection` (not `pointerWithin`) — more tolerant of
+      // a slightly-off drop when dragging over a day cell.
+      collisionDetection={rectIntersection}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >

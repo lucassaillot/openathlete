@@ -57,7 +57,7 @@ function DoneSummary({
   );
 
   return (
-    <div className="min-h-32 flex flex-col md:[&:not(:last-child)]:border-r-1 p-2 select-none w-full md:w-auto">
+    <div className="min-h-32 min-w-0 flex flex-col lg:[&:not(:last-child)]:border-r-1 p-2 select-none w-full lg:w-auto">
       {!!trainingCompetitions.length && (
         <div className="flex gap-1 items-center">
           <span>
@@ -108,7 +108,7 @@ function PlannedSummary({
   }, 0);
 
   return (
-    <div className="min-h-32 flex flex-col md:[&:not(:last-child)]:border-r-1 p-2 select-none w-full md:w-auto">
+    <div className="min-h-32 min-w-0 flex flex-col lg:[&:not(:last-child)]:border-r-1 p-2 select-none w-full lg:w-auto">
       <DurationStat duration={totalDuration} />
       <DistanceStat distance={totalDistance} />
       <ElevationStat elevation={totalElevation} />
@@ -162,7 +162,7 @@ function PlannedDoneSummary({
   }, 0);
 
   return (
-    <div className="min-h-32 flex flex-col md:[&:not(:last-child)]:border-r-1 p-2 select-none w-full md:w-auto">
+    <div className="min-h-32 min-w-0 flex flex-col lg:[&:not(:last-child)]:border-r-1 p-2 select-none w-full lg:w-auto">
       <DurationStat
         duration={totalActivitiesDuration + totalTrainingDuration}
       />

@@ -51,6 +51,7 @@ export function CalendarMobileDay({
         <div className="flex items-center gap-3">
           <div
             className={cn(
+              // oa-responsive-ok: fixed-size day-number badge, not a content container
               'flex flex-col items-center justify-center min-w-[48px]',
               isToday && 'text-gray-900 font-bold',
               !isCurrentMonth && 'opacity-40',

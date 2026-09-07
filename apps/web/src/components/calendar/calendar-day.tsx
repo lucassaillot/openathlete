@@ -180,7 +180,7 @@ export function CalendarDay({
   return (
     <div
       className={cn(
-        'min-h-32 flex-1 [&:not(:last-child)]:border-r-1 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30 select-none',
+        'min-h-32 min-w-0 flex-1 overflow-hidden [&:not(:last-child)]:border-r-1 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30 select-none',
         isOver ? 'bg-gray-100 dark:bg-gray-800/50' : '',
         isInDragSelection ? 'bg-blue-50 dark:bg-blue-950/30' : '',
       )}
@@ -190,7 +190,7 @@ export function CalendarDay({
       ref={setNodeRef}
     >
       <ContextMenu>
-        <ContextMenuTrigger className="flex-1 flex flex-col h-full">
+        <ContextMenuTrigger className="flex h-full min-w-0 flex-1 flex-col">
           <div
             className={cn(
               'flex justify-center p-2 text-sm font-medium text-gray-600',
@@ -237,7 +237,7 @@ export function CalendarDay({
             </div>
           )}
 
-          <div className="flex-1 p-1 pb-2 pt-0 flex flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1 p-1 pb-2 pt-0">
             {events
               .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
               .map((event) => (
