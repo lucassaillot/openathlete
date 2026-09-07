@@ -150,7 +150,8 @@ export function StatisticsView({ athleteId }: P) {
               athleteId={athleteId}
             />
           </div>
-          {/* <div className="col-span-2">
+          {/* oa-responsive-ok: dead code (commented out)
+          <div className="col-span-2">
             <TrainingLoadMetricsCard athleteId={athleteId} />
           </div> */}
         </>

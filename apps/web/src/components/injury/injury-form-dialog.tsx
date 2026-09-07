@@ -175,7 +175,7 @@ export function InjuryFormDialog({ open, onClose, athleteId, injury }: P) {
             className="min-h-[80px]"
           />
 
-          <div className="grid grid-cols-2 gap-4 items-end">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-end">
             <RHFDatePicker
               name="startDate"
               label={m.start_date()}

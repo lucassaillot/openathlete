@@ -45,7 +45,7 @@ export function SportDistributionChart({ sports, keyToUse, formatter }: P) {
             <ChartTooltipContent
               hideLabel
               formatter={(value, name, _, __, payload) => (
-                <div className="flex min-w-[130px] items-center text-xs text-muted-foreground gap-2">
+                <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground sm:min-w-[130px]">
                   <SportIcon
                     sport={(payload as unknown as { sport: SPORT_TYPE }).sport}
                   />

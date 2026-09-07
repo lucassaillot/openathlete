@@ -357,7 +357,7 @@ export function RecordsChart({ records, className }: P) {
                   return null;
                 }
                 return (
-                  <div className="flex min-w-[130px] items-center text-xs text-muted-foreground gap-2">
+                  <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground sm:min-w-[130px]">
                     {recordTypeLabelMap[name as RECORD_TYPE]}
                     <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                       {typeFormatter(Number(value), name as RECORD_TYPE)}

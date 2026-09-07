@@ -427,7 +427,7 @@ export function MessagesPage() {
 
   // Desktop: show sidebar and conversation side by side
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-dvh bg-background">
       {/* Threads sidebar */}
       <div className="hidden md:flex md:flex-col w-80 border-r border-border min-h-0">
         <div className="flex-shrink-0 p-4 border-b border-border">

@@ -132,7 +132,11 @@ export function SegmentsChart({ segments, sport }: P) {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end gap-2 -mt-12">
+      {/* No longer pulled up with a negative margin to sit next to
+         the parent Card's title — that only lined up at one exact
+         header height/width and overlapped it as soon as either
+         varied (e.g. the title wrapping on a narrow screen). */}
+      <div className="flex justify-end gap-2">
         <Button
           size="icon"
           variant={view === 'chart' ? 'default' : 'ghost'}

@@ -91,7 +91,7 @@ export function ActivityDetailsOverviewTab({
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Card className="col-span-2 sm:col-span-1">
+      <Card className="sm:col-span-1">
         <CardHeader>
           <CardTitle>{m.statistics()}</CardTitle>
         </CardHeader>
@@ -118,7 +118,7 @@ export function ActivityDetailsOverviewTab({
             <ActivityDetailsSelectionProvider fullDomain={fullDomain}>
               {stream?.latlng && (
                 <ActivityDetailsMap
-                  className="col-span-2 sm:col-span-1 rounded-xl shadow-sm border w-full min-h-[300px]"
+                  className="sm:col-span-1 rounded-xl shadow-sm border w-full min-h-[300px]"
                   polyline={stream.latlng}
                   pins={hoverPin}
                   distance={stream.distance}
@@ -136,7 +136,7 @@ export function ActivityDetailsOverviewTab({
                 <ActivityFeedbackDisplayCard event={event} />
               )}
               {stream?.heartrate && (
-                <Card className="col-span-2 sm:col-span-1">
+                <Card className="sm:col-span-1">
                   <CardHeader>
                     <CardTitle>{m.heart_rate_distribution()}</CardTitle>
                   </CardHeader>
@@ -167,7 +167,7 @@ export function ActivityDetailsOverviewTab({
                 return (
                   <>
                     {hasSegments && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader>
                           <CardTitle>{m.segments()}</CardTitle>
                         </CardHeader>
@@ -179,7 +179,7 @@ export function ActivityDetailsOverviewTab({
                         </CardContent>
                       </Card>
                     )}
-                    <Card className="col-span-2">
+                    <Card className="sm:col-span-2">
                       <CardHeader className="flex flex-row items-center justify-between gap-2">
                         <CardTitle>
                           {speedConfig.speedLabel === 'pace'
@@ -201,7 +201,7 @@ export function ActivityDetailsOverviewTab({
                       </CardContent>
                     </Card>
                     {stream && stream.gap && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <CardTitle>{m.gap()}</CardTitle>
                           <div className="flex-shrink-0">
@@ -220,7 +220,7 @@ export function ActivityDetailsOverviewTab({
                       </Card>
                     )}
                     {stream?.altitude && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <CardTitle>{m.altitude()}</CardTitle>
                           <div className="flex-shrink-0">
@@ -238,7 +238,7 @@ export function ActivityDetailsOverviewTab({
                       </Card>
                     )}
                     {stream?.watts && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <CardTitle>{m.power()}</CardTitle>
                           <div className="flex-shrink-0">
@@ -256,7 +256,7 @@ export function ActivityDetailsOverviewTab({
                       </Card>
                     )}
                     {stream?.cadence && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <CardTitle>{m.cadence()}</CardTitle>
                           <div className="flex-shrink-0">
@@ -275,7 +275,7 @@ export function ActivityDetailsOverviewTab({
                       </Card>
                     )}
                     {stream?.heartrate && (
-                      <Card className="col-span-2">
+                      <Card className="sm:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <CardTitle>{m.heart_rate()}</CardTitle>
                           <div className="flex-shrink-0">
@@ -295,7 +295,7 @@ export function ActivityDetailsOverviewTab({
                     )}
                     {event.records && !!event.records.length && (
                       <>
-                        <Card className="col-span-2">
+                        <Card className="sm:col-span-2">
                           <CardHeader>
                             <CardTitle>{m.records()}</CardTitle>
                           </CardHeader>
@@ -313,7 +313,7 @@ export function ActivityDetailsOverviewTab({
         ) : (
           stream.heartrate && (
             <>
-              <Card className="col-span-2">
+              <Card className="sm:col-span-2">
                 <CardHeader>
                   <CardTitle>{m.heart_rate()}</CardTitle>
                 </CardHeader>
@@ -327,7 +327,7 @@ export function ActivityDetailsOverviewTab({
                   />
                 </CardContent>
               </Card>
-              <Card className="col-span-2">
+              <Card className="sm:col-span-2">
                 <CardHeader>
                   <CardTitle>{m.heart_rate_distribution()}</CardTitle>
                 </CardHeader>
@@ -343,7 +343,7 @@ export function ActivityDetailsOverviewTab({
           )
         ))}
       {normalization && !!normalization.factors.length && (
-        <Card className="col-span-2">
+        <Card className="sm:col-span-2">
           <CardHeader>
             <CardTitle>{m.normalized()}</CardTitle>
           </CardHeader>

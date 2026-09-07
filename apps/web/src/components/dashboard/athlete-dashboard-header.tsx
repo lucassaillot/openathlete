@@ -158,7 +158,7 @@ export function AthleteDashboardHeader({
               </div>
             ) : trainingLoadMetrics ? (
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-md bg-gradient-to-br from-purple-50 to-blue-50 p-2 dark:from-purple-950/30 dark:to-blue-950/30">
+                <div className="min-w-0 rounded-md bg-gradient-to-br from-purple-50 to-blue-50 p-2 dark:from-purple-950/30 dark:to-blue-950/30">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-medium text-muted-foreground mb-0.5">
                       CTL
@@ -168,7 +168,7 @@ export function AthleteDashboardHeader({
                     </span>
                   </div>
                 </div>
-                <div className="rounded-md bg-gradient-to-br from-orange-50 to-red-50 p-2 dark:from-orange-950/30 dark:to-red-950/30">
+                <div className="min-w-0 rounded-md bg-gradient-to-br from-orange-50 to-red-50 p-2 dark:from-orange-950/30 dark:to-red-950/30">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-medium text-muted-foreground mb-0.5">
                       ATL
@@ -179,7 +179,7 @@ export function AthleteDashboardHeader({
                   </div>
                 </div>
                 <div
-                  className={`rounded-md bg-gradient-to-br p-2 ${
+                  className={`min-w-0 rounded-md bg-gradient-to-br p-2 ${
                     getTSBStatus(trainingLoadMetrics.tsb) === 'optimal'
                       ? 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30'
                       : getTSBStatus(trainingLoadMetrics.tsb) === 'overreaching'
@@ -253,7 +253,7 @@ export function AthleteDashboardHeader({
                   return (
                     <div
                       key={metric.athleteMetricId}
-                      className={`rounded-md bg-gradient-to-br p-2 ${gradientColors[index % gradientColors.length]}`}
+                      className={`min-w-0 rounded-md bg-gradient-to-br p-2 ${gradientColors[index % gradientColors.length]}`}
                     >
                       <div className="flex flex-col">
                         <span className="text-[10px] font-medium text-muted-foreground mb-0.5 truncate">

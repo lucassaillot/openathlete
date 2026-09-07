@@ -10,7 +10,7 @@ import { metricTypeLabelMap } from '@/utils/label-map/core/metric-type.label-map
 import { cn } from '@/utils/shadcn';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import {
   METRIC_TYPE,
@@ -68,7 +68,7 @@ export function MetricChart({
           value={selectedType}
           onValueChange={(v) => setSelectedType(v as METRIC_TYPE)}
         >
-          <SelectTrigger className="w-[300px]">
+          <SelectTrigger className="w-full sm:w-[300px]">
             <SelectValue placeholder={m.select_metric_to_view()} />
           </SelectTrigger>
           <SelectContent>
@@ -101,55 +101,53 @@ export function MetricChart({
               color: 'var(--chart-1)',
             },
           }}
-          className="h-[400px] w-full"
+          className="h-[260px] w-full md:h-[400px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} tickMargin={10} />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                tickMargin={10}
-                label={{
-                  value: metricUnitMap[selectedType],
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { fontSize: 12 },
-                }}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => (
-                      <>
-                        {value} {metricUnitMap[selectedType]}
-                      </>
-                    )}
-                  />
-                }
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--chart-1)"
-                strokeWidth={3}
-                dot={{
-                  r: 6,
-                  fill: 'var(--chart-1)',
-                  stroke: 'hsl(var(--background))',
-                  strokeWidth: 2,
-                }}
-                activeDot={{
-                  r: 8,
-                  fill: 'var(--chart-1)',
-                  stroke: 'hsl(var(--background))',
-                  strokeWidth: 2,
-                }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LineChart data={chartData}>
+            <XAxis dataKey="date" tick={{ fontSize: 12 }} tickMargin={10} />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              tickMargin={10}
+              label={{
+                value: metricUnitMap[selectedType],
+                angle: -90,
+                position: 'insideLeft',
+                style: { fontSize: 12 },
+              }}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => (
+                    <>
+                      {value} {metricUnitMap[selectedType]}
+                    </>
+                  )}
+                />
+              }
+            />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="var(--chart-1)"
+              strokeWidth={3}
+              dot={{
+                r: 6,
+                fill: 'var(--chart-1)',
+                stroke: 'hsl(var(--background))',
+                strokeWidth: 2,
+              }}
+              activeDot={{
+                r: 8,
+                fill: 'var(--chart-1)',
+                stroke: 'hsl(var(--background))',
+                strokeWidth: 2,
+              }}
+            />
+          </LineChart>
         </ChartContainer>
       ) : (
-        <div className="h-[400px] flex items-center justify-center border rounded-lg bg-muted/50">
+        <div className="flex h-[260px] items-center justify-center rounded-lg border bg-muted/50 md:h-[400px]">
           <p className="text-muted-foreground">{m.no_data_for_metric()}</p>
         </div>
       )}
