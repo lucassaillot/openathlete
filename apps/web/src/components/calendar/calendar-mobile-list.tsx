@@ -1,7 +1,14 @@
 import { Loader } from '@/components/ui/loader';
 import { m } from '@/paraglide/messages';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { EVENT_TYPE } from '@openathlete/shared';
 
@@ -14,15 +21,26 @@ import { calculateInjuriesForDay } from './utils/injury-day-layout';
 
 interface P {
   isLoading?: boolean;
+  isFetching?: boolean;
 }
+
+// Load more weeks when the user gets this close (in screen heights) to an edge.
+const EXTEND_THRESHOLD_SCREENS = 3;
 
 type ListItem =
   | { type: 'week-header'; week: Date[]; weekIndex: number }
   | { type: 'day'; day: Date; dayIndex: number };
 
-export function CalendarMobileList({ isLoading }: P) {
-  const { displayedWeeks, events, cycles, injuries, displayedMonth } =
-    useCalendarContext();
+export function CalendarMobileList({ isLoading, isFetching }: P) {
+  const {
+    displayedWeeks,
+    events,
+    cycles,
+    injuries,
+    displayedMonth,
+    extendPast,
+    extendFuture,
+  } = useCalendarContext();
 
   const parentRef = useRef<HTMLDivElement>(null);
   const [currentScrollIndex, setCurrentScrollIndex] = useState<number | null>(
@@ -31,7 +49,16 @@ export function CalendarMobileList({ isLoading }: P) {
   const [isScrollingToToday, setIsScrollingToToday] = useState(false);
   const hasScrolledToTodayRef = useRef(false);
   const scrollAttemptsRef = useRef(0);
-  const wasLoadingRef = useRef(isLoading);
+  // Infinite scroll bookkeeping: the item count we last extended at (to avoid
+  // firing several extensions for the same list), and the scroll position to
+  // restore once weeks have been prepended.
+  const extendedFutureAtRef = useRef<number | null>(null);
+  const extendedPastAtRef = useRef<number | null>(null);
+  const pendingPrependRef = useRef<{
+    firstKey: string;
+    scrollTop: number;
+    totalSize: number;
+  } | null>(null);
 
   const items: ListItem[] = useMemo(() => {
     const result: ListItem[] = [];
@@ -62,9 +89,19 @@ export function CalendarMobileList({ isLoading }: P) {
     );
   }, [items]);
 
+  // Must be referentially stable: a new function on every render makes the
+  // virtualizer recompute (and re-render) endlessly.
+  const getVirtualItemKey = useCallback(
+    (index: number) => getItemKey(items[index]) ?? index,
+    [items],
+  );
+
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
+    // Date-based keys keep measured sizes attached to the right day when
+    // weeks are prepended.
+    getItemKey: getVirtualItemKey,
     estimateSize: (index) => {
       if (index >= items.length || index < 0) {
         return 120;
@@ -122,6 +159,32 @@ export function CalendarMobileList({ isLoading }: P) {
   useEffect(() => {
     const updateScrollIndex = () => {
       const virtualItems = virtualizer.getVirtualItems();
+      // Read the DOM directly: the virtualizer's range lags behind right
+      // after weeks are prepended, which would re-trigger extensions.
+      const scrollElement = parentRef.current;
+      if (scrollElement && hasScrolledToTodayRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+        const threshold = clientHeight * EXTEND_THRESHOLD_SCREENS;
+        if (
+          scrollHeight - scrollTop - clientHeight < threshold &&
+          extendedFutureAtRef.current !== items.length
+        ) {
+          extendedFutureAtRef.current = items.length;
+          extendFuture();
+        } else if (
+          scrollTop < threshold &&
+          extendedPastAtRef.current !== items.length &&
+          !pendingPrependRef.current
+        ) {
+          extendedPastAtRef.current = items.length;
+          pendingPrependRef.current = {
+            firstKey: String(getItemKey(items[0])),
+            scrollTop,
+            totalSize: virtualizer.getTotalSize(),
+          };
+          extendPast();
+        }
+      }
       if (virtualItems.length > 0) {
         const firstVisibleIndex = virtualItems[0]?.index ?? 0;
         if (firstVisibleIndex >= 0 && firstVisibleIndex < items.length) {
@@ -151,19 +214,32 @@ export function CalendarMobileList({ isLoading }: P) {
         clearInterval(intervalId);
       };
     }
-  }, [virtualizer, items.length, currentScrollIndex]);
+  }, [virtualizer, items, currentScrollIndex, extendFuture, extendPast]);
 
-  useEffect(() => {
-    const justFinishedLoading = wasLoadingRef.current && !isLoading;
-    wasLoadingRef.current = isLoading;
-
-    if (isLoading || items.length === 0) {
+  // After weeks were prepended, shift the scroll position by the height they
+  // added so the content on screen doesn't jump.
+  useLayoutEffect(() => {
+    const pending = pendingPrependRef.current;
+    if (!pending || String(getItemKey(items[0])) === pending.firstKey) {
       return;
     }
+    pendingPrependRef.current = null;
+    const target =
+      pending.scrollTop + virtualizer.getTotalSize() - pending.totalSize;
+    // Also sync the virtualizer's own offset: until the next scroll event it
+    // still holds the old value, and its size-change corrections would
+    // otherwise scroll back to it.
+    virtualizer.scrollOffset = target;
+    if (parentRef.current) {
+      parentRef.current.scrollTop = target;
+    }
+  }, [items, virtualizer]);
 
-    if (justFinishedLoading || displayedMonth) {
-      scrollAttemptsRef.current = 0;
-      hasScrolledToTodayRef.current = false;
+  useEffect(() => {
+    // Scroll to today only once, on first load. Later data arrivals (more
+    // weeks loaded while scrolling) must not move the list.
+    if (isLoading || items.length === 0 || hasScrolledToTodayRef.current) {
+      return;
     }
 
     if (
@@ -233,8 +309,7 @@ export function CalendarMobileList({ isLoading }: P) {
         });
       };
 
-      const delay = justFinishedLoading ? 300 : 100;
-      const timeoutId = setTimeout(scrollToToday, delay);
+      const timeoutId = setTimeout(scrollToToday, 300);
 
       return () => {
         clearTimeout(timeoutId);
@@ -244,16 +319,7 @@ export function CalendarMobileList({ isLoading }: P) {
       setCurrentScrollIndex(0);
       hasScrolledToTodayRef.current = true;
     }
-  }, [
-    displayedMonth,
-    todayIndex,
-    items.length,
-    virtualizer,
-    isLoading,
-    events.length,
-    cycles.length,
-    injuries.length,
-  ]);
+  }, [todayIndex, items.length, virtualizer, isLoading]);
 
   const handleScrollToToday = () => {
     if (todayIndex >= 0) {
@@ -313,6 +379,14 @@ export function CalendarMobileList({ isLoading }: P) {
           </div>
         </div>
       )}
+      {isFetching && !isScrollingToToday && (
+        // Zero-height sticky row: floats over the list without shifting it.
+        <div className="pointer-events-none sticky top-2 z-20 flex h-0 justify-center">
+          <div className="h-fit rounded-full bg-background/90 p-2 shadow-md">
+            <Loader size="sm" />
+          </div>
+        </div>
+      )}
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
@@ -345,7 +419,7 @@ export function CalendarMobileList({ isLoading }: P) {
             );
             return (
               <div
-                key={`week-${item.weekIndex}`}
+                key={virtualItem.key}
                 data-index={virtualItem.index}
                 ref={virtualizer.measureElement}
                 style={{
@@ -378,7 +452,7 @@ export function CalendarMobileList({ isLoading }: P) {
 
           return (
             <div
-              key={`day-${item.dayIndex}`}
+              key={virtualItem.key}
               data-index={virtualItem.index}
               ref={virtualizer.measureElement}
               style={{
@@ -410,4 +484,11 @@ export function CalendarMobileList({ isLoading }: P) {
       />
     </div>
   );
+}
+
+function getItemKey(item: ListItem | undefined): string | undefined {
+  if (!item) return undefined;
+  return item.type === 'week-header'
+    ? `week-${item.week[0].toDateString()}`
+    : `day-${item.day.toDateString()}`;
 }

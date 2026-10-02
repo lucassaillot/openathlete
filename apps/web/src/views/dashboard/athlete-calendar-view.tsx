@@ -1,8 +1,8 @@
-import { useGetMyEventsQuery } from '@/api/event';
+import { useCalendarEvents } from '@/api/event';
 import { Calendar } from '@/components/calendar/calendar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/utils/shadcn';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
 interface P {
@@ -11,39 +11,18 @@ interface P {
 
 export function AthleteCalendarView({ athleteId }: P) {
   const isMobile = useIsMobile();
-  const [displayedMonth, setDisplayedMonth] = useState(new Date());
+  const [range, setRange] = useState<{ start?: Date; end?: Date }>({});
 
-  const { startDate, endDate } = useMemo(() => {
-    const start = new Date(
-      displayedMonth.getFullYear(),
-      displayedMonth.getMonth() - 1,
-      1,
-    );
-    const end = new Date(
-      displayedMonth.getFullYear(),
-      displayedMonth.getMonth() + 2,
-      0,
-    );
-    end.setHours(23, 59, 59, 999);
-    return { startDate: start, endDate: end };
-  }, [displayedMonth]);
+  const { data, isError, isPending, isLoadingRange, isFetching } =
+    useCalendarEvents({
+      isCoach: true,
+      athleteId,
+      start: range.start,
+      end: range.end,
+    });
 
-  const { data, refetch, isError, isFetching } = useGetMyEventsQuery(
-    true,
-    athleteId,
-    startDate,
-    endDate,
-    {
-      retry: false,
-    },
-  );
-
-  useEffect(() => {
-    refetch();
-  }, [athleteId, startDate, endDate, refetch]);
-
-  const handleMonthChange = useCallback((month: Date) => {
-    setDisplayedMonth(month);
+  const handleRangeChange = useCallback((start: Date, end: Date) => {
+    setRange({ start, end });
   }, []);
 
   if (isError) {
@@ -54,8 +33,9 @@ export function AthleteCalendarView({ athleteId }: P) {
       <Calendar
         events={data}
         athleteId={athleteId}
-        onMonthChange={handleMonthChange}
-        isLoading={isFetching}
+        onRangeChange={handleRangeChange}
+        isLoading={isMobile ? isPending : isLoadingRange}
+        isFetching={isFetching}
       />
     </div>
   );

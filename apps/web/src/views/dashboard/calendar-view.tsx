@@ -1,12 +1,12 @@
 import { useGetMyAthleteQuery } from '@/api/athlete';
-import { useGetMyEventsQuery } from '@/api/event';
+import { useCalendarEvents } from '@/api/event';
 import { ActivityFeedbackDialog } from '@/components/activity-feedback/activity-feedback-dialog';
 import { Calendar } from '@/components/calendar/calendar';
 import { AthleteDashboardHeader } from '@/components/dashboard/athlete-dashboard-header';
 import { useSpaceContext } from '@/contexts/space';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/utils/shadcn';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   ActivityEvent,
@@ -18,53 +18,17 @@ export function CalendarView() {
   const isMobile = useIsMobile();
   const { data: athlete } = useGetMyAthleteQuery();
   const { space } = useSpaceContext();
-  const [displayedMonth, setDisplayedMonth] = useState(new Date());
+  const [range, setRange] = useState<{ start?: Date; end?: Date }>({});
   const [pendingFeedbackEvent, setPendingFeedbackEvent] =
     useState<ActivityEvent | null>(null);
   const [dismissedFeedbackEvents, setDismissedFeedbackEvents] = useState<
     Set<number>
   >(new Set());
 
-  const { startDate, endDate } = useMemo(() => {
-    if (isMobile) {
-      const start = new Date(
-        displayedMonth.getFullYear(),
-        displayedMonth.getMonth() - 6,
-        1,
-      );
-      const end = new Date(
-        displayedMonth.getFullYear(),
-        displayedMonth.getMonth() + 12,
-        0,
-      );
-      end.setHours(23, 59, 59, 999);
-      return { startDate: start, endDate: end };
-    } else {
-      const start = new Date(
-        displayedMonth.getFullYear(),
-        displayedMonth.getMonth() - 1,
-        1,
-      );
-      const end = new Date(
-        displayedMonth.getFullYear(),
-        displayedMonth.getMonth() + 2,
-        0,
-      );
-      end.setHours(23, 59, 59, 999);
-      return { startDate: start, endDate: end };
-    }
-  }, [displayedMonth, isMobile]);
-
-  const { data, refetch, isPending } = useGetMyEventsQuery(
-    undefined,
-    undefined,
-    startDate,
-    endDate,
-  );
-
-  useEffect(() => {
-    refetch();
-  }, [startDate, endDate, refetch]);
+  const { data, isPending, isLoadingRange, isFetching } = useCalendarEvents({
+    start: range.start,
+    end: range.end,
+  });
 
   useEffect(() => {
     if (space !== 'ATHLETE' || !data || !athlete || isPending) {
@@ -112,8 +76,8 @@ export function CalendarView() {
     dismissedFeedbackEvents,
   ]);
 
-  const handleMonthChange = useCallback((month: Date) => {
-    setDisplayedMonth(month);
+  const handleRangeChange = useCallback((start: Date, end: Date) => {
+    setRange({ start, end });
   }, []);
 
   const handleFeedbackDialogClose = () => {
@@ -142,8 +106,9 @@ export function CalendarView() {
           events={data}
           athleteId={space === 'ATHLETE' ? athlete?.athleteId : undefined}
           allowCreate={space === 'ATHLETE'}
-          onMonthChange={handleMonthChange}
-          isLoading={isPending}
+          onRangeChange={handleRangeChange}
+          isLoading={isMobile ? isPending : isLoadingRange}
+          isFetching={isFetching}
         />
       </div>
       {pendingFeedbackEvent && (
