@@ -41,6 +41,7 @@ import { JwtStrategy } from './strategies';
     PrismaService,
   ],
   exports: [
+    AuthService,
     CaslAbilityFactory,
     UserService,
     JwtModule,

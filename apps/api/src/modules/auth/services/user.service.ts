@@ -74,7 +74,7 @@ export class UserService {
     });
 
   public getMe = async (user: AuthUser) => {
-    return await this.prisma.user.findUniqueOrThrow({
+    const me = await this.prisma.user.findUniqueOrThrow({
       where: { userId: user.userId },
       select: {
         userId: true,
@@ -85,8 +85,24 @@ export class UserService {
         roles: true,
         onboardingCompleted: true,
         language: true,
+        isAdmin: true,
       },
     });
+
+    // When an admin browses as this user, tell the client who they really are.
+    const impersonatedBy = user.impersonatedBy
+      ? await this.prisma.user.findUnique({
+          where: { userId: user.impersonatedBy },
+          select: {
+            userId: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        })
+      : null;
+
+    return { ...me, impersonatedBy };
   };
 
   public updateLanguage = async (user: AuthUser, language: Language) => {

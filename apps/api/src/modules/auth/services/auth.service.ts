@@ -1,7 +1,14 @@
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -52,14 +59,62 @@ export class AuthService {
     userId: number,
     email: string,
     isRefresh: boolean,
+    impersonatedBy?: number,
   ): string {
     return sign(
-      { userId: userId, email },
+      impersonatedBy
+        ? { userId: userId, email, impersonatedBy }
+        : { userId: userId, email },
       this.configService.getOrThrow('JWT_SECRET_KEY'),
       {
-        expiresIn: isRefresh ? '30d' : '1h',
+        // Impersonation sessions are short-lived: they can't be extended
+        // past 8h even with refreshes.
+        expiresIn: isRefresh ? (impersonatedBy ? '8h' : '30d') : '1h',
       },
     );
+  }
+
+  /**
+   * Issues tokens letting an admin browse the app as `targetUserId`.
+   * The resulting session is read-only (enforced in JwtStrategy).
+   */
+  async impersonate(
+    adminId: number,
+    targetUserId: number,
+  ): Promise<AuthResponseDto> {
+    const admin = await this.prisma.user.findUnique({
+      where: { userId: adminId },
+      select: { isAdmin: true, email: true },
+    });
+    if (!admin?.isAdmin) throw new ForbiddenException();
+    if (adminId === targetUserId) {
+      throw new BadRequestException('Cannot impersonate yourself');
+    }
+
+    const target = await this.prisma.user.findUnique({
+      where: { userId: targetUserId },
+      select: { userId: true, email: true },
+    });
+    if (!target) throw new NotFoundException();
+
+    this.logger.warn(
+      `Admin ${adminId} (${admin.email}) started impersonating user ${target.userId} (${target.email})`,
+    );
+
+    return {
+      accessToken: this.createToken(
+        target.userId,
+        target.email,
+        false,
+        adminId,
+      ),
+      refreshToken: this.createToken(
+        target.userId,
+        target.email,
+        true,
+        adminId,
+      ),
+    };
   }
 
   async login(credentials: LoginDto): Promise<AuthResponseDto> {
@@ -94,8 +149,9 @@ export class AuthService {
     const payload = verify(
       refreshToken,
       this.configService.getOrThrow('JWT_SECRET_KEY'),
-    ) as JwtPayload & Partial<{ userId: number }>;
+    ) as JwtPayload & Partial<{ userId: number; impersonatedBy: number }>;
     if (!payload.userId) throw new UnauthorizedException();
+    const { impersonatedBy } = payload;
     const user = await this.prisma.user.findFirst({
       where: {
         userId: payload.userId,
@@ -106,6 +162,25 @@ export class AuthService {
       },
     });
     if (!user) throw new UnauthorizedException();
+
+    if (impersonatedBy) {
+      // Keep the impersonation going only while the admin is still an admin.
+      const admin = await this.prisma.user.findUnique({
+        where: { userId: impersonatedBy },
+        select: { isAdmin: true },
+      });
+      if (!admin?.isAdmin) throw new UnauthorizedException();
+      // Don't extend the session: reuse the original refresh token's expiry.
+      return {
+        accessToken: this.createToken(
+          user.userId,
+          user.email,
+          false,
+          impersonatedBy,
+        ),
+        refreshToken,
+      };
+    }
 
     return {
       accessToken: this.createToken(user.userId, user.email, false),
@@ -166,6 +241,7 @@ export class AuthService {
         select: {
           userId: true,
           email: true,
+          isAdmin: true,
           athlete: {
             select: {
               athleteId: true,
@@ -193,6 +269,10 @@ export class AuthService {
         athlete: user.athlete ? { athleteId: user.athlete.athleteId } : null,
         coachAthletes:
           user.coachAthletes?.map((ca) => ({ athleteId: ca.athleteId })) || [],
+        impersonatedBy:
+          typeof payload.impersonatedBy === 'number'
+            ? payload.impersonatedBy
+            : null,
       };
     } catch (error) {
       this.logger.error('Error in validateUser', error);

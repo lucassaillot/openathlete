@@ -37,6 +37,11 @@ export type TrainingZoneValue = PrismaTrainingZoneValue;
 export interface User extends PrismaUser {
   roles: UserRole[];
   athlete?: Athlete;
+  /** Set by /user/me when an admin is browsing as this user (read-only). */
+  impersonatedBy?: Pick<
+    PrismaUser,
+    'userId' | 'email' | 'firstName' | 'lastName'
+  > | null;
 }
 
 export type Record = PrismaRecord;

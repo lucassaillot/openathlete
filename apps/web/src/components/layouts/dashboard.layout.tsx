@@ -27,6 +27,7 @@ import {
   DraggableData,
   DraggableType,
 } from '../create-event-from-template-dialog/dnd-types';
+import { ImpersonationBanner } from '../impersonation-banner';
 import { InstallAppPrompt } from '../install-app-prompt/install-app-prompt';
 import { MobileLayout } from '../mobile/mobile-layout';
 import { PlanImportHandler } from '../plan-import-handler';
@@ -183,7 +184,10 @@ function LayoutContent({ children }: P) {
           <>
             <div className="flex w-full min-w-0">
               <TemplateLibrarySidebar />
-              <SidebarInset className="min-w-0 flex-1">{children}</SidebarInset>
+              <SidebarInset className="min-w-0 flex-1">
+                <ImpersonationBanner />
+                {children}
+              </SidebarInset>
             </div>
 
             <ChatBubble />

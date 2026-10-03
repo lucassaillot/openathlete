@@ -4,6 +4,8 @@ declare module 'jsonwebtoken' {
     user_id?: number; // Alias for compatibility
     email: string;
     type: string;
+    /** Admin user id when this token is an impersonation session. */
+    impersonatedBy?: number;
     iat?: number;
     exp?: number;
   }
