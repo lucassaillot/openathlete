@@ -202,10 +202,21 @@ function LayoutContent({ children }: P) {
   );
 }
 
+// Below this width (small laptops, tablets) the sidebar starts icon-only to
+// leave room for the content. The user's own choice (cookie) still wins.
+const SIDEBAR_DEFAULT_OPEN_MIN_WIDTH = 1280;
+
+function isWideScreen() {
+  return (
+    typeof window === 'undefined' ||
+    window.innerWidth >= SIDEBAR_DEFAULT_OPEN_MIN_WIDTH
+  );
+}
+
 export function DashboardLayout({ children }: P) {
   return (
     <SpaceProvider>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={isWideScreen()}>
         <TemplateLibrarySidebarProvider>
           <SharedDndProvider>
             <LayoutContent>{children}</LayoutContent>

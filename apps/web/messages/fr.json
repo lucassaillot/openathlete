@@ -1010,5 +1010,7 @@
   "new_conversation": "Nouvelle conversation",
   "select_people_to_talk_with": "Sélectionnez les personnes avec qui vous souhaitez dialoguer",
   "no_people_available_for_conversation": "Aucune personne disponible pour démarrer une conversation",
-  "edited": "édité"
+  "edited": "édité",
+  "sidebar_collapse": "Réduire le menu",
+  "sidebar_expand": "Déplier le menu"
 }

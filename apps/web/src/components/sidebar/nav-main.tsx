@@ -6,6 +6,13 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   SidebarGroup,
   SidebarMenu,
   SidebarMenuButton,
@@ -41,7 +48,9 @@ export function NavMain({
 }) {
   const { space } = useSpaceContext();
   const { pathname } = useLocation();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  // Icon-only sidebar: sub-menus can't unfold inline, show them in a flyout.
+  const isIconOnly = state === 'collapsed' && !isMobile;
 
   const [openStates, setOpenStates] = useState<Record<string, boolean>>(() => {
     const stored = getItem(SIDEBAR_OPEN_STATES);
@@ -67,7 +76,46 @@ export function NavMain({
         {items
           .filter((item) => !item.spaces || item.spaces.includes(space))
           .map((item) =>
-            item.items ? (
+            item.items && isIconOnly ? (
+              <SidebarMenuItem key={item.title}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      isActive={item.items.some(
+                        (subItem) => pathname === subItem.url,
+                      )}
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="right"
+                    align="start"
+                    sideOffset={4}
+                    className="min-w-48"
+                  >
+                    <DropdownMenuLabel className="truncate">
+                      {item.title}
+                    </DropdownMenuLabel>
+                    {item.items.map((subItem) => (
+                      <DropdownMenuItem key={subItem.title} asChild>
+                        <Link
+                          to={subItem.url}
+                          className={
+                            pathname === subItem.url ? 'font-bold' : ''
+                          }
+                        >
+                          {subItem.icon && <subItem.icon />}
+                          <span>{subItem.title}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            ) : item.items ? (
               <Collapsible
                 key={item.title}
                 asChild
@@ -110,7 +158,11 @@ export function NavMain({
               </Collapsible>
             ) : (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={pathname === item.url}
+                >
                   <Link
                     to={item.url || '#'}
                     onClick={handleLinkClick}
