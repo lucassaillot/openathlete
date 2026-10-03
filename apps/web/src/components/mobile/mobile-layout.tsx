@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { ImpersonationBanner } from '../impersonation-banner';
 import { MobileHeader } from './mobile-header';
 import { MobileNavbar } from './mobile-navbar';
 
@@ -174,6 +175,7 @@ export function MobileLayout({
     <PageActionsProvider>
       <ActionsSetter actions={actions} />
       <div className="flex min-h-dvh w-full flex-col overflow-x-clip">
+        <ImpersonationBanner />
         <MobileHeader
           title={pageTitle}
           showBack={

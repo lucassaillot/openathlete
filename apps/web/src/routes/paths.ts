@@ -62,6 +62,7 @@ export const paths: Paths = {
     },
     messages: `${ROOTS.DASHBOARD}/messages`,
     profile: `${ROOTS.DASHBOARD}/profile`,
+    admin: `${ROOTS.DASHBOARD}/admin`,
   },
 } as const;
 

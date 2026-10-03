@@ -16,6 +16,7 @@ import {
   WorkoutSyncListener,
 } from 'src/listeners';
 
+import { AdminModule } from './admin/admin.module';
 import { AgentModule } from './agent/agent.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth';
@@ -52,6 +53,7 @@ import { SeoPlanModule } from './seo/seo-plan.module';
     }),
     SentryModule.forRoot(),
     AuthModule,
+    AdminModule,
     CoreModule,
     AgentModule,
     MessagesModule,

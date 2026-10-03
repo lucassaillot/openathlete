@@ -70,7 +70,8 @@ export function AuthProvider({ children }: Props) {
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlLang = urlParams.get('lang');
-        if (urlLang && urlLang === 'fr') {
+        // No writes on behalf of a user while an admin impersonates them.
+        if (!user.impersonatedBy && urlLang && urlLang === 'fr') {
           const language = urlLang.toUpperCase() as 'FR';
           if (user.language !== language) {
             try {
@@ -81,9 +82,9 @@ export function AuthProvider({ children }: Props) {
           }
         }
 
-        posthog.identify(user.userId.toString(), {
-          roles: user.roles,
-        });
+        if (!user.impersonatedBy) {
+          posthog.identify(user.userId.toString(), { roles: user.roles });
+        }
 
         dispatch({
           type: Types.INITIAL,
@@ -93,48 +94,7 @@ export function AuthProvider({ children }: Props) {
         });
 
         // Initialize push notifications and send any pending token
-        initializePushNotifications()
-          .then(() => {
-            // Import dynamically to avoid circular dependency
-            import('@/utils/push-notifications').then(
-              ({ sendPendingTokenIfAny }) => {
-                sendPendingTokenIfAny();
-              },
-            );
-          })
-          .catch((error) => {
-            console.error('Failed to initialize push notifications:', error);
-          });
-      } else {
-        try {
-          const user = await UserAPI.getMe();
-          queryClient.setQueryData([userKeys.getMe], user);
-
-          const urlParams = new URLSearchParams(window.location.search);
-          const urlLang = urlParams.get('lang');
-          if (urlLang && urlLang === 'fr') {
-            const language = urlLang.toUpperCase() as 'FR';
-            if (user.language !== language) {
-              try {
-                await UserAPI.updateLanguage(language);
-              } catch (error) {
-                console.error('Failed to update language:', error);
-              }
-            }
-          }
-
-          posthog.identify(user.userId.toString(), {
-            roles: user.roles,
-          });
-
-          dispatch({
-            type: Types.INITIAL,
-            payload: {
-              user,
-            },
-          });
-
-          // Initialize push notifications and send any pending token
+        if (!user.impersonatedBy) {
           initializePushNotifications()
             .then(() => {
               // Import dynamically to avoid circular dependency
@@ -147,6 +107,55 @@ export function AuthProvider({ children }: Props) {
             .catch((error) => {
               console.error('Failed to initialize push notifications:', error);
             });
+        }
+      } else {
+        try {
+          const user = await UserAPI.getMe();
+          queryClient.setQueryData([userKeys.getMe], user);
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlLang = urlParams.get('lang');
+          // No writes on behalf of a user while an admin impersonates them.
+          if (!user.impersonatedBy && urlLang && urlLang === 'fr') {
+            const language = urlLang.toUpperCase() as 'FR';
+            if (user.language !== language) {
+              try {
+                await UserAPI.updateLanguage(language);
+              } catch (error) {
+                console.error('Failed to update language:', error);
+              }
+            }
+          }
+
+          if (!user.impersonatedBy) {
+            posthog.identify(user.userId.toString(), { roles: user.roles });
+          }
+
+          dispatch({
+            type: Types.INITIAL,
+            payload: {
+              user,
+            },
+          });
+
+          // Initialize push notifications and send any pending token
+          if (!user.impersonatedBy) {
+            initializePushNotifications()
+              .then(() => {
+                // Import dynamically to avoid circular dependency
+                import('@/utils/push-notifications').then(
+                  ({ sendPendingTokenIfAny }) => {
+                    sendPendingTokenIfAny();
+                  },
+                );
+              })
+              .catch((error) => {
+                console.error(
+                  'Failed to initialize push notifications:',
+                  error,
+                );
+              });
+          }
         } catch {
           dispatch({
             type: Types.INITIAL,

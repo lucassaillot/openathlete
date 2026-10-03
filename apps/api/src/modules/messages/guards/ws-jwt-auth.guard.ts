@@ -11,6 +11,15 @@ import { WsException } from '@nestjs/websockets';
 
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
 
+// Socket events allowed during an admin impersonation session (read-only):
+// anything else (sending/editing messages, read receipts…) is refused.
+const READ_ONLY_EVENTS = new Set([
+  'join_thread',
+  'leave_thread',
+  'subscribe',
+  'unsubscribe',
+]);
+
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
   private readonly logger = new Logger(WsJwtAuthGuard.name);
@@ -30,11 +39,12 @@ export class WsJwtAuthGuard implements CanActivate {
         throw new WsException('Unauthorized: No token provided');
       }
 
-      let payload: { userId: number; email: string };
+      let payload: { userId: number; email: string; impersonatedBy?: number };
       try {
         payload = await this.jwtService.verifyAsync<{
           userId: number;
           email: string;
+          impersonatedBy?: number;
         }>(token);
       } catch (jwtError: unknown) {
         if (jwtError instanceof TokenExpiredError) {
@@ -58,6 +68,13 @@ export class WsJwtAuthGuard implements CanActivate {
           throw new WsException('Unauthorized: Invalid token');
         }
         throw new WsException('Unauthorized: Invalid token');
+      }
+
+      if (
+        payload.impersonatedBy &&
+        !READ_ONLY_EVENTS.has(context.switchToWs().getPattern())
+      ) {
+        throw new WsException('Forbidden: read-only impersonation session');
       }
 
       const user = await this.prisma.user.findUnique({

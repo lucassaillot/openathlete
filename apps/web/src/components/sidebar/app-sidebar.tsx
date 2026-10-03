@@ -15,6 +15,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { useAuthContext } from '@/contexts/auth';
 import { useSpaceContext } from '@/contexts/space';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
@@ -27,6 +28,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
+  Shield,
   TrendingUp,
   User,
 } from 'lucide-react';
@@ -38,6 +40,8 @@ import { UserRole } from '@openathlete/shared';
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { space } = useSpaceContext();
+  const { user } = useAuthContext();
+  const showAdminLink = Boolean(user?.isAdmin && !user.impersonatedBy);
   const { data: athletes } = useGetMyCoachedAthletesQuery();
   const { resolvedTheme } = useTheme();
   const { isMobile, setOpenMobile, state, toggleSidebar } = useSidebar();
@@ -153,6 +157,21 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     ];
   }, [athletes, space]);
 
+  const navItems = useMemo(
+    () =>
+      showAdminLink
+        ? [
+            ...sidebarNavigation,
+            {
+              title: m.admin_title(),
+              url: getPath(['dashboard', 'admin']),
+              icon: Shield,
+            },
+          ]
+        : sidebarNavigation,
+    [sidebarNavigation, showAdminLink],
+  );
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -172,7 +191,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <SpaceSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarNavigation} />
+        <NavMain items={navItems} />
       </SidebarContent>
       <SidebarFooter>
         {!isMobile && (

@@ -11,6 +11,11 @@ export const routes = {
   app: {
     config: '/config',
   },
+  admin: {
+    stats: '/admin/stats',
+    users: '/admin/users',
+    impersonate: (userId: number) => `/admin/impersonate/${userId}`,
+  },
   auth: {
     login: '/auth/login',
     firebaseLogin: '/auth/firebase',

@@ -33,6 +33,9 @@ model User {
   language            UserLanguage @default(FR)
   /// Push notification token for mobile devices
   pushToken           String?      @map("push_token")
+  /// Site administrator: can see global stats and sign in as any user
+  /// (read-only). Granted manually in the database only.
+  isAdmin             Boolean      @default(false) @map("is_admin")
 
   // relationships
   athlete                   Athlete?
