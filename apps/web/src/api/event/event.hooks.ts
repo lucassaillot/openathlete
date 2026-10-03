@@ -1,7 +1,9 @@
 import {
   MutationOptions,
   QueryOptions,
+  UseQueryResult,
   useMutation,
+  useQueries,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -255,6 +257,82 @@ export const useGetMyEventsQuery = (
     queryFn: () => EventAPI.getMyEvents(isCoach, athleteId, startDate, endDate),
     queryKey: [eventKeys.getMyEvents, isCoach, athleteId, startDate, endDate],
   });
+
+// Module-level (stable reference) so react-query only re-runs it when the
+// query results change.
+const combineCalendarEvents = (results: UseQueryResult<Event[]>[]) => {
+  // Events spanning two months, or optimistic updates applied to every
+  // getMyEvents query, may appear in several chunks: dedupe by id.
+  const byId = new Map<number, Event>();
+  results.forEach((result) => {
+    result.data?.forEach((event) => byId.set(event.eventId, event));
+  });
+  return {
+    data: results.some((result) => result.data)
+      ? Array.from(byId.values())
+      : undefined,
+    isPending: results.length === 0 || results.every((result) => !result.data),
+    // At least one month of the range has no data yet.
+    isLoadingRange:
+      results.length === 0 || results.some((result) => result.isLoading),
+    isFetching: results.some((result) => result.isFetching),
+    isError: results.some((result) => result.isError),
+  };
+};
+
+/**
+ * Fetches calendar events for an arbitrary range, split into one query per
+ * month. Extending the range (infinite scroll on mobile) only fetches the new
+ * months; already-loaded months are served from the cache.
+ */
+export const useCalendarEvents = ({
+  isCoach,
+  athleteId,
+  start,
+  end,
+  enabled = true,
+}: {
+  isCoach?: boolean;
+  athleteId?: number;
+  start?: Date;
+  end?: Date;
+  enabled?: boolean;
+}) => {
+  const months: { start: Date; end: Date }[] = [];
+  if (start && end) {
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end) {
+      const monthEnd = new Date(
+        cursor.getFullYear(),
+        cursor.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+      months.push({ start: new Date(cursor), end: monthEnd });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  }
+
+  return useQueries({
+    queries: months.map((month) => ({
+      queryFn: () =>
+        EventAPI.getMyEvents(isCoach, athleteId, month.start, month.end),
+      queryKey: [
+        eventKeys.getMyEvents,
+        isCoach,
+        athleteId,
+        month.start,
+        month.end,
+      ],
+      enabled,
+      retry: false,
+    })),
+    combine: combineCalendarEvents,
+  });
+};
 
 export const useGetUpcomingCompetitionsQuery = (
   isCoach?: boolean,

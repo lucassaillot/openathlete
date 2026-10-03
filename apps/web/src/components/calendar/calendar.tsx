@@ -62,16 +62,20 @@ interface P {
   events?: Event[];
   athleteId?: number;
   allowCreate?: boolean;
-  onMonthChange?: (month: Date) => void;
+  /** Called with the date range currently rendered, to fetch its events. */
+  onRangeChange?: (start: Date, end: Date) => void;
   isLoading?: boolean;
+  /** Background fetch in progress (e.g. more weeks loading on mobile). */
+  isFetching?: boolean;
 }
 
 export function Calendar({
   events,
   athleteId,
   allowCreate = true,
-  onMonthChange,
+  onRangeChange,
   isLoading = false,
+  isFetching = false,
 }: P) {
   const posthog = usePostHog();
   const isMobile = useIsMobile();
@@ -142,11 +146,30 @@ export function Calendar({
     });
   }, [calendarData.displayedMonth, calendarData.events]);
 
+  // Report the rendered range (local time) so the parent can fetch its events.
+  const rangeStartTime = weekRangeStart
+    ? new Date(
+        weekRangeStart.getFullYear(),
+        weekRangeStart.getMonth(),
+        weekRangeStart.getDate(),
+      ).getTime()
+    : undefined;
+  const rangeEndTime = weekRangeEnd
+    ? new Date(
+        weekRangeEnd.getFullYear(),
+        weekRangeEnd.getMonth(),
+        weekRangeEnd.getDate(),
+        23,
+        59,
+        59,
+        999,
+      ).getTime()
+    : undefined;
   useEffect(() => {
-    if (onMonthChange) {
-      onMonthChange(calendarData.displayedMonth);
+    if (onRangeChange && rangeStartTime && rangeEndTime) {
+      onRangeChange(new Date(rangeStartTime), new Date(rangeEndTime));
     }
-  }, [calendarData.displayedMonth, onMonthChange]);
+  }, [rangeStartTime, rangeEndTime, onRangeChange]);
 
   // WebSocket connection and event handling
   useEffect(() => {
@@ -453,6 +476,7 @@ export function Calendar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       calendarData.displayedMonth,
+      calendarData.displayedWeeks,
       calendarData.events,
       cycles,
       injuries,
@@ -650,7 +674,10 @@ export function Calendar({
             <div className={isMobile ? 'w-full flex-1' : 'relative'}>
               {isMobile ? (
                 <div className="w-full h-full">
-                  <CalendarMobileList isLoading={isLoading} />
+                  <CalendarMobileList
+                    isLoading={isLoading}
+                    isFetching={isFetching}
+                  />
                 </div>
               ) : (
                 <>

@@ -18,6 +18,9 @@ export type CalendarContextType = {
   prevMonth: () => void;
   goToCurrentMonth: () => void;
   displayedWeeks: Date[][];
+  /** Mobile infinite scroll: load more weeks before / after the list. */
+  extendPast: () => void;
+  extendFuture: () => void;
   createEvent: (date: Date, type: EVENT_TYPE) => void;
   createEventFromTemplate: (date: Date) => void;
   createEventWithAI: (date: Date) => void;

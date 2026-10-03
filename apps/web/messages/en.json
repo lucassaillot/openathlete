@@ -1005,5 +1005,7 @@
   "new_conversation": "New conversation",
   "select_people_to_talk_with": "Select the people you want to talk with",
   "no_people_available_for_conversation": "No people available to start a conversation",
-  "edited": "Edited"
+  "edited": "Edited",
+  "sidebar_collapse": "Collapse menu",
+  "sidebar_expand": "Expand menu"
 }

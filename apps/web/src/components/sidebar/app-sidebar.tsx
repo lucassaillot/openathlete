@@ -9,6 +9,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -21,6 +24,8 @@ import {
   CogIcon,
   MedalIcon,
   MessageCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
   PieChart,
   TrendingUp,
   User,
@@ -35,7 +40,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { space } = useSpaceContext();
   const { data: athletes } = useGetMyCoachedAthletesQuery();
   const { resolvedTheme } = useTheme();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   const handleLogoClick = () => {
     // Close sidebar on mobile when clicking logo
@@ -159,7 +165,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             <img
               src={resolvedTheme === 'dark' ? logoWhiteSrc : logoDarkSrc}
               alt="Team Running Rouxmesnil Logo"
-              className="h-10 w-10"
+              className="h-10 w-10 transition-[width,height] group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8"
             />
           </Link>
         </div>
@@ -169,6 +175,24 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <NavMain items={sidebarNavigation} />
       </SidebarContent>
       <SidebarFooter>
+        {!isMobile && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={toggleSidebar}
+                tooltip={
+                  isCollapsed ? m.sidebar_expand() : m.sidebar_collapse()
+                }
+                className="text-muted-foreground"
+              >
+                {isCollapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+                <span>
+                  {isCollapsed ? m.sidebar_expand() : m.sidebar_collapse()}
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

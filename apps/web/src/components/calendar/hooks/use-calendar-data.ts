@@ -3,6 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { Event } from '@openathlete/shared';
 
+const MOBILE_INITIAL_PAST_MONTHS = 3;
+const MOBILE_INITIAL_FUTURE_MONTHS = 6;
+const MOBILE_EXTEND_MONTHS = 3;
+
 interface CalendarData {
   defaultMonth?: Date;
   events?: Event[];
@@ -13,6 +17,44 @@ export function useCalendarData({ defaultMonth, events }: CalendarData) {
   const [displayedMonth, setDisplayedMonth] = useState(
     defaultMonth || new Date(),
   );
+
+  const [mobileRange, setMobileRange] = useState(() => {
+    const today = new Date();
+    return {
+      start: new Date(
+        today.getFullYear(),
+        today.getMonth() - MOBILE_INITIAL_PAST_MONTHS,
+        1,
+      ),
+      end: new Date(
+        today.getFullYear(),
+        today.getMonth() + MOBILE_INITIAL_FUTURE_MONTHS + 1,
+        0,
+      ),
+    };
+  });
+
+  const extendPast = useCallback(() => {
+    setMobileRange((prev) => ({
+      ...prev,
+      start: new Date(
+        prev.start.getFullYear(),
+        prev.start.getMonth() - MOBILE_EXTEND_MONTHS,
+        1,
+      ),
+    }));
+  }, []);
+
+  const extendFuture = useCallback(() => {
+    setMobileRange((prev) => ({
+      ...prev,
+      end: new Date(
+        prev.end.getFullYear(),
+        prev.end.getMonth() + MOBILE_EXTEND_MONTHS + 1,
+        0,
+      ),
+    }));
+  }, []);
 
   const nextMonth = useCallback(() => {
     const nextMonth = new Date(
@@ -94,61 +136,28 @@ export function useCalendarData({ defaultMonth, events }: CalendarData) {
     }
 
     if (isMobile) {
-      const today = new Date();
-      const maxFutureDate = new Date(
-        today.getFullYear(),
-        today.getMonth() + 12,
-        0,
+      // Mobile shows a continuous list of full weeks (Monday → Sunday)
+      // covering `mobileRange`, which grows as the user scrolls.
+      const mobileWeeks: Date[][] = [];
+      const cursor = new Date(
+        mobileRange.start.getFullYear(),
+        mobileRange.start.getMonth(),
+        mobileRange.start.getDate(),
       );
-      const minPastDate = new Date(
-        today.getFullYear(),
-        today.getMonth() - 6,
-        1,
-      );
-
-      // Add weeks in the past
-      const firstWeek = weeks[0];
-      if (firstWeek && firstWeek.length > 0) {
-        const firstDate = new Date(firstWeek[0]);
-        firstDate.setDate(firstDate.getDate() - 1);
-
-        while (firstDate >= minPastDate) {
-          const week: Date[] = [];
-          for (let j = 6; j >= 0; j--) {
-            if (firstDate >= minPastDate) {
-              week.unshift(new Date(firstDate));
-              firstDate.setDate(firstDate.getDate() - 1);
-            } else {
-              week.unshift(new Date(minPastDate));
-            }
-          }
-          weeks.unshift(week);
+      cursor.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7));
+      while (cursor <= mobileRange.end) {
+        const week: Date[] = [];
+        for (let j = 0; j < 7; j++) {
+          week.push(new Date(cursor));
+          cursor.setDate(cursor.getDate() + 1);
         }
+        mobileWeeks.push(week);
       }
-
-      // Add weeks in the future
-      const lastWeek = weeks[weeks.length - 1];
-      if (lastWeek && lastWeek.length > 0) {
-        const currentDate = new Date(lastWeek[lastWeek.length - 1]);
-        currentDate.setDate(currentDate.getDate() + 1);
-
-        while (currentDate <= maxFutureDate) {
-          const week: Date[] = [];
-          for (let j = 0; j < 7; j++) {
-            if (currentDate <= maxFutureDate) {
-              week.push(new Date(currentDate));
-              currentDate.setDate(currentDate.getDate() + 1);
-            } else {
-              week.push(new Date(maxFutureDate));
-            }
-          }
-          weeks.push(week);
-        }
-      }
+      return mobileWeeks;
     }
 
     return weeks;
-  }, [displayedMonth, isMobile]);
+  }, [displayedMonth, isMobile, mobileRange]);
 
   return {
     displayedMonth,
@@ -156,6 +165,8 @@ export function useCalendarData({ defaultMonth, events }: CalendarData) {
     prevMonth,
     goToCurrentMonth,
     displayedWeeks,
+    extendPast,
+    extendFuture,
     events: events || [],
   };
 }
