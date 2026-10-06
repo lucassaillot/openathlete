@@ -1,6 +1,7 @@
+import type { Request } from 'express';
 import { ZodValidationPipe } from 'nestjs-zod';
 
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
@@ -20,7 +21,23 @@ import {
 } from '@openathlete/shared';
 
 import { AuthService, UserService } from '../services';
+import type { LoginContext } from '../services/auth.service';
 import { InvitationService } from '../services/invitation.service';
+
+function getLoginContext(req: Request): LoginContext {
+  // The API runs behind a reverse proxy: the client is the first hop of
+  // X-Forwarded-For. Informational only (it can be spoofed).
+  const forwardedFor = req.headers['x-forwarded-for'];
+  const firstHop = (
+    Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor
+  )
+    ?.split(',')[0]
+    ?.trim();
+  return {
+    ipAddress: firstHop || req.socket?.remoteAddress || null,
+    userAgent: req.headers['user-agent'] ?? null,
+  };
+}
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -83,8 +100,9 @@ export class AuthController {
   })
   async login(
     @Body(new ZodValidationPipe(loginDtoSchema)) credentials: LoginDto,
+    @Req() req: Request,
   ): Promise<AuthResponseDto> {
-    return await this.authService.login(credentials);
+    return await this.authService.login(credentials, getLoginContext(req));
   }
 
   @Post('firebase')
@@ -95,8 +113,9 @@ export class AuthController {
   })
   async loginWithFirebase(
     @Body(new ZodValidationPipe(firebaseLoginDtoSchema)) body: FirebaseLoginDto,
+    @Req() req: Request,
   ): Promise<AuthResponseDto> {
-    return await this.authService.loginWithFirebase(body);
+    return await this.authService.loginWithFirebase(body, getLoginContext(req));
   }
 
   @Post('refresh-token')

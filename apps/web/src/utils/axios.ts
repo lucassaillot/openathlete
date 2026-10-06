@@ -14,6 +14,7 @@ export const routes = {
   admin: {
     stats: '/admin/stats',
     users: '/admin/users',
+    userLogins: (userId: number) => `/admin/users/${userId}/logins`,
     impersonate: (userId: number) => `/admin/impersonate/${userId}`,
   },
   auth: {

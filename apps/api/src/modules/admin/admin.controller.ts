@@ -15,7 +15,13 @@ import { JwtUser } from '../auth/decorators/user.decorator';
 import type { AuthUser } from '../auth/decorators/user.decorator';
 import { AuthService } from '../auth/services/auth.service';
 import { AdminGuard } from './admin.guard';
-import { AdminService } from './admin.service';
+import { AdminService, AdminUsersSort } from './admin.service';
+
+const USERS_SORTS: AdminUsersSort[] = [
+  'createdAt',
+  'lastSeenAt',
+  'lastLoginAt',
+];
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -38,8 +44,19 @@ export class AdminController {
   listUsers(
     @Query('search') search?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('sort') sort?: string,
   ) {
-    return this.adminService.listUsers({ search, page });
+    return this.adminService.listUsers({
+      search,
+      page,
+      sort: USERS_SORTS.find((s) => s === sort),
+    });
+  }
+
+  @Get('users/:userId/logins')
+  @ApiOperation({ summary: "A user's latest sign-ins (admin only)" })
+  listLoginEvents(@Param('userId', ParseIntPipe) userId: number) {
+    return this.adminService.listLoginEvents(userId);
   }
 
   @Post('impersonate/:userId')

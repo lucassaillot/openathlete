@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { LoginMethod } from '@openathlete/database';
 import {
   ApiEnvSchemaType,
   AuthResponseDto,
@@ -43,6 +44,17 @@ function deriveNames(params: { name?: string; email: string }): {
   const emailLocalPart = params.email.split('@')[0] || 'Athlete';
   return { firstName: emailLocalPart, lastName: '' };
 }
+
+/** Client information recorded with each sign-in. */
+export type LoginContext = {
+  ipAddress?: string | null;
+  userAgent?: string | null;
+};
+
+// `lastSeenAt` is only written when older than this, so an active user costs
+// at most one extra write every few minutes rather than one per request.
+const LAST_SEEN_THROTTLE_MS = 5 * 60 * 1000;
+const USER_AGENT_MAX_LENGTH = 512;
 
 @Injectable()
 export class AuthService {
@@ -117,7 +129,50 @@ export class AuthService {
     };
   }
 
-  async login(credentials: LoginDto): Promise<AuthResponseDto> {
+  private async recordLogin(
+    userId: number,
+    method: LoginMethod,
+    context: LoginContext = {},
+  ): Promise<void> {
+    const now = new Date();
+    try {
+      await this.prisma.$transaction([
+        this.prisma.loginEvent.create({
+          data: {
+            userId,
+            method,
+            ipAddress: context.ipAddress || null,
+            userAgent:
+              context.userAgent?.slice(0, USER_AGENT_MAX_LENGTH) || null,
+            createdAt: now,
+          },
+        }),
+        this.prisma.user.update({
+          where: { userId },
+          data: { lastLoginAt: now, lastSeenAt: now },
+        }),
+      ]);
+    } catch (error) {
+      // Tracking must never prevent a user from signing in.
+      this.logger.error(`Failed to record login of user ${userId}`, error);
+    }
+  }
+
+  private async touchLastSeen(userId: number): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { userId },
+        data: { lastSeenAt: new Date() },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to update lastSeenAt of user ${userId}`, error);
+    }
+  }
+
+  async login(
+    credentials: LoginDto,
+    context?: LoginContext,
+  ): Promise<AuthResponseDto> {
     const { email, password } = credentials;
     const user = await this.prisma.user.findFirst({
       where: {
@@ -138,6 +193,8 @@ export class AuthService {
       },
       { email },
     );
+
+    await this.recordLogin(user.userId, LoginMethod.PASSWORD, context);
 
     return {
       accessToken: this.createToken(user.userId, user.email, false),
@@ -182,13 +239,18 @@ export class AuthService {
       };
     }
 
+    await this.touchLastSeen(user.userId);
+
     return {
       accessToken: this.createToken(user.userId, user.email, false),
       refreshToken: this.createToken(user.userId, user.email, true),
     };
   }
 
-  async loginWithFirebase(body: FirebaseLoginDto): Promise<AuthResponseDto> {
+  async loginWithFirebase(
+    body: FirebaseLoginDto,
+    context?: LoginContext,
+  ): Promise<AuthResponseDto> {
     const verified = await this.firebaseAuthService.verifyIdToken(body.idToken);
     const email = verified.email.toLowerCase();
 
@@ -220,6 +282,8 @@ export class AuthService {
       user = { userId: created.userId, email };
     }
 
+    await this.recordLogin(user.userId, LoginMethod.FIREBASE, context);
+
     return {
       accessToken: this.createToken(user.userId, user.email, false),
       refreshToken: this.createToken(user.userId, user.email, true),
@@ -242,6 +306,7 @@ export class AuthService {
           userId: true,
           email: true,
           isAdmin: true,
+          lastSeenAt: true,
           athlete: {
             select: {
               athleteId: true,
@@ -263,16 +328,27 @@ export class AuthService {
         throw new Error(`Invalid id for email ${user.email}`);
       }
 
+      const impersonatedBy =
+        typeof payload.impersonatedBy === 'number'
+          ? payload.impersonatedBy
+          : null;
+      const { lastSeenAt, ...authUser } = user;
+      if (
+        impersonatedBy === null &&
+        (!lastSeenAt ||
+          Date.now() - lastSeenAt.getTime() > LAST_SEEN_THROTTLE_MS)
+      ) {
+        // Fire and forget: don't delay the request on this write.
+        void this.touchLastSeen(user.userId);
+      }
+
       return {
-        ...user,
+        ...authUser,
         userId: user.userId,
         athlete: user.athlete ? { athleteId: user.athlete.athleteId } : null,
         coachAthletes:
           user.coachAthletes?.map((ca) => ({ athleteId: ca.athleteId })) || [],
-        impersonatedBy:
-          typeof payload.impersonatedBy === 'number'
-            ? payload.impersonatedBy
-            : null,
+        impersonatedBy,
       };
     } catch (error) {
       this.logger.error('Error in validateUser', error);
