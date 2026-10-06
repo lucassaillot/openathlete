@@ -103,6 +103,13 @@ enum TrainingZoneType {
   @@map("training_zone_type")
 }
 
+enum LoginMethod {
+  PASSWORD
+  FIREBASE
+
+  @@map("login_method")
+}
+
 enum TokenType {
   PASSWORD_RESET
   ATHLETE_INVITATION

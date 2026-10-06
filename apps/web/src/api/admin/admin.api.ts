@@ -8,6 +8,9 @@ export type AdminStats = {
   athletes: number;
   newUsersLast30Days: number;
   eventsLast7Days: number;
+  onlineNow: number;
+  activeLast24Hours: number;
+  activeLast7Days: number;
 };
 
 export type AdminUser = {
@@ -19,7 +22,19 @@ export type AdminUser = {
   isAdmin: boolean;
   onboardingCompleted: boolean;
   createdAt: string;
+  lastLoginAt: string | null;
+  lastSeenAt: string | null;
   coachedAthletesCount: number;
+};
+
+export type AdminUsersSort = 'createdAt' | 'lastSeenAt' | 'lastLoginAt';
+
+export type AdminLoginEvent = {
+  loginEventId: number;
+  method: 'PASSWORD' | 'FIREBASE';
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
 };
 
 export type AdminUsersPage = {
@@ -38,10 +53,16 @@ export class AdminAPI {
   static async listUsers(
     search: string,
     page: number,
+    sort: AdminUsersSort,
   ): Promise<AdminUsersPage> {
     const res = await client.get(routes.admin.users, {
-      params: { search: search || undefined, page },
+      params: { search: search || undefined, page, sort },
     });
+    return res.data;
+  }
+
+  static async listLoginEvents(userId: number): Promise<AdminLoginEvent[]> {
+    const res = await client.get(routes.admin.userLogins(userId));
     return res.data;
   }
 

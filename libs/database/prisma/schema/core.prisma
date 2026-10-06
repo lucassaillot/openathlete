@@ -36,6 +36,11 @@ model User {
   /// Site administrator: can see global stats and sign in as any user
   /// (read-only). Granted manually in the database only.
   isAdmin             Boolean      @default(false) @map("is_admin")
+  /// Last successful sign-in (password or OAuth), refreshes excluded
+  lastLoginAt         DateTime?    @map("last_login_at")
+  /// Last authenticated activity (API call or token refresh), updated at
+  /// most every few minutes. Admin impersonation does not count.
+  lastSeenAt          DateTime?    @map("last_seen_at")
 
   // relationships
   athlete                   Athlete?
@@ -51,6 +56,7 @@ model User {
   sentMessages              Message[]
   messageReadReceipts       MessageReadReceipt[]
   subscription              Subscription?
+  loginEvents               LoginEvent[]
 
   // timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -152,6 +158,30 @@ model ProviderWorkoutExport {
   @@unique([athleteId, provider, workoutId, plannedDate])
   @@index([status, plannedDate])
   @@map("provider_workout_export")
+}
+
+/// Sign-in history: one row per successful login (refreshes excluded).
+model LoginEvent {
+  // primary key
+  loginEventId Int @id @default(autoincrement()) @map("login_event_id")
+
+  // fields
+  /// How the user signed in
+  method    LoginMethod
+  /// Client IP (first X-Forwarded-For hop when behind a proxy)
+  ipAddress String?     @map("ip_address")
+  /// Client User-Agent header
+  userAgent String?     @map("user_agent")
+
+  // relationships
+  user   User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId Int  @map("user_id")
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("login_event")
 }
 
 /// Authentication and invitation tokens.

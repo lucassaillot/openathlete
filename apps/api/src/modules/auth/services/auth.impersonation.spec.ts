@@ -22,7 +22,9 @@ import { UserService } from './user.service';
 const SECRET = 'test-secret';
 
 function createService() {
-  const prisma = { user: { findUnique: jest.fn(), findFirst: jest.fn() } };
+  const prisma = {
+    user: { findUnique: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
+  };
   const config = { getOrThrow: () => SECRET, get: () => undefined };
   const service = new AuthService(
     prisma as unknown as PrismaService,
