@@ -7,6 +7,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePageActions } from '@/hooks/use-page-actions';
+import { useUnreadMessagesCount } from '@/hooks/use-unread-messages-count';
+import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -32,6 +34,7 @@ function isProfileSubPage(pathname: string): boolean {
 
 export function MobileHeader({ title, showBack, onBack }: MobileHeaderProps) {
   const navigate = useNavigate();
+  const unreadCount = useUnreadMessagesCount();
   const location = useLocation();
   const actions = usePageActions();
 
@@ -66,7 +69,15 @@ export function MobileHeader({ title, showBack, onBack }: MobileHeaderProps) {
           <span className="sr-only">Go back</span>
         </Button>
       ) : (
-        <SidebarTrigger className="h-9 w-9" />
+        <span className="relative flex">
+          <SidebarTrigger className="h-9 w-9" />
+          {unreadCount > 0 && (
+            <span
+              aria-label={m.unread_messages_count({ count: unreadCount })}
+              className="pointer-events-none absolute right-1 top-1 size-2.5 rounded-full bg-destructive ring-2 ring-background"
+            />
+          )}
+        </span>
       )}
 
       {/* Title */}
