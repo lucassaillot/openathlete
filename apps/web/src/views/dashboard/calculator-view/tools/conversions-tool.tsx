@@ -2,7 +2,6 @@ import { m } from '@/paraglide/messages';
 import {
   type DistanceUnit,
   METERS_PER_MILE,
-  effortKilometers,
   formatDuration,
   formatNumber,
   formatPace,
@@ -10,9 +9,8 @@ import {
   pacePerKmToPerMile,
   paceToSpeedKmh,
   speedKmhToPace,
-  treadmillFlatEquivalent,
 } from '@/utils/running-calculator';
-import { ArrowLeftRight, Mountain, MoveUpRight, Tally5 } from 'lucide-react';
+import { ArrowLeftRight, MoveUpRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Field, NumberInput, PaceInput } from '../calculator-inputs';
@@ -21,13 +19,8 @@ import { num, str, useToolState } from '../use-tool-state';
 
 const DEFAULTS = {
   cp: '300',
-  tm: '12',
-  ti: '1',
   gp: '360',
   gg: '8',
-  ek: '30',
-  eg: '1200',
-  ep: '360',
 };
 
 const MPH_PER_KMH = 1000 / METERS_PER_MILE;
@@ -38,25 +31,10 @@ export function ConversionsTool({ unit }: { unit: DistanceUnit }) {
   const displayPace = (p: number | null) =>
     formatPace(unit === 'mi' ? pacePerKmToPerMile(p) : p);
 
-  // Treadmill
-  const tmSpeed = num(state.tm);
-  const tmIncline = num(state.ti) ?? 0;
-  const tmFlat = tmSpeed ? treadmillFlatEquivalent(tmSpeed, tmIncline) : null;
-
   // Grade
   const gradePace = num(state.gp);
   const grade = num(state.gg) ?? 0;
   const flatPace = gradePace ? gradeAdjustedPace(gradePace, grade) : null;
-
-  // Trail effort
-  const trailKm = num(state.ek);
-  const trailDistance = trailKm ? trailKm * 1000 : null;
-  const trailGain = num(state.eg) ?? 0;
-  const trailPace = num(state.ep);
-  const kmEffort = trailDistance
-    ? effortKilometers(trailDistance, trailGain)
-    : null;
-  const trailTime = kmEffort && trailPace ? kmEffort * trailPace : null;
 
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
@@ -64,49 +42,6 @@ export function ConversionsTool({ unit }: { unit: DistanceUnit }) {
         pace={num(state.cp)}
         onChange={(p) => patch({ cp: str(p) })}
       />
-
-      <Panel
-        title={
-          <span className="inline-flex items-center gap-2">
-            <Tally5 className="size-4 text-primary" />
-            {m.calc_treadmill_title()}
-          </span>
-        }
-        description={m.calc_treadmill_description()}
-        action={<InfoTip>{m.calc_treadmill_info()}</InfoTip>}
-      >
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={m.calc_speed()}>
-            <NumberInput
-              value={state.tm}
-              onChange={(v) => patch({ tm: v })}
-              suffix="km/h"
-            />
-          </Field>
-          <Field label={m.calc_incline()}>
-            <NumberInput
-              value={state.ti}
-              onChange={(v) => patch({ ti: v })}
-              suffix="%"
-              min={-10}
-            />
-          </Field>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Stat
-            className="bg-primary/10"
-            label={m.calc_flat_speed()}
-            value={formatNumber(tmFlat, 1)}
-            unit="km/h"
-          />
-          <Stat
-            className="bg-primary/10"
-            label={m.calc_flat_pace()}
-            value={displayPace(speedKmhToPace(tmFlat))}
-            unit={`/${unit}`}
-          />
-        </div>
-      </Panel>
 
       <Panel
         title={
@@ -149,53 +84,6 @@ export function ConversionsTool({ unit }: { unit: DistanceUnit }) {
                 ? `${grade >= 0 ? '+' : ''}${formatNumber((gradePace / flatPace - 1) * 100, 0)} %`
                 : '—'
             }
-          />
-        </div>
-      </Panel>
-
-      <Panel
-        title={
-          <span className="inline-flex items-center gap-2">
-            <Mountain className="size-4 text-primary" />
-            {m.calc_trail_title()}
-          </span>
-        }
-        description={m.calc_trail_description()}
-        action={<InfoTip>{m.calc_trail_info()}</InfoTip>}
-      >
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={m.calc_distance()}>
-            <NumberInput
-              value={state.ek}
-              onChange={(v) => patch({ ek: v })}
-              suffix="km"
-            />
-          </Field>
-          <Field label={m.calc_elevation_gain()}>
-            <NumberInput
-              value={state.eg}
-              onChange={(v) => patch({ eg: v })}
-              suffix="m D+"
-            />
-          </Field>
-        </div>
-        <Field label={m.calc_flat_pace_effort()}>
-          <PaceInput
-            value={trailPace}
-            onChange={(v) => patch({ ep: str(v) })}
-            unit="km"
-          />
-        </Field>
-        <div className="grid grid-cols-2 gap-2">
-          <Stat
-            label={m.calc_km_effort()}
-            value={formatNumber(kmEffort, 1)}
-            unit="km-e"
-          />
-          <Stat
-            className="bg-primary/10"
-            label={m.calc_estimated_time()}
-            value={formatDuration(trailTime)}
           />
         </div>
       </Panel>

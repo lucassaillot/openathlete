@@ -1059,7 +1059,6 @@
   "calc_copy_failed": "Could not copy",
   "calc_reset": "Reset",
   "calc_how_computed": "How is it computed?",
-  "calc_print_band": "Wristband",
   "calc_optional": "Optional",
   "calc_tool_pace": "Pace",
   "calc_tool_splits": "Splits",
@@ -1199,12 +1198,6 @@
   "calc_convert_title": "Pace ↔ speed",
   "calc_convert_description": "Edit any field, the others follow.",
   "calc_convert_400m": "That is {time} per 400 m.",
-  "calc_treadmill_title": "Treadmill",
-  "calc_treadmill_description": "Flat-ground equivalent of an inclined treadmill run.",
-  "calc_treadmill_info": "ACSM equation: the vertical component costs 4.5× the horizontal one. A 1% incline roughly compensates for the lack of air resistance.",
-  "calc_incline": "Incline",
-  "calc_flat_speed": "Equivalent speed",
-  "calc_flat_pace": "Equivalent pace",
   "calc_grade_title": "Pace on a slope",
   "calc_grade_description": "Which flat pace for the same effort?",
   "calc_grade_info": "Empirical grade-adjusted pace (GAP) approximation: climbing costs much more, gentle descents help down to about −10%.",
@@ -1212,11 +1205,5 @@
   "calc_slope": "Grade",
   "calc_flat_equivalent": "Flat equivalent",
   "calc_effort": "Extra effort",
-  "calc_trail_title": "Trail: effort kilometers",
-  "calc_trail_description": "Estimate the duration of a hilly course.",
-  "calc_trail_info": "Effort-km rule: 100 m of climbing ≈ 1 flat km. Estimated time = effort-km × your easy flat pace.",
-  "calc_elevation_gain": "Elevation gain",
-  "calc_flat_pace_effort": "Your flat pace at this effort",
-  "calc_km_effort": "Effort-km",
-  "calc_estimated_time": "Estimated time"
+  "calc_download": "Download"
 }

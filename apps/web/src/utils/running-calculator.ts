@@ -456,20 +456,6 @@ export function hrZones(max: number, rest?: number | null): HrZone[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Flat-ground equivalent speed of a treadmill run (ACSM running equation:
- * the vertical component costs 0.9 × grade vs 0.2 for the horizontal one).
- */
-export function treadmillFlatEquivalent(
-  speedKmh: number,
-  inclinePercent: number,
-): number | null {
-  if (!isPositive(speedKmh)) return null;
-  const grade = (inclinePercent || 0) / 100;
-  const result = speedKmh * (1 + 4.5 * grade);
-  return result > 0 ? result : null;
-}
-
-/**
  * Relative effort of running on a slope compared to flat ground. Empirical
  * fit of grade-adjusted-pace curves: uphill costs more, gentle downhill
  * helps up to ~-11%, steeper descents stop helping.
@@ -486,13 +472,4 @@ export function gradeAdjustedPace(
 ): number | null {
   if (!isPositive(pace)) return null;
   return pace / gradeEffortFactor(gradePercent);
-}
-
-/** Trail "kilomètre-effort": 100 m of D+ ≈ 1 flat km. */
-export function effortKilometers(
-  meters: number,
-  elevationGain: number,
-): number | null {
-  if (!isPositive(meters)) return null;
-  return meters / 1000 + Math.max(0, elevationGain || 0) / 100;
 }

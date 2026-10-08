@@ -1059,7 +1059,6 @@
   "calc_copy_failed": "Impossibile copiare",
   "calc_reset": "Reimposta",
   "calc_how_computed": "Come viene calcolato?",
-  "calc_print_band": "Braccialetto",
   "calc_optional": "Facoltativo",
   "calc_tool_pace": "Andatura",
   "calc_tool_splits": "Passaggi",
@@ -1199,12 +1198,6 @@
   "calc_convert_title": "Andatura ↔ velocità",
   "calc_convert_description": "Modifica un campo qualsiasi, gli altri si aggiornano.",
   "calc_convert_400m": "Cioè {time} ai 400 m.",
-  "calc_treadmill_title": "Tapis roulant",
-  "calc_treadmill_description": "Equivalente in piano di una corsa in pendenza.",
-  "calc_treadmill_info": "Equazione ACSM: la componente verticale costa 4,5 volte quella orizzontale. Una pendenza dell'1% compensa circa l'assenza di resistenza dell'aria.",
-  "calc_incline": "Pendenza",
-  "calc_flat_speed": "Velocità equivalente",
-  "calc_flat_pace": "Andatura equivalente",
   "calc_grade_title": "Andatura in salita",
   "calc_grade_description": "Quale andatura in piano per lo stesso sforzo?",
   "calc_grade_info": "Approssimazione empirica dell'andatura corretta per la pendenza (GAP): salire costa molto di più, le discese dolci aiutano fino a circa −10%.",
@@ -1212,11 +1205,5 @@
   "calc_slope": "Pendenza",
   "calc_flat_equivalent": "Equivalente in piano",
   "calc_effort": "Sforzo extra",
-  "calc_trail_title": "Trail: chilometri sforzo",
-  "calc_trail_description": "Stima la durata di un percorso con dislivello.",
-  "calc_trail_info": "Regola dei km sforzo: 100 m di D+ ≈ 1 km in piano. Tempo stimato = km sforzo × andatura in piano.",
-  "calc_elevation_gain": "Dislivello positivo",
-  "calc_flat_pace_effort": "La tua andatura in piano a questo sforzo",
-  "calc_km_effort": "Km sforzo",
-  "calc_estimated_time": "Tempo stimato"
+  "calc_download": "Scarica"
 }

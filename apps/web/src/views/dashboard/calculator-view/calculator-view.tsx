@@ -1,4 +1,11 @@
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { m } from '@/paraglide/messages';
 import type { DistanceUnit } from '@/utils/running-calculator';
 import { cn } from '@/utils/shadcn';
@@ -12,7 +19,7 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -53,18 +60,8 @@ export function CalculatorView() {
     readCalcPreference('unit', 'km') === 'mi' ? 'mi' : 'km',
   );
 
-  const navRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     writeCalcPreference('last_tool', tool);
-    // Keep the active chip visible in the horizontally-scrolling mobile nav
-    navRef.current
-      ?.querySelector<HTMLElement>(`[data-tool="${tool}"]`)
-      ?.scrollIntoView({
-        block: 'nearest',
-        inline: 'center',
-        behavior: 'smooth',
-      });
   }, [tool]);
 
   const selectTool = (key: ToolKey) => {
@@ -127,15 +124,33 @@ export function CalculatorView() {
         </div>
       </header>
 
+      {/* Mobile: sticky dropdown to pick the tool */}
+      <div className="sticky top-[max(3.5rem,calc(2.25rem+var(--sat,0px)))] z-20 -mx-4 border-b bg-background/95 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
+        <Select
+          value={tool}
+          onValueChange={(value) => isTool(value) && selectTool(value)}
+        >
+          <SelectTrigger
+            aria-label={m.calculator()}
+            className="h-12 w-full rounded-xl bg-background text-base font-medium shadow-sm data-[size=default]:h-12 [&_svg:not([class*='text-'])]:text-primary"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TOOLS.map(({ key, icon: Icon, label }) => (
+              <SelectItem key={key} value={key} className="h-11 text-base">
+                <Icon className="size-4" />
+                {label()}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop: full-width segmented bar */}
       <nav
-        ref={navRef}
         aria-label={m.calculator()}
-        className={cn(
-          // Mobile: sticky, horizontally scrolling chips
-          'sticky top-[max(3.5rem,calc(2.25rem+var(--sat,0px)))] z-20 -mx-4 flex gap-2 overflow-x-auto border-b bg-background/95 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/80 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-          // Desktop: full-width segmented bar
-          'md:static md:mx-0 md:grid md:grid-cols-6 md:gap-1 md:overflow-visible md:rounded-2xl md:border md:bg-muted md:p-1 md:backdrop-blur-none',
-        )}
+        className="hidden grid-cols-6 gap-1 rounded-2xl border bg-muted p-1 md:grid"
       >
         {TOOLS.map(({ key, icon: Icon, label }) => {
           const active = key === tool;
@@ -143,22 +158,20 @@ export function CalculatorView() {
             <button
               key={key}
               type="button"
-              data-tool={key}
               aria-current={active ? 'page' : undefined}
               onClick={() => selectTool(key)}
               className={cn(
-                'inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-all',
+                'inline-flex h-11 min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 text-sm font-medium whitespace-nowrap transition-all',
                 'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                'md:h-11 md:min-w-0 md:rounded-xl md:border-transparent md:px-2',
                 active
-                  ? 'border-primary bg-primary text-primary-foreground shadow-sm md:border-transparent md:bg-background md:text-foreground'
-                  : 'border-border bg-background text-muted-foreground hover:text-foreground md:bg-transparent',
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <Icon
-                className={cn('size-4 shrink-0', active && 'md:text-primary')}
+                className={cn('size-4 shrink-0', active && 'text-primary')}
               />
-              <span className="md:truncate">{label()}</span>
+              <span className="truncate">{label()}</span>
             </button>
           );
         })}
