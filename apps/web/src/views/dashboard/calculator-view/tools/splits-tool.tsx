@@ -23,10 +23,10 @@ import {
 } from '../calculator-inputs';
 import {
   CopyButton,
+  DownloadButton,
   EmptyResult,
   HeroStat,
   Panel,
-  PrintButton,
   ResetButton,
   ResultHero,
   ToolLayout,
@@ -55,25 +55,42 @@ const DEFAULTS = {
   sp: '2',
 };
 
-function printWristband(title: string, splits: Split[], unit: DistanceUnit) {
-  const win = window.open('', '_blank', 'width=480,height=720');
-  if (!win) return;
-  const rows = splits
-    .map(
-      (s) =>
-        `<tr${MILESTONES.some((ms) => Math.abs(ms - s.distance) < 1) ? ' class="ms"' : ''}><td>${formatDistance(s.distance, unit)}</td><td>${formatDuration(s.cumulativeTime)}</td><td>${formatDuration(s.splitTime)}</td></tr>`,
-    )
-    .join('');
-  win.document
-    .write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
-<style>
-  *{box-sizing:border-box} body{font-family:system-ui,-apple-system,sans-serif;margin:16px;color:#000}
-  h1{font-size:14px;margin:0 0 8px} table{border-collapse:collapse;width:260px;font-variant-numeric:tabular-nums}
-  td{border:1px solid #000;padding:3px 6px;font-size:13px} td:nth-child(2){font-weight:700;font-size:15px}
-  tr.ms td{background:#eee} @page{margin:10mm}
-</style></head><body><h1>${title}</h1><table>${rows}</table>
-<script>window.onload=function(){window.print()}</script></body></html>`);
-  win.document.close();
+function downloadSplits(
+  distance: number,
+  totalTime: number,
+  splits: Split[],
+  unit: DistanceUnit,
+) {
+  const rows = [
+    [
+      '#',
+      m.calc_distance(),
+      m.calc_split(),
+      m.calc_pace(),
+      m.calc_cumulative(),
+    ],
+    ...splits.map((s) => [
+      String(s.index),
+      formatDistance(s.distance, unit),
+      formatDuration(s.splitTime),
+      `${formatPace(unit === 'mi' ? pacePerKmToPerMile(s.pace) : s.pace)}/${unit}`,
+      formatDuration(s.cumulativeTime),
+    ]),
+  ];
+  const csv = rows
+    .map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(';'))
+    .join('\r\n');
+  // BOM so spreadsheet apps read the accents correctly
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download =
+    `${m.calc_splits_title()} ${formatDistance(distance, unit)} ${formatDuration(totalTime)}.csv`
+      .replace(/[\s:]+/g, '-')
+      .toLowerCase();
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export function SplitsTool({ unit }: { unit: DistanceUnit }) {
@@ -244,11 +261,16 @@ export function SplitsTool({ unit }: { unit: DistanceUnit }) {
               action={
                 <>
                   <CopyButton getText={asText} />
-                  <span className="hidden sm:inline-flex">
-                    <PrintButton
-                      onClick={() => printWristband(title, splits, unit)}
-                    />
-                  </span>
+                  <DownloadButton
+                    onClick={() =>
+                      downloadSplits(
+                        distance as number,
+                        totalTime,
+                        splits,
+                        unit,
+                      )
+                    }
+                  />
                 </>
               }
             >

@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/popover';
 import { m } from '@/paraglide/messages';
 import { cn } from '@/utils/shadcn';
-import { Check, Copy, Info, Printer, RotateCcw } from 'lucide-react';
+import { Check, Copy, Download, Info, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -307,11 +307,11 @@ export function CopyButton({ getText }: { getText: () => string }) {
   );
 }
 
-export function PrintButton({ onClick }: { onClick: () => void }) {
+export function DownloadButton({ onClick }: { onClick: () => void }) {
   return (
     <Button type="button" variant="outline" size="sm" onClick={onClick}>
-      <Printer className="size-3.5" />
-      {m.calc_print_band()}
+      <Download className="size-3.5" />
+      {m.calc_download()}
     </Button>
   );
 }
