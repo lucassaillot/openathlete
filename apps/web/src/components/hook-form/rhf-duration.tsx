@@ -66,8 +66,6 @@ function DurationFieldAdapter({
     }
   }, [field.value, showSeconds]);
 
-  const digitsOnly = (value: string) => value.replace(/\D/g, '');
-
   const updateFormValue = (hours: string, minutes: string, seconds: string) => {
     const hoursNum = hours === '' ? 0 : Number.parseInt(hours, 10);
     const minutesNum = minutes === '' ? 0 : Number.parseInt(minutes, 10);
@@ -88,12 +86,11 @@ function DurationFieldAdapter({
     <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full">
       <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
         <Input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          type="number"
+          min={0}
           value={hoursInput}
           onChange={(event) => {
-            const newHoursInput = digitsOnly(event.target.value);
+            const newHoursInput = event.target.value;
             setHoursInput(newHoursInput);
             updateFormValue(newHoursInput, minutesInput, secondsInput);
           }}
@@ -110,12 +107,12 @@ function DurationFieldAdapter({
       </div>
       <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
         <Input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          type="number"
+          min={0}
+          max={59}
           value={minutesInput}
           onChange={(event) => {
-            const newMinutesInput = digitsOnly(event.target.value);
+            const newMinutesInput = event.target.value;
             setMinutesInput(newMinutesInput);
             updateFormValue(hoursInput, newMinutesInput, secondsInput);
           }}
@@ -138,12 +135,12 @@ function DurationFieldAdapter({
       {showSeconds && (
         <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[130px]">
           <Input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
+            type="number"
+            min={0}
+            max={59}
             value={secondsInput}
             onChange={(event) => {
-              const newSecondsInput = digitsOnly(event.target.value);
+              const newSecondsInput = event.target.value;
               setSecondsInput(newSecondsInput);
               updateFormValue(hoursInput, minutesInput, newSecondsInput);
             }}
