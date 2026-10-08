@@ -1205,5 +1205,6 @@
   "calc_slope": "Pendenza",
   "calc_flat_equivalent": "Equivalente in piano",
   "calc_effort": "Sforzo extra",
-  "calc_download": "Scarica"
+  "calc_download": "Scarica",
+  "calc_pick_record": "Scegli un record"
 }

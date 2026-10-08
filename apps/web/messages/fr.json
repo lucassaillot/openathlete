@@ -1210,5 +1210,6 @@
   "calc_slope": "Pente",
   "calc_flat_equivalent": "Équivalent plat",
   "calc_effort": "Surcoût d'effort",
-  "calc_download": "Télécharger"
+  "calc_download": "Télécharger",
+  "calc_pick_record": "Choisir un record"
 }

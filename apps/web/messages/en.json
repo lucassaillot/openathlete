@@ -1205,5 +1205,6 @@
   "calc_slope": "Grade",
   "calc_flat_equivalent": "Flat equivalent",
   "calc_effort": "Extra effort",
-  "calc_download": "Download"
+  "calc_download": "Download",
+  "calc_pick_record": "Pick a record"
 }

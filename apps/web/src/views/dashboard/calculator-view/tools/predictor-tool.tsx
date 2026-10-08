@@ -1,3 +1,10 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { m } from '@/paraglide/messages';
 import {
   type DistanceUnit,
@@ -49,18 +56,44 @@ export function RecordChips({
 }) {
   const bests = useRunningBests();
   if (bests.length === 0) return null;
+  const isActive = (b: (typeof bests)[number]) =>
+    distance !== null &&
+    Math.abs(distance - b.meters) < 0.5 &&
+    time !== null &&
+    Math.abs(time - Math.round(b.seconds)) <= 1;
+  const selected = bests.find(isActive)?.key ?? '';
   return (
     <Field label={m.calc_use_my_records()}>
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:-mx-5 sm:px-5 [scrollbar-width:none]">
+      {/* Mobile: dropdown */}
+      <Select
+        value={selected}
+        onValueChange={(key) => {
+          const best = bests.find((b) => b.key === key);
+          if (best) onPick(best.meters, Math.round(best.seconds));
+        }}
+      >
+        <SelectTrigger className="h-12 w-full rounded-xl text-base data-[size=default]:h-12 sm:hidden">
+          <SelectValue placeholder={m.calc_pick_record()} />
+        </SelectTrigger>
+        <SelectContent>
+          {bests.map((b) => (
+            <SelectItem key={b.key} value={b.key} className="h-11 text-base">
+              <Medal className="size-4 text-amber-500" />
+              {presetLabel(b.key)}
+              <span className="tabular-nums text-muted-foreground">
+                {formatDuration(b.seconds)}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Desktop: chips */}
+      <div className="hidden flex-wrap gap-1.5 sm:flex">
         {bests.map((b) => (
           <Chip
             key={b.key}
-            active={
-              distance !== null &&
-              Math.abs(distance - b.meters) < 0.5 &&
-              time !== null &&
-              Math.abs(time - Math.round(b.seconds)) <= 1
-            }
+            active={isActive(b)}
             onClick={() => onPick(b.meters, Math.round(b.seconds))}
           >
             <Medal className="size-3.5 text-amber-500" />
