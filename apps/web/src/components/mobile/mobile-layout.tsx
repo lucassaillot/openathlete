@@ -32,6 +32,7 @@ function getPageTitle(pathname: string): string {
     [getPath(['dashboard', 'coach'])]: m.coach_dashboard(),
     [getPath(['dashboard', 'profile'])]: m.profile(),
     [getPath(['dashboard', 'messages'])]: m.messages(),
+    [getPath(['dashboard', 'calculator'])]: m.calculator(),
     [getPath(['dashboard', 'statistics'])]: m.statistics(),
     [getPath(['dashboard', 'records'])]: m.records(),
     [getPath(['dashboard', 'metrics'])]: m.metrics(),
@@ -50,6 +51,7 @@ function shouldShowNavbar(pathname: string): boolean {
     getPath(['dashboard', 'coach']),
     getPath(['dashboard', 'profile']),
     getPath(['dashboard', 'messages']),
+    getPath(['dashboard', 'calculator']),
   ];
 
   return navbarRoutes.some((route) => pathname === route);

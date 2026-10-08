@@ -22,6 +22,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { UnreadBadge } from '@/components/ui/unread-badge';
 import { useSpaceContext } from '@/contexts/space';
 import { SIDEBAR_OPEN_STATES, getItem, setItem } from '@/utils/local-storage';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
@@ -39,6 +40,8 @@ export function NavMain({
     icon?: LucideIcon;
     isActive?: boolean;
     spaces?: UserRole[];
+    /** unread counter shown next to the entry */
+    badge?: number;
     items?: {
       title: string;
       url: string;
@@ -170,8 +173,18 @@ export function NavMain({
                       pathname === item.url ? 'font-bold' : ''
                     }`}
                   >
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                    {item.icon && (
+                      <span className="relative flex shrink-0">
+                        <item.icon className="size-4" />
+                        {!!item.badge && isIconOnly && (
+                          <span className="absolute -right-1 -top-1 size-2 rounded-full bg-destructive ring-2 ring-sidebar" />
+                        )}
+                      </span>
+                    )}
+                    <span className="truncate">{item.title}</span>
+                    {!!item.badge && (
+                      <UnreadBadge count={item.badge} className="ml-auto" />
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

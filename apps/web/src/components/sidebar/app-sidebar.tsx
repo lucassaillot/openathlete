@@ -17,10 +17,12 @@ import {
 } from '@/components/ui/sidebar';
 import { useAuthContext } from '@/contexts/auth';
 import { useSpaceContext } from '@/contexts/space';
+import { useUnreadMessagesCount } from '@/hooks/use-unread-messages-count';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import {
   Activity,
+  Calculator,
   Calendar,
   CogIcon,
   MedalIcon,
@@ -43,6 +45,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuthContext();
   const showAdminLink = Boolean(user?.isAdmin && !user.impersonatedBy);
   const { data: athletes } = useGetMyCoachedAthletesQuery();
+  const unreadCount = useUnreadMessagesCount();
   const { resolvedTheme } = useTheme();
   const { isMobile, setOpenMobile, state, toggleSidebar } = useSidebar();
   const isCollapsed = state === 'collapsed';
@@ -68,6 +71,13 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           title: m.messages(),
           url: getPath(['dashboard', 'messages']),
           icon: MessageCircle,
+          spaces: ['COACH'] as UserRole[],
+          badge: unreadCount,
+        },
+        {
+          title: m.calculator(),
+          url: getPath(['dashboard', 'calculator']),
+          icon: Calculator,
           spaces: ['COACH'] as UserRole[],
         },
       ];
@@ -149,13 +159,20 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         spaces: ['ATHLETE'] as UserRole[],
       },
       {
+        title: m.calculator(),
+        url: getPath(['dashboard', 'calculator']),
+        icon: Calculator,
+        spaces: ['ATHLETE'] as UserRole[],
+      },
+      {
         title: m.messages(),
         url: getPath(['dashboard', 'messages']),
         icon: MessageCircle,
         spaces: ['ATHLETE'] as UserRole[],
+        badge: unreadCount,
       },
     ];
-  }, [athletes, space]);
+  }, [athletes, space, unreadCount]);
 
   const navItems = useMemo(
     () =>

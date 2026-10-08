@@ -22,7 +22,6 @@ import {
 } from '../calendar/contexts/shared-dnd-context';
 import { TemplateLibrarySidebarProvider } from '../calendar/contexts/template-library-sidebar-context';
 import { TemplateLibrarySidebar } from '../calendar/template-library-sidebar';
-import { ChatBubble, ChatWindow } from '../chatbot';
 import {
   DraggableData,
   DraggableType,
@@ -181,18 +180,13 @@ function LayoutContent({ children }: P) {
         {isCapacitor() || isMobile ? (
           <MobileLayout>{children}</MobileLayout>
         ) : (
-          <>
-            <div className="flex w-full min-w-0">
-              <TemplateLibrarySidebar />
-              <SidebarInset className="min-w-0 flex-1">
-                <ImpersonationBanner />
-                {children}
-              </SidebarInset>
-            </div>
-
-            <ChatBubble />
-            <ChatWindow />
-          </>
+          <div className="flex w-full min-w-0">
+            <TemplateLibrarySidebar />
+            <SidebarInset className="min-w-0 flex-1">
+              <ImpersonationBanner />
+              {children}
+            </SidebarInset>
+          </div>
         )}
       </SpaceConsumer>
 

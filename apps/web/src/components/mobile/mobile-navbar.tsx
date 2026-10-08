@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { m } from '@/paraglide/messages';
 import { getPath } from '@/routes/paths';
 import { cn } from '@/utils/shadcn';
-import { Calendar, MessageCircle, User } from 'lucide-react';
+import { Calculator, Calendar, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
@@ -23,9 +23,9 @@ const navItems: NavItem[] = [
     path: getPath(['dashboard', 'profile']),
   },
   {
-    label: m.messages(),
-    icon: MessageCircle,
-    path: getPath(['dashboard', 'messages']),
+    label: m.calculator(),
+    icon: Calculator,
+    path: getPath(['dashboard', 'calculator']),
   },
 ];
 
