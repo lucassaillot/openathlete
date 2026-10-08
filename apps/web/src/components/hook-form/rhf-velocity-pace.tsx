@@ -99,6 +99,17 @@ function VelocityPaceFieldAdapter({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [field.value, unit]);
 
+  const digitsOnly = (value: string) => value.replace(/\D/g, '');
+  const decimalOnly = (value: string) => {
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    const firstDot = cleaned.indexOf('.');
+    if (firstDot === -1) return cleaned;
+    return (
+      cleaned.slice(0, firstDot + 1) +
+      cleaned.slice(firstDot + 1).replace(/\./g, '')
+    );
+  };
+
   const updateFormValue = (
     newValue: string,
     newPaceMinutes: string = '',
@@ -183,11 +194,12 @@ function VelocityPaceFieldAdapter({
         <div className="flex flex-col sm:flex-row gap-2 flex-1 sm:min-w-[280px]">
           <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <Input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={paceMinutes}
               onChange={(e) => {
-                const newMinutes = e.target.value;
+                const newMinutes = digitsOnly(e.target.value);
                 setPaceMinutes(newMinutes);
                 updateFormValue(valueInput, newMinutes, paceSeconds);
               }}
@@ -204,12 +216,12 @@ function VelocityPaceFieldAdapter({
           </div>
           <div className="flex items-center w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <Input
-              type="number"
-              min={0}
-              max={59}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={paceSeconds}
               onChange={(e) => {
-                const newSeconds = e.target.value;
+                const newSeconds = digitsOnly(e.target.value);
                 setPaceSeconds(newSeconds);
                 updateFormValue(valueInput, paceMinutes, newSeconds);
               }}
@@ -227,12 +239,11 @@ function VelocityPaceFieldAdapter({
         </div>
       ) : (
         <Input
-          type="number"
-          min={0}
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           value={valueInput}
           onChange={(e) => {
-            const newValue = e.target.value;
+            const newValue = decimalOnly(e.target.value);
             setValueInput(newValue);
             updateFormValue(newValue);
           }}
