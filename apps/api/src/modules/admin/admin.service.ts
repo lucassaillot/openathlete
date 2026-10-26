@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { Prisma } from '@openathlete/database';
 
@@ -139,5 +143,17 @@ export class AdminService {
         createdAt: true,
       },
     });
+  }
+
+  /** Admin accounts cannot be deleted from the admin page. */
+  async assertDeletableUser(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+      select: { isAdmin: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.isAdmin) {
+      throw new BadRequestException('Admin accounts cannot be deleted');
+    }
   }
 }

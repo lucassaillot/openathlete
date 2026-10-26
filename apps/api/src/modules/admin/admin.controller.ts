@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -14,6 +16,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtUser } from '../auth/decorators/user.decorator';
 import type { AuthUser } from '../auth/decorators/user.decorator';
 import { AuthService } from '../auth/services/auth.service';
+import { UserService } from '../auth/services/user.service';
 import { AdminGuard } from './admin.guard';
 import { AdminService, AdminUsersSort } from './admin.service';
 
@@ -31,6 +34,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {}
 
   @Get('stats')
@@ -68,5 +72,22 @@ export class AdminController {
     @Param('userId', ParseIntPipe) userId: number,
   ) {
     return this.authService.impersonate(admin.userId, userId);
+  }
+
+  @Delete('users/:userId')
+  @ApiOperation({
+    summary:
+      'Permanently delete a user and all their data (admin only, not admins)',
+  })
+  async deleteUser(
+    @JwtUser() admin: AuthUser,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    if (userId === admin.userId) {
+      throw new BadRequestException('You cannot delete your own account here');
+    }
+    await this.adminService.assertDeletableUser(userId);
+    await this.userService.deleteUserById(userId);
+    return { success: true };
   }
 }

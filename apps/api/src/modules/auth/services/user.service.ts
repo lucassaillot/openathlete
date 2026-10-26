@@ -470,181 +470,119 @@ export class UserService {
   };
 
   public deleteAccount = async (user: AuthUser) => {
-    const userId = user.userId;
-
-    // Get athlete if exists
-    const athlete = await this.prisma.athlete.findUnique({
-      where: { userId },
-      select: { athleteId: true },
-    });
-
-    if (athlete) {
-      const athleteId = athlete.athleteId;
-
-      // Delete all events and related data (similar to event service deleteEvent)
-      const events = await this.prisma.event.findMany({
-        where: { athleteId },
-        select: {
-          eventId: true,
-          training: { select: { workout: { select: { workoutId: true } } } },
-        },
-      });
-
-      for (const event of events) {
-        if (event.training?.workout?.workoutId) {
-          // Delete provider exports for workouts
-          await this.prisma.providerWorkoutExport.deleteMany({
-            where: {
-              workout: {
-                eventTrainingId: event.eventId,
-              },
-            },
-          });
-        }
-
-        // Delete workout-related data
-        await this.prisma.workout.deleteMany({
-          where: { eventTrainingId: event.eventId },
-        });
-        await this.prisma.eventTraining.deleteMany({
-          where: { eventId: event.eventId },
-        });
-        await this.prisma.eventCompetition.deleteMany({
-          where: { eventId: event.eventId },
-        });
-        await this.prisma.eventNote.deleteMany({
-          where: { eventId: event.eventId },
-        });
-
-        // Delete activity-related data
-        await this.prisma.eventActivityWeather.deleteMany({
-          where: { eventActivity: { eventId: event.eventId } },
-        });
-        await this.prisma.eventActivityNormalizationFactor.deleteMany({
-          where: {
-            normalization: { eventActivity: { eventId: event.eventId } },
-          },
-        });
-        await this.prisma.eventActivityNormalization.deleteMany({
-          where: { eventActivity: { eventId: event.eventId } },
-        });
-        await this.prisma.record.deleteMany({
-          where: { eventActivity: { event: { eventId: event.eventId } } },
-        });
-        await this.prisma.activityFeedbackQuestion.deleteMany({
-          where: { activity: { eventId: event.eventId } },
-        });
-        await this.prisma.activityFeedbackEmbedding.deleteMany({
-          where: { activity: { eventId: event.eventId } },
-        });
-        await this.prisma.eventActivity.deleteMany({
-          where: { eventId: event.eventId },
-        });
-      }
-
-      // Delete events
-      await this.prisma.event.deleteMany({
-        where: { athleteId },
-      });
-
-      // Delete athlete-related data
-      const trainingZones = await this.prisma.trainingZone.findMany({
-        where: { athleteId },
-        include: {
-          values: true,
-        },
-      });
-      for (const trainingZone of trainingZones) {
-        await this.prisma.trainingZoneValue.deleteMany({
-          where: { trainingZoneId: trainingZone.trainingZoneId },
-        });
-      }
-      await this.prisma.trainingZone.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.equipment.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.cycle.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.athleteMetric.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.trainingLoadCalculation.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.trainingPlan.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.athleteAvailability.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.providerAccount.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.providerWorkoutExport.deleteMany({
-        where: { athlete: { athleteId } },
-      });
-      await this.prisma.athleteSettings.deleteMany({
-        where: { athleteId },
-      });
-      await this.prisma.athleteInjury.deleteMany({
-        where: { athleteId },
-      });
-
-      // Delete coach-athlete relationships
-      await this.prisma.coachAthlete.deleteMany({
-        where: { athleteId },
-      });
-    }
-
-    // Delete user-related data
-    await this.prisma.token.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.eventTemplate.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.agentThread.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.eventTemplateFolder.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.athleteInvitation.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.coachInvitation.deleteMany({
-      where: { OR: [{ coachUserId: userId }, { athleteUserId: userId }] },
-    });
-    await this.prisma.messageThreadParticipant.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.message.deleteMany({
-      where: { senderId: userId },
-    });
-    await this.prisma.messageReadReceipt.deleteMany({
-      where: { userId },
-    });
-    await this.prisma.coachAthlete.deleteMany({
-      where: { userId },
-    });
-
-    // Delete athlete record if exists
-    if (athlete) {
-      await this.prisma.athlete.delete({
-        where: { athleteId: athlete.athleteId },
-      });
-    }
-
-    // Finally, delete the user
-    await this.prisma.user.delete({
-      where: { userId },
-    });
-
-    this.logger.log(`Account deleted for user ${userId}`);
-
+    await this.deleteUserById(user.userId);
     return { success: true };
   };
+
+  /**
+   * Permanently deletes a user and everything they own, in one transaction
+   * (either everything is deleted or nothing is).
+   */
+  public async deleteUserById(userId: number) {
+    await this.prisma.$transaction(
+      async (tx) => {
+        const athlete = await tx.athlete.findUnique({
+          where: { userId },
+          select: { athleteId: true },
+        });
+
+        // Events of the athlete + events backing the user's templates
+        const templates = await tx.eventTemplate.findMany({
+          where: { userId },
+          select: { eventId: true },
+        });
+        const athleteEvents = athlete
+          ? await tx.event.findMany({
+              where: { athleteId: athlete.athleteId },
+              select: { eventId: true },
+            })
+          : [];
+        const eventIds = [
+          ...new Set([
+            ...athleteEvents.map((e) => e.eventId),
+            ...templates.map((t) => t.eventId),
+          ]),
+        ];
+        await tx.eventTemplate.deleteMany({ where: { userId } });
+        await deleteEvents(tx, eventIds);
+
+        if (athlete) {
+          const { athleteId } = athlete;
+          await tx.trainingZoneValue.deleteMany({
+            where: { trainingZone: { athleteId } },
+          });
+          await tx.trainingZone.deleteMany({ where: { athleteId } });
+          await tx.record.deleteMany({ where: { athleteId } });
+          await tx.equipment.deleteMany({ where: { athleteId } });
+          await tx.cycle.deleteMany({ where: { athleteId } });
+          await tx.athleteMetric.deleteMany({ where: { athleteId } });
+          await tx.trainingLoadCalculation.deleteMany({ where: { athleteId } });
+          await tx.trainingPlan.deleteMany({ where: { athleteId } });
+          await tx.athleteAvailability.deleteMany({ where: { athleteId } });
+          await tx.providerWorkoutExport.deleteMany({ where: { athleteId } });
+          await tx.providerAccount.deleteMany({ where: { athleteId } });
+          await tx.athleteSettings.deleteMany({ where: { athleteId } });
+          await tx.athleteInjury.deleteMany({ where: { athleteId } });
+          await tx.coachAthlete.deleteMany({ where: { athleteId } });
+        }
+
+        // User-level data
+        await tx.token.deleteMany({ where: { userId } });
+        await tx.agentThread.deleteMany({ where: { userId } });
+        await tx.eventTemplateFolder.deleteMany({ where: { userId } });
+        await tx.athleteInvitation.deleteMany({ where: { userId } });
+        await tx.coachInvitation.deleteMany({
+          where: { OR: [{ coachUserId: userId }, { athleteUserId: userId }] },
+        });
+        await tx.subscription.deleteMany({ where: { userId } });
+        await tx.coachAthlete.deleteMany({ where: { userId } });
+
+        if (athlete) {
+          await tx.athlete.delete({ where: { athleteId: athlete.athleteId } });
+        }
+
+        // Messages, read receipts, logins and strength programs cascade
+        await tx.user.delete({ where: { userId } });
+      },
+      { timeout: 120_000, maxWait: 10_000 },
+    );
+
+    this.logger.log(`Account deleted for user ${userId}`);
+  }
+}
+
+type TransactionClient = Prisma.TransactionClient;
+
+/** Deletes events and every row that depends on them. */
+async function deleteEvents(tx: TransactionClient, eventIds: number[]) {
+  if (eventIds.length === 0) return;
+  const inEvents = { in: eventIds };
+  await tx.providerWorkoutExport.deleteMany({
+    where: { workout: { eventTraining: { eventId: inEvents } } },
+  });
+  // Workout steps, repeats and targets cascade from the workout
+  await tx.workout.deleteMany({
+    where: { eventTraining: { eventId: inEvents } },
+  });
+  await tx.eventTraining.deleteMany({ where: { eventId: inEvents } });
+  await tx.eventCompetition.deleteMany({ where: { eventId: inEvents } });
+  await tx.eventNote.deleteMany({ where: { eventId: inEvents } });
+
+  const activity = { eventActivity: { eventId: inEvents } };
+  await tx.eventActivityWeather.deleteMany({ where: activity });
+  await tx.eventActivityNormalizationFactor.deleteMany({
+    where: { normalization: activity },
+  });
+  await tx.eventActivityNormalization.deleteMany({ where: activity });
+  await tx.record.deleteMany({ where: activity });
+  await tx.activityFeedbackQuestion.deleteMany({
+    where: { activity: { eventId: inEvents } },
+  });
+  await tx.activityFeedbackEmbedding.deleteMany({
+    where: { activity: { eventId: inEvents } },
+  });
+  // Segments, training load entries and comment threads cascade
+  await tx.eventActivity.deleteMany({ where: { eventId: inEvents } });
+  await tx.eventTemplate.deleteMany({ where: { eventId: inEvents } });
+  await tx.event.deleteMany({ where: { eventId: inEvents } });
 }

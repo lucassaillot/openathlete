@@ -1,6 +1,7 @@
 import {
   type AdminUser,
   type AdminUsersSort,
+  useAdminDeleteUserMutation,
   useAdminLoginEventsQuery,
   useAdminStatsQuery,
   useAdminUsersQuery,
@@ -37,7 +38,7 @@ import { m } from '@/paraglide/messages';
 import { getLocale } from '@/paraglide/runtime';
 import { getPath } from '@/routes/paths';
 import { startImpersonation } from '@/utils/impersonation';
-import { History, LogIn, Search } from 'lucide-react';
+import { History, LogIn, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -68,6 +69,94 @@ function isOnline(lastSeenAt: string | null): boolean {
   return (
     !!lastSeenAt &&
     Date.now() - new Date(lastSeenAt).getTime() < ONLINE_WINDOW_MS
+  );
+}
+
+function DeleteUserDialog({
+  target,
+  onClose,
+}: {
+  target: AdminUser | null;
+  onClose: () => void;
+}) {
+  const deleteUser = useAdminDeleteUserMutation();
+  const [confirmation, setConfirmation] = useState('');
+  const name = `${target?.firstName ?? ''} ${target?.lastName ?? ''}`.trim();
+  const canDelete =
+    !!target &&
+    confirmation.trim().toLowerCase() === target.email.toLowerCase();
+
+  useEffect(() => {
+    setConfirmation('');
+  }, [target]);
+
+  const handleDelete = () => {
+    if (!target || !canDelete) return;
+    deleteUser.mutate(target.userId, {
+      onSuccess: () => {
+        toast.success(m.admin_delete_user_success({ email: target.email }));
+        onClose();
+      },
+      onError: () => toast.error(m.admin_delete_user_error()),
+    });
+  };
+
+  return (
+    <Dialog open={target !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-destructive">
+            {m.admin_delete_user_title({ name: name || target?.email || '' })}
+          </DialogTitle>
+        </DialogHeader>
+        <DialogBody className="flex flex-col gap-4">
+          <p className="text-sm">{m.admin_delete_user_warning()}</p>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>{m.admin_delete_user_item_profile()}</li>
+            <li>{m.admin_delete_user_item_events()}</li>
+            <li>{m.admin_delete_user_item_library()}</li>
+            <li>{m.admin_delete_user_item_links()}</li>
+          </ul>
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleDelete();
+            }}
+          >
+            <label
+              htmlFor="delete-user-confirm"
+              className="text-sm font-medium"
+            >
+              {m.admin_delete_user_type_email({ email: target?.email ?? '' })}
+            </label>
+            <Input
+              id="delete-user-confirm"
+              value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)}
+              placeholder={target?.email}
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                {m.cancel()}
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={!canDelete}
+                isLoading={deleteUser.isPending}
+              >
+                <Trash2 className="h-4 w-4" />
+                {m.admin_delete_user_confirm()}
+              </Button>
+            </div>
+          </form>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -153,6 +242,7 @@ export function AdminView() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<AdminUsersSort>('createdAt');
   const [historyTarget, setHistoryTarget] = useState<AdminUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [impersonatingId, setImpersonatingId] = useState<number | null>(null);
 
   const isAdmin = Boolean(user?.isAdmin && !user.impersonatedBy);
@@ -388,6 +478,17 @@ export function AdminView() {
                         )}
                         {m.admin_impersonate()}
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        disabled={row.userId === user?.userId || row.isAdmin}
+                        onClick={() => setDeleteTarget(row)}
+                        title={m.admin_delete_user()}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">{m.admin_delete_user()}</span>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -424,6 +525,10 @@ export function AdminView() {
       <LoginHistoryDialog
         target={historyTarget}
         onClose={() => setHistoryTarget(null)}
+      />
+      <DeleteUserDialog
+        target={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
       />
     </div>
   );
