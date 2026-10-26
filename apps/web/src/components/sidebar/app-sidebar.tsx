@@ -25,6 +25,7 @@ import {
   Calculator,
   Calendar,
   CogIcon,
+  Dumbbell,
   MedalIcon,
   MessageCircle,
   PanelLeftClose,
@@ -73,6 +74,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           icon: MessageCircle,
           spaces: ['COACH'] as UserRole[],
           badge: unreadCount,
+        },
+        {
+          title: m.strength_title(),
+          url: getPath(['dashboard', 'strength']),
+          icon: Dumbbell,
+          spaces: ['COACH'] as UserRole[],
         },
         {
           title: m.calculator(),
@@ -156,6 +163,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         title: m.metrics(),
         url: getPath(['dashboard', 'metrics']),
         icon: Activity,
+        spaces: ['ATHLETE'] as UserRole[],
+      },
+      {
+        title: m.strength_title(),
+        url: getPath(['dashboard', 'strength']),
+        icon: Dumbbell,
         spaces: ['ATHLETE'] as UserRole[],
       },
       {

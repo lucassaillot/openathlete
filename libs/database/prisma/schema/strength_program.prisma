@@ -1,0 +1,124 @@
+// ============================================================================
+// Strength Program Models
+// ============================================================================
+// Strength & conditioning programs built by a user (usually a coach):
+// - StrengthCategory: free, user-defined categories (and sub-categories)
+// - StrengthProgram: a program split in weeks and sessions
+// - StrengthProgramSession: one session of a week, with free-form content
+// - StrengthExercise: the user's personal exercise library
+// Sessions are placed in an athlete's calendar as TRAINING events (sport
+// STRENGTH) carrying a copy of the session content.
+// ============================================================================
+
+/// User-defined strength category (e.g. "Feet", "Legs", "General").
+/// Categories can be nested through `parentCategoryId`.
+model StrengthCategory {
+  // primary key
+  strengthCategoryId Int @id @default(autoincrement()) @map("strength_category_id")
+
+  // fields
+  /// Category name
+  name  String
+  /// Hex color code used in the UI
+  color String @default("#6366f1")
+
+  // relationships
+  user             User               @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId           Int                @map("user_id")
+  parentCategory   StrengthCategory?  @relation("StrengthCategoryHierarchy", fields: [parentCategoryId], references: [strengthCategoryId], onDelete: SetNull)
+  parentCategoryId Int?               @map("parent_category_id")
+  childCategories  StrengthCategory[] @relation("StrengthCategoryHierarchy")
+  programs         StrengthProgram[]
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("strength_category")
+}
+
+/// Strength program, organised in weeks and sessions.
+model StrengthProgram {
+  // primary key
+  strengthProgramId Int @id @default(autoincrement()) @map("strength_program_id")
+
+  // fields
+  /// Program name
+  name        String
+  /// Free description / general instructions
+  description String @default("")
+
+  // relationships
+  user       User                     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId     Int                      @map("user_id")
+  category   StrengthCategory?        @relation(fields: [categoryId], references: [strengthCategoryId], onDelete: SetNull)
+  categoryId Int?                     @map("category_id")
+  sessions   StrengthProgramSession[]
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("strength_program")
+}
+
+/// One session of a strength program (e.g. week 2, session 1).
+model StrengthProgramSession {
+  // primary key
+  strengthProgramSessionId Int @id @default(autoincrement()) @map("strength_program_session_id")
+
+  // fields
+  /// Week number in the program (1-based)
+  weekNumber    Int    @map("week_number")
+  /// Session number within the week (1-based)
+  sessionNumber Int    @map("session_number")
+  /// Session name (e.g. "Legs - heavy")
+  name          String
+  /// Free text (warm-up, general instructions...)
+  notes         String @default("")
+  /// Estimated duration in seconds (optional)
+  duration      Int?
+  /// Session content: free-form blocks (exercises, circuits, notes).
+  /// Validated by `strengthContentSchema` in @openathlete/shared.
+  content       Json
+
+  // relationships
+  program   StrengthProgram @relation(fields: [programId], references: [strengthProgramId], onDelete: Cascade)
+  programId Int             @map("program_id")
+  events    Event[]
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([programId, weekNumber, sessionNumber])
+  @@map("strength_program_session")
+}
+
+/// Exercise of a user's personal library, suggested when building sessions.
+model StrengthExercise {
+  // primary key
+  strengthExerciseId Int @id @default(autoincrement()) @map("strength_exercise_id")
+
+  // fields
+  /// Exercise name
+  name         String
+  /// Default instructions pre-filled when the exercise is added
+  defaultNotes String  @default("") @map("default_notes")
+  /// Optional link to a video or picture
+  mediaUrl     String? @map("media_url")
+
+  // relationships
+  user   User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId Int  @map("user_id")
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, name])
+  @@map("strength_exercise")
+}

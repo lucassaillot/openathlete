@@ -22,7 +22,7 @@ import { CALENDAR_COLORED_BY, getItem, setItem } from '@/utils/local-storage';
 import { DragEndEvent } from '@dnd-kit/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { addDays, startOfMonth } from 'date-fns';
-import { Activity, Award, Plus, Sparkles } from 'lucide-react';
+import { Activity, Award, Dumbbell, Plus, Sparkles } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -43,6 +43,7 @@ import { CreateCycleDialog } from '../create-cycle-dialog';
 import { CreateEventDialog } from '../create-event-dialog';
 import { CreateEventFromTemplateDialog } from '../create-event-from-template-dialog/create-event-from-template.dialog';
 import { InjuryFormDialog } from '../injury/injury-form-dialog';
+import { StrengthAssignDialog } from '../strength/strength-assign-dialog';
 import { CalendarBody } from './calendar-body';
 import { CalendarEventDetailsDialog } from './calendar-event-details.dialog';
 import { CalendarHeader } from './calendar-header';
@@ -321,6 +322,8 @@ export function Calendar({
     useState<Date | null>(null);
   const [aiGenerateEventDialog, setAIGenerateEventDialog] =
     useState<Date | null>(null);
+  const [strengthSessionDialog, setStrengthSessionDialog] =
+    useState<Date | null>(null);
   const [editEventDialog, setEditEventDialog] = useState<
     Event['eventId'] | null
   >(null);
@@ -444,6 +447,7 @@ export function Calendar({
       },
       createEventFromTemplate: setCreateEventFromTemplateDialog,
       createEventWithAI: setAIGenerateEventDialog,
+      createStrengthSession: setStrengthSessionDialog,
       openEventDetails: setEventDetailsOpened,
       eventDetailsOpened,
       editEvent: (eventId) => setEditEventDialog(eventId),
@@ -602,6 +606,13 @@ export function Calendar({
         icon: Award,
         onClick: () => {
           setCreateEventDialog({ date: today, type: EVENT_TYPE.COMPETITION });
+        },
+      },
+      {
+        label: m.strength_plan_session(),
+        icon: Dumbbell,
+        onClick: () => {
+          setStrengthSessionDialog(today);
         },
       },
     ];
@@ -769,6 +780,12 @@ export function Calendar({
               open={createEventFromTemplateDialog !== null}
               onClose={() => setCreateEventFromTemplateDialog(null)}
               date={createEventFromTemplateDialog || undefined}
+            />
+            <StrengthAssignDialog
+              open={strengthSessionDialog !== null}
+              onClose={() => setStrengthSessionDialog(null)}
+              date={strengthSessionDialog || undefined}
+              athleteId={athleteId}
             />
             <CreateCycleDialog
               key={`create-cycle-${createCycleDialog?.startDate?.toDateString()}`}

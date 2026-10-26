@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { EVENT_TYPE, SPORT_TYPE } from '../../misc';
+import { strengthContentSchema } from './strength.dto';
 import { createWorkoutStepDtoSchema } from './workout.dto';
 
 const baseEventSchema = z.object({
@@ -25,6 +26,8 @@ export const trainingEventSchema = baseEventSchema.extend({
     })
     .optional()
     .nullable(),
+  // Free-form strength session content (sport STRENGTH)
+  strengthContent: strengthContentSchema.optional().nullable(),
 });
 
 export const competitionEventSchema = baseEventSchema.extend({

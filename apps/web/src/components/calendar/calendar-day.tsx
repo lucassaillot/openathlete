@@ -7,6 +7,7 @@ import {
   Activity,
   Award,
   ClipboardPaste,
+  Dumbbell,
   FileText,
   StickyNote,
 } from 'lucide-react';
@@ -50,6 +51,7 @@ export function CalendarDay({
     allowCreate,
     createEventFromTemplate,
     createEventWithAI,
+    createStrengthSession,
     dragSelection,
     setDragSelection,
     createCycle,
@@ -302,6 +304,10 @@ export function CalendarDay({
             <ContextMenuItem onClick={() => createEventFromTemplate(day)}>
               <FileText className="w-4 h-4 mr-2" />
               {m.set_a_template()}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => createStrengthSession(day)}>
+              <Dumbbell className="w-4 h-4 mr-2" />
+              {m.strength_plan_session()}
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem

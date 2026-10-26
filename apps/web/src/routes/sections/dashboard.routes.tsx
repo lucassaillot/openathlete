@@ -110,6 +110,18 @@ const CalculatorPage = lazy(() =>
   })),
 );
 
+const StrengthPage = lazy(() =>
+  import('@/pages/dashboard/strength').then((module) => ({
+    default: module.StrengthPage,
+  })),
+);
+
+const StrengthProgramPage = lazy(() =>
+  import('@/pages/dashboard/strength').then((module) => ({
+    default: module.StrengthProgramPage,
+  })),
+);
+
 const OnboardingPage = lazy(() =>
   import('@/pages/dashboard/onboarding').then((module) => ({
     default: module.OnboardingPage,
@@ -197,6 +209,14 @@ export const dashboardRoutes: RouteObject[] = [
       {
         path: getPath(['dashboard', 'calculator']),
         element: <CalculatorPage />,
+      },
+      {
+        path: getPath(['dashboard', 'strength']),
+        element: <StrengthPage />,
+      },
+      {
+        path: getPath(['dashboard', 'strength', 'programId']),
+        element: <StrengthProgramPage />,
       },
       {
         path: getPath(['dashboard', 'profile']),

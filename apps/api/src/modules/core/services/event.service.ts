@@ -1081,7 +1081,8 @@ export class EventService {
       throw new NotFoundException('Event not found');
     }
 
-    const { startDate, endDate, name, type, athleteId } = event;
+    const { startDate, endDate, name, type, athleteId, strengthSessionId } =
+      event;
 
     const subEntityData: Record<string, unknown> = {
       ...event[type.toLocaleLowerCase() as Lowercase<Event['type']>],
@@ -1107,6 +1108,7 @@ export class EventService {
         name,
         type,
         athleteId,
+        strengthSessionId,
         [type.toLocaleLowerCase()]: {
           create: subEntityData,
         },

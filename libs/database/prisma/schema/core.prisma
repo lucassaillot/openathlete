@@ -49,6 +49,9 @@ model User {
   templates                 EventTemplate[]
   agentThreads              AgentThread[]
   eventTemplateFolder       EventTemplateFolder[]
+  strengthCategories        StrengthCategory[]
+  strengthPrograms          StrengthProgram[]
+  strengthExercises         StrengthExercise[]
   athleteInvitations        AthleteInvitation[]
   coachInvitationsSent      CoachInvitation[]          @relation("CoachInvitationsSent")
   coachInvitationsReceived  CoachInvitation[]          @relation("CoachInvitationsReceived")

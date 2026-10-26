@@ -19,6 +19,7 @@ import { MetricController } from './controllers/metric.controller';
 import { ProgressionController } from './controllers/progression.controller';
 import { RecordController } from './controllers/record.controller';
 import { StatisticsController } from './controllers/statistics.controller';
+import { StrengthProgramController } from './controllers/strength-program.controller';
 import { TrainingLoadController } from './controllers/training-load.controller';
 import { TrainingZoneController } from './controllers/training-zone.controller';
 import { ActivityFileParserService } from './helpers/activity-file-parser.service';
@@ -48,6 +49,7 @@ import {
 import { ProgressionService } from './services/progression.service';
 import { RecordService } from './services/record.service';
 import { StatisticsService } from './services/statistics.service';
+import { StrengthProgramService } from './services/strength-program.service';
 import { TrainingLoadService } from './services/training-load.service';
 import { TrainingZoneService } from './services/training-zone.service';
 import { OpenMeteoWeatherProvider } from './services/weather/providers/openmeteo.provider';
@@ -77,6 +79,7 @@ import { WeatherService } from './services/weather/weather.service';
     TrainingZoneController,
     TrainingLoadController,
     CycleController,
+    StrengthProgramController,
   ],
   providers: [
     EventService,
@@ -97,6 +100,7 @@ import { WeatherService } from './services/weather/weather.service';
     TrainingLoadService,
     TrainingPlanService,
     CycleService,
+    StrengthProgramService,
     WeatherService,
     ActivityFeedbackService,
     OpenMeteoWeatherProvider,
