@@ -357,6 +357,23 @@ export class PolarProviderService
   /**
    * Connect user: exchange code, register user, save account
    */
+  /**
+   * De-registers the user from Polar AccessLink, which revokes the
+   * application's access to their Polar data.
+   */
+  async deregisterUser(
+    accessToken: string,
+    polarUserId: string,
+  ): Promise<void> {
+    await axios.delete(
+      `${POLAR_API_BASE}/users/${encodeURIComponent(polarUserId)}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        timeout: 10_000,
+      },
+    );
+  }
+
   async connect(code: string, athleteId: number): Promise<ProviderAccount> {
     this.logger.log(`Starting Polar connection flow for athlete ${athleteId}`);
 

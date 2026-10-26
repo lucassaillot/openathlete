@@ -47,6 +47,7 @@ import {
   SuuntoWebhookPayload,
 } from '../../core/types/connector';
 import { FullImportResult } from '../base/base-provider.service';
+import { ProviderRevocationService } from '../provider-revocation.service';
 import { CorosProviderService, SuuntoProviderService } from '../providers';
 import { GarminProviderService } from '../providers/garmin.provider.service';
 import { PolarProviderService } from '../providers/polar.provider.service';
@@ -71,6 +72,7 @@ export class ProviderOAuthController {
     private readonly polarProviderService: PolarProviderService,
     private readonly prisma: PrismaService,
     private readonly queueService: QueueService,
+    private readonly providerRevocationService: ProviderRevocationService,
   ) {}
 
   /** Whether the server has OAuth credentials configured for this provider. */
@@ -356,7 +358,7 @@ export class ProviderOAuthController {
   @ApiOperation({
     summary: 'Disconnect provider account',
     description:
-      "Disconnects a connected provider account by revoking access and marking the account as revoked. For Garmin, calls the deleteUserRegistration API before revoking. For Suunto, calls the deauthorize API before revoking. The provider account status is updated to 'revoked' instead of being deleted, preserving historical data.",
+      "Disconnects a connected provider account by revoking access and marking the account as revoked. The access is first revoked on the provider side when it offers an API for it (Strava deauthorize, Garmin user registration deletion, Suunto deauthorize, Polar user de-registration). The provider account status is updated to 'revoked' instead of being deleted, preserving historical data.",
   })
   @ApiParam({
     name: 'provider',
@@ -398,35 +400,8 @@ export class ProviderOAuthController {
       providerEnum,
     );
 
-    // For Garmin, call deleteUserRegistration API before revoking
-    if (providerEnum === ConnectorProvider.GARMIN && account.accessToken) {
-      try {
-        await this.garminProviderService.deleteUserRegistration(
-          account.accessToken,
-        );
-      } catch (error) {
-        // Log error but continue with revocation
-        // Token might already be expired or invalid
-        this.logger.error(
-          `Failed to delete Garmin user registration: ${error instanceof Error ? error.message : String(error)}`,
-          error instanceof Error ? error.stack : undefined,
-        );
-      }
-    }
-
-    // For Suunto, call deauthorize API before revoking
-    if (providerEnum === ConnectorProvider.SUUNTO && account.accessToken) {
-      try {
-        await this.suuntoProviderService.deauthorize(account.accessToken);
-      } catch (error) {
-        // Log error but continue with revocation
-        // Token might already be expired or invalid
-        this.logger.error(
-          `Failed to deauthorize Suunto: ${error instanceof Error ? error.message : String(error)}`,
-          error instanceof Error ? error.stack : undefined,
-        );
-      }
-    }
+    // Revoke the access on the provider side first (never throws)
+    await this.providerRevocationService.revokeAccount(account);
 
     // Update status to revoked instead of deleting
     await this.prisma.providerAccount.update({
