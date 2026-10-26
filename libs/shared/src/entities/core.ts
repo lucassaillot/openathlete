@@ -14,6 +14,10 @@ import {
   type EventTemplateFolder as PrismaEventTemplateFolder,
   type EventTraining as PrismaEventTraining,
   type Record as PrismaRecord,
+  type StrengthCategory as PrismaStrengthCategory,
+  type StrengthExercise as PrismaStrengthExercise,
+  type StrengthProgram as PrismaStrengthProgram,
+  type StrengthProgramSession as PrismaStrengthProgramSession,
   type TrainingZone as PrismaTrainingZone,
   type TrainingZoneValue as PrismaTrainingZoneValue,
   type User as PrismaUser,
@@ -24,6 +28,7 @@ import {
   type WorkoutStepTarget as PrismaWorkoutStepTarget,
 } from '@openathlete/database';
 
+import type { StrengthContent } from '../types/dtos/core/strength.dto';
 import { EQUIPMENT_TYPE, EVENT_TYPE, SPORT_TYPE } from '../types/misc';
 
 export type UserRole = PrismaUserRole;
@@ -78,12 +83,27 @@ export interface Workout extends PrismaWorkout {
   steps: WorkoutStep[];
 }
 
-export type TrainingEvent = Omit<PrismaEventTraining, 'sport'> &
+export type TrainingEvent = Omit<
+  PrismaEventTraining,
+  'sport' | 'strengthContent'
+> &
   Omit<PrismaEvent, 'type' | 'sport'> & {
     type: EVENT_TYPE.TRAINING;
     sport: SPORT_TYPE;
     relatedActivity?: ActivityEvent;
     workout?: Workout;
+    strengthContent: StrengthContent | null;
+    strengthSession?:
+      | (Pick<
+          StrengthProgramSession,
+          | 'strengthProgramSessionId'
+          | 'weekNumber'
+          | 'sessionNumber'
+          | 'programId'
+        > & {
+          program?: Pick<StrengthProgram, 'strengthProgramId' | 'name'>;
+        })
+      | null;
   };
 
 export type CompetitionEvent = Omit<PrismaEvent, 'type' | 'sport'> &
@@ -137,4 +157,22 @@ export interface EventTemplateFolder extends PrismaEventTemplateFolder {
 
 export interface Cycle extends PrismaCycle {
   athlete?: Athlete;
+}
+
+export type StrengthCategory = PrismaStrengthCategory;
+
+export type StrengthExercise = PrismaStrengthExercise;
+
+export interface StrengthProgramSession
+  extends Omit<PrismaStrengthProgramSession, 'content'> {
+  content: StrengthContent;
+}
+
+export interface StrengthProgram extends PrismaStrengthProgram {
+  category?: StrengthCategory | null;
+  sessions?: StrengthProgramSession[];
+  /** Number of weeks (highest week number), computed by the API */
+  weekCount?: number;
+  /** Number of sessions, computed by the API */
+  sessionCount?: number;
 }

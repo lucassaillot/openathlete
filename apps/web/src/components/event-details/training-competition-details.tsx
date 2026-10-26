@@ -7,6 +7,7 @@ import { m } from '@/paraglide/messages';
 import {
   CompetitionEvent,
   EVENT_TYPE,
+  SPORT_TYPE,
   TrainingEvent,
   formatDistance,
 } from '@openathlete/shared';
@@ -22,6 +23,7 @@ import { SelectEvent } from '../select-event';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { WorkoutGraph, WorkoutSummary } from '../workout';
+import { StrengthSessionDetails } from './strength-session-details';
 
 interface P {
   event: CompetitionEvent | TrainingEvent;
@@ -33,6 +35,10 @@ export function TrainingCompetitionDetails({ event }: P) {
   const { events, openEventDetails } = useCalendarContext();
 
   const isTraining = event.type === EVENT_TYPE.TRAINING;
+  const isStrength =
+    isTraining &&
+    ((event as TrainingEvent).sport === SPORT_TYPE.STRENGTH ||
+      !!(event as TrainingEvent).strengthContent);
   return (
     <>
       <div className="space-y-4">
@@ -157,6 +163,9 @@ export function TrainingCompetitionDetails({ event }: P) {
               </p>
             </CardContent>
           </Card>
+        )}
+        {isStrength && (
+          <StrengthSessionDetails event={event as TrainingEvent} />
         )}
         {isTraining && event.workout && event.workout.steps.length > 0 && (
           <Card>

@@ -30,21 +30,25 @@ model Event {
   type      EventType
 
   // relationships
-  training       EventTraining?
-  competition    EventCompetition?
-  note           EventNote?
-  activity       EventActivity?
-  athlete        Athlete?          @relation(fields: [athleteId], references: [athleteId])
-  athleteId      Int?              @map("athlete_id")
-  templates      EventTemplate[]
-  trainingWeek   TrainingWeek?     @relation(fields: [trainingWeekId], references: [trainingWeekId])
-  trainingWeekId Int?              @map("training_week_id")
+  training          EventTraining?
+  competition       EventCompetition?
+  note              EventNote?
+  activity          EventActivity?
+  athlete           Athlete?                @relation(fields: [athleteId], references: [athleteId])
+  athleteId         Int?                    @map("athlete_id")
+  templates         EventTemplate[]
+  trainingWeek      TrainingWeek?           @relation(fields: [trainingWeekId], references: [trainingWeekId])
+  trainingWeekId    Int?                    @map("training_week_id")
+  /// Strength program session this event was created from (optional)
+  strengthSession   StrengthProgramSession? @relation(fields: [strengthSessionId], references: [strengthProgramSessionId], onDelete: SetNull)
+  strengthSessionId Int?                    @map("strength_session_id")
 
   // timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([trainingWeekId])
+  @@index([strengthSessionId])
   @@map("event")
 }
 
@@ -71,6 +75,8 @@ model EventTraining {
   goalRpe           Float?    @map("goal_rpe")
   /// Estimated training load (TRIMP) for this session (optional)
   estimatedLoad     Float?    @map("estimated_load")
+  /// Strength session content (free-form blocks, see `strengthContentSchema`)
+  strengthContent   Json?     @map("strength_content")
 
   // relationships
   event             Event          @relation(fields: [eventId], references: [eventId])

@@ -86,6 +86,22 @@ export const routes = {
     update: (folderId: number) => `/event-template-folder/${folderId}`,
     delete: (folderId: number) => `/event-template-folder/${folderId}`,
   },
+  strength: {
+    categories: '/strength/categories',
+    category: (categoryId: number) => `/strength/categories/${categoryId}`,
+    programs: '/strength/programs',
+    program: (programId: number) => `/strength/programs/${programId}`,
+    copyWeek: (programId: number, weekNumber: number) =>
+      `/strength/programs/${programId}/weeks/${weekNumber}/copy`,
+    week: (programId: number, weekNumber: number) =>
+      `/strength/programs/${programId}/weeks/${weekNumber}`,
+    sessions: (programId: number) => `/strength/programs/${programId}/sessions`,
+    session: (sessionId: number) => `/strength/sessions/${sessionId}`,
+    assignSession: (sessionId: number) =>
+      `/strength/sessions/${sessionId}/assign`,
+    exercises: '/strength/exercises',
+    exercise: (exerciseId: number) => `/strength/exercises/${exerciseId}`,
+  },
   record: {
     getRecords: '/record',
   },

@@ -39,6 +39,10 @@ function getPageTitle(pathname: string): string {
     [getPath(['dashboard', 'settings'])]: m.settings(),
   };
 
+  if (pathname.startsWith(getPath(['dashboard', 'strength']))) {
+    return m.strength_title();
+  }
+
   return titleMap[pathname] || 'Team Running Rouxmesnil';
 }
 

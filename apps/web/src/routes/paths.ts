@@ -33,6 +33,10 @@ export const paths: Paths = {
     onboarding: `${ROOTS.DASHBOARD}/onboarding`,
     coach: `${ROOTS.DASHBOARD}/coach`,
     calculator: `${ROOTS.DASHBOARD}/calculator`,
+    strength: {
+      root: `${ROOTS.DASHBOARD}/strength`,
+      programId: `${ROOTS.DASHBOARD}/strength/:programId`,
+    },
     calendar: {
       root: `${ROOTS.DASHBOARD}/calendar`,
       athleteId: `${ROOTS.DASHBOARD}/calendar/:athleteId`,

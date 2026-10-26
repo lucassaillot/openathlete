@@ -24,6 +24,7 @@ export type CalendarContextType = {
   createEvent: (date: Date, type: EVENT_TYPE) => void;
   createEventFromTemplate: (date: Date) => void;
   createEventWithAI: (date: Date) => void;
+  createStrengthSession: (date: Date) => void;
   editEvent: (eventId: Event['eventId']) => void;
   deleteEvent: (eventId: Event['eventId']) => void;
   events: Event[];

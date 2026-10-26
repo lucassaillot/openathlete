@@ -42,6 +42,20 @@ export const EVENT_INCLUDES = {
     },
   },
   note: true,
+  strengthSession: {
+    select: {
+      strengthProgramSessionId: true,
+      weekNumber: true,
+      sessionNumber: true,
+      programId: true,
+      program: {
+        select: {
+          strengthProgramId: true,
+          name: true,
+        },
+      },
+    },
+  },
   activity: {
     // select all fields except stream
     select: {
