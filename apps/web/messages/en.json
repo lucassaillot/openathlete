@@ -1326,5 +1326,16 @@
   "strength_session_card_title": "Strength session",
   "strength_copy_text": "Copy",
   "strength_edit_planned_session": "Edit this session",
-  "strength_edit_planned_session_description": "Changes only apply to this calendar session, not to the program."
+  "strength_edit_planned_session_description": "Changes only apply to this calendar session, not to the program.",
+  "admin_delete_user": "Delete user",
+  "admin_delete_user_title": "Delete {name}?",
+  "admin_delete_user_warning": "This cannot be undone. The account and all its data will be deleted:",
+  "admin_delete_user_item_profile": "the account, athlete profile, settings and zones",
+  "admin_delete_user_item_events": "their whole calendar: sessions, activities, records, cycles and injuries",
+  "admin_delete_user_item_library": "their templates, strength programs, messages and subscription",
+  "admin_delete_user_item_links": "their coach/athlete links and connected accounts (Garmin, Strava…)",
+  "admin_delete_user_type_email": "To confirm, type the email: {email}",
+  "admin_delete_user_confirm": "Delete permanently",
+  "admin_delete_user_success": "Account {email} deleted",
+  "admin_delete_user_error": "Could not delete this account"
 }

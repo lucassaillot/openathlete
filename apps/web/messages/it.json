@@ -1326,5 +1326,16 @@
   "strength_session_card_title": "Seduta di rinforzo",
   "strength_copy_text": "Copia",
   "strength_edit_planned_session": "Modifica questa seduta",
-  "strength_edit_planned_session_description": "Le modifiche valgono solo per questa seduta del calendario, non per il programma."
+  "strength_edit_planned_session_description": "Le modifiche valgono solo per questa seduta del calendario, non per il programma.",
+  "admin_delete_user": "Elimina utente",
+  "admin_delete_user_title": "Eliminare {name}?",
+  "admin_delete_user_warning": "Questa azione è definitiva. L'account e tutti i suoi dati saranno eliminati:",
+  "admin_delete_user_item_profile": "l'account, il profilo atleta, le impostazioni e le zone",
+  "admin_delete_user_item_events": "tutto il calendario: sedute, attività, record, cicli e infortuni",
+  "admin_delete_user_item_library": "i modelli, i programmi di rinforzo, i messaggi e l'abbonamento",
+  "admin_delete_user_item_links": "i collegamenti coach/atleta e gli account collegati (Garmin, Strava…)",
+  "admin_delete_user_type_email": "Per confermare, digita l'email: {email}",
+  "admin_delete_user_confirm": "Elimina definitivamente",
+  "admin_delete_user_success": "L'account {email} è stato eliminato",
+  "admin_delete_user_error": "Impossibile eliminare questo account"
 }

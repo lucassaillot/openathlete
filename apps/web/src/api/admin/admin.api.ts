@@ -66,6 +66,10 @@ export class AdminAPI {
     return res.data;
   }
 
+  static async deleteUser(userId: number): Promise<void> {
+    await client.delete(routes.admin.user(userId));
+  }
+
   static async impersonate(userId: number): Promise<AuthResponseDto> {
     const res = await client.post(routes.admin.impersonate(userId));
     return res.data;

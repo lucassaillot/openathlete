@@ -1331,5 +1331,16 @@
   "strength_session_card_title": "Séance de renfo",
   "strength_copy_text": "Copier",
   "strength_edit_planned_session": "Modifier cette séance",
-  "strength_edit_planned_session_description": "Les changements ne s'appliquent qu'à cette séance du calendrier, pas au programme."
+  "strength_edit_planned_session_description": "Les changements ne s'appliquent qu'à cette séance du calendrier, pas au programme.",
+  "admin_delete_user": "Supprimer l'utilisateur",
+  "admin_delete_user_title": "Supprimer {name} ?",
+  "admin_delete_user_warning": "Cette action est définitive. Le compte et toutes ses données seront supprimés :",
+  "admin_delete_user_item_profile": "le compte, le profil athlète, ses réglages et ses zones",
+  "admin_delete_user_item_events": "tout son calendrier : séances, activités, records, cycles et blessures",
+  "admin_delete_user_item_library": "ses modèles, programmes de renfo, messages et abonnement",
+  "admin_delete_user_item_links": "ses liens coach / athlète et comptes connectés (Garmin, Strava…)",
+  "admin_delete_user_type_email": "Pour confirmer, tapez l'e-mail : {email}",
+  "admin_delete_user_confirm": "Supprimer définitivement",
+  "admin_delete_user_success": "Le compte {email} a été supprimé",
+  "admin_delete_user_error": "Impossible de supprimer ce compte"
 }
