@@ -30,7 +30,7 @@ import {
 } from '@openathlete/shared';
 
 import { Language } from 'src/common/constants/languages.constant';
-import { SendEmailEvent } from 'src/events';
+import { SendEmailEvent, UserDeletingEvent } from 'src/events';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
 
 import { AuthUser } from '../decorators/user.decorator';
@@ -479,6 +479,26 @@ export class UserService {
    * (either everything is deleted or nothing is).
    */
   public async deleteUserById(userId: number) {
+    // Let other modules release external resources first (e.g. revoke
+    // Strava/Garmin access) while the provider tokens still exist.
+    const athlete = await this.prisma.athlete.findUnique({
+      where: { userId },
+      select: { athleteId: true },
+    });
+    try {
+      await this.eventEmitter.emitAsync(
+        UserDeletingEvent.SLUG,
+        new UserDeletingEvent({
+          userId,
+          athleteId: athlete?.athleteId ?? null,
+        }),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Pre-deletion cleanup failed for user ${userId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
     await this.prisma.$transaction(
       async (tx) => {
         const athlete = await tx.athlete.findUnique({
