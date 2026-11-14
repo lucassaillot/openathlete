@@ -98,6 +98,9 @@ export class EventService {
     event: Event & {
       competition: EventCompetition | null;
       training: EventTraining | null;
+      strengthSession: Prisma.StrengthProgramSessionGetPayload<
+        typeof EVENT_INCLUDES.strengthSession
+      > | null;
       note: EventNote | null;
       activity:
         | (Omit<EventActivity, 'stream'> & {
@@ -114,11 +117,16 @@ export class EventService {
         | null;
     },
   ) {
-    const { competition, training, note, activity, ...rest } = event;
+    const { competition, training, strengthSession, note, activity, ...rest } =
+      event;
+    const { content, ...strengthSessionInfo } = strengthSession ?? {};
 
     return {
       ...rest,
-      ...(training ? { ...training } : {}),
+      strengthSession: strengthSession ? strengthSessionInfo : null,
+      ...(training
+        ? { ...training, strengthContent: content ?? training.strengthContent }
+        : {}),
       ...(competition ? { ...competition } : {}),
       ...(note ? { ...note } : {}),
       ...(activity ? { ...activity } : {}),
@@ -419,6 +427,16 @@ export class EventService {
 
     if ('workout' in rest) {
       delete rest.workout;
+    }
+
+    if (
+      event.strengthSessionId !== null &&
+      'strengthContent' in rest &&
+      rest.strengthContent !== undefined
+    ) {
+      throw new BadRequestException(
+        'Edit the strength content in the linked program session',
+      );
     }
 
     // Check if RPE is being updated on an activity

@@ -48,6 +48,7 @@ export const EVENT_INCLUDES = {
       weekNumber: true,
       sessionNumber: true,
       programId: true,
+      content: true,
       program: {
         select: {
           strengthProgramId: true,

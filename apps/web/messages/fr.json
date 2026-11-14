@@ -1317,7 +1317,7 @@
   "strength_delete_category": "Supprimer la catégorie",
   "strength_delete_category_confirm": "La catégorie « {name} » sera supprimée. Ses programmes sont conservés (sans catégorie).",
   "strength_plan_session": "Séance de renfo",
-  "strength_plan_session_description": "Choisissez une séance d'un programme pour la placer dans le calendrier. Elle reste modifiable ensuite.",
+  "strength_plan_session_description": "Choisissez une séance à placer dans le calendrier. Si vous modifiez son contenu dans Renfo, toutes les séances planifiées liées sont mises à jour.",
   "strength_pick_program": "Choisir un programme",
   "strength_pick_athlete": "Choisir un athlète",
   "strength_athlete": "Athlète",

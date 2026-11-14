@@ -11,7 +11,13 @@ interface P {
 }
 
 export function EventDetails({ eventId }: P) {
-  const { data: event } = useGetEventQuery(eventId);
+  const {
+    data: event,
+    isFetching,
+    isFetchedAfterMount,
+  } = useGetEventQuery(eventId);
+
+  if (isFetching && !isFetchedAfterMount) return null;
 
   if (event?.type === EVENT_TYPE.ACTIVITY) {
     return <ActivityDetails event={event} />;

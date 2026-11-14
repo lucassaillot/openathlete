@@ -20,6 +20,7 @@ export function StrengthSessionDetails({ event }: { event: TrainingEvent }) {
   const [copied, setCopied] = useState(false);
   const content = normalizeStrengthContent(event.strengthContent);
   const origin = event.strengthSession;
+  const isLinked = event.strengthSessionId != null;
 
   const handleCopy = async () => {
     try {
@@ -58,15 +59,17 @@ export function StrengthSessionDetails({ event }: { event: TrainingEvent }) {
               )}
               <span className="hidden sm:inline">{m.strength_copy_text()}</span>
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setEditing(true)}
-            >
-              <Pencil className="size-3.5" />
-              {m.strength_edit()}
-            </Button>
+            {!isLinked && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setEditing(true)}
+              >
+                <Pencil className="size-3.5" />
+                {m.strength_edit()}
+              </Button>
+            )}
           </div>
         </div>
         {origin?.program && (
@@ -87,7 +90,7 @@ export function StrengthSessionDetails({ event }: { event: TrainingEvent }) {
       </CardContent>
 
       <StrengthSessionDialog
-        open={editing}
+        open={editing && !isLinked}
         onClose={() => setEditing(false)}
         title={m.strength_edit_planned_session()}
         description={m.strength_edit_planned_session_description()}

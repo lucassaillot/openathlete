@@ -1312,7 +1312,7 @@
   "strength_delete_category": "Delete category",
   "strength_delete_category_confirm": "The \"{name}\" category will be deleted. Its programs are kept (without category).",
   "strength_plan_session": "Strength session",
-  "strength_plan_session_description": "Pick a session from a program to place it in the calendar. You can still edit it afterwards.",
+  "strength_plan_session_description": "Choose a session to schedule. Editing its content in the strength program updates all linked calendar sessions.",
   "strength_pick_program": "Pick a program",
   "strength_pick_athlete": "Pick an athlete",
   "strength_athlete": "Athlete",

@@ -1312,7 +1312,7 @@
   "strength_delete_category": "Elimina categoria",
   "strength_delete_category_confirm": "La categoria \"{name}\" sarà eliminata. I suoi programmi vengono mantenuti (senza categoria).",
   "strength_plan_session": "Seduta di rinforzo",
-  "strength_plan_session_description": "Scegli una seduta di un programma da inserire nel calendario. Resta modificabile in seguito.",
+  "strength_plan_session_description": "Scegli una seduta da pianificare. Modificare il suo contenuto nel programma di rinforzo aggiorna tutte le sedute collegate nel calendario.",
   "strength_pick_program": "Scegli un programma",
   "strength_pick_athlete": "Scegli un atleta",
   "strength_athlete": "Atleta",
