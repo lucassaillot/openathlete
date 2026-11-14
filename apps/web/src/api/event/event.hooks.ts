@@ -352,6 +352,7 @@ export const useGetEventQuery = (
   opt?: QueryOptions<Awaited<ReturnType<typeof EventAPI.getEvent>>>,
 ) =>
   useQuery({
+    refetchOnMount: 'always',
     ...opt,
     queryFn: () => EventAPI.getEvent(eventId),
     queryKey: [eventKeys.getEvent, eventId],

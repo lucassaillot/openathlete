@@ -7,7 +7,7 @@
 // - StrengthProgramSession: one session of a week, with free-form content
 // - StrengthExercise: the user's personal exercise library
 // Sessions are placed in an athlete's calendar as TRAINING events (sport
-// STRENGTH) carrying a copy of the session content.
+// STRENGTH) linked to the current session content, with a local fallback.
 // ============================================================================
 
 /// User-defined strength category (e.g. "Feet", "Legs", "General").

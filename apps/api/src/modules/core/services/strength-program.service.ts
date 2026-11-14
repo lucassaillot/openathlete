@@ -346,7 +346,7 @@ export class StrengthProgramService {
     await this.touchProgram(session.programId);
   }
 
-  /** Places a copy of the session in an athlete's calendar. */
+  /** Places a linked session in an athlete's calendar. */
   async assignSession(
     user: AuthUser,
     sessionId: number,

@@ -188,7 +188,7 @@ export class StrengthProgramController {
 
   @Post('sessions/:sessionId/assign')
   @ApiOperation({
-    summary: "Place a copy of the session in an athlete's calendar",
+    summary: "Place a linked session in an athlete's calendar",
   })
   assignSession(
     @JwtUser() user: AuthUser,
