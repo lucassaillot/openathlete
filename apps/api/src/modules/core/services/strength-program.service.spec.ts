@@ -39,15 +39,25 @@ const exercise = (name: string) => ({
 
 const CONTENT: StrengthContent = {
   blocks: [
-    { type: 'exercise', id: 'a', exercise: exercise('Squat') },
+    {
+      type: 'exercise',
+      id: 'a',
+      exercise: {
+        ...exercise('Squat'),
+        mediaUrl: 'https://example.com/squat',
+      },
+    },
     {
       type: 'circuit',
       id: 'b',
       name: 'Pieds',
       rounds: '3',
-      rest: '',
-      notes: '',
-      exercises: [exercise('Mollets'), exercise(' Squat ')],
+      rest: '2 min',
+      notes: 'Garder le même rythme',
+      exercises: [
+        { ...exercise('Mollets'), mediaUrl: 'https://example.com/mollets' },
+        exercise(' Squat '),
+      ],
     },
     { type: 'note', id: 'c', text: 'Étirements' },
   ],
@@ -158,12 +168,14 @@ describe('StrengthProgramService', () => {
           weekNumber: 4,
           sessionNumber: 1,
           name: 'A',
+          content: CONTENT,
         }),
         expect.objectContaining({
           programId: 5,
           weekNumber: 4,
           sessionNumber: 2,
           name: 'B',
+          content: CONTENT,
         }),
       ],
     });

@@ -66,6 +66,26 @@ export function formatSetsReps(exercise: StrengthExerciseItem): string {
   return sets || reps || '';
 }
 
+export function getStrengthMediaHref(value: string): string | null {
+  const url = value.trim();
+  if (!url || /[\s\\]/u.test(url)) return null;
+
+  const hasHttpScheme = /^https?:\/\//i.test(url);
+  const address = url.replace(/^\/\//, '');
+  const hasBareDomain =
+    /^(?:[^/:?#@.]+\.)+[^/:?#@.]+\.?(?::\d+)?(?:[/?#]|$)/u.test(address);
+  if (!hasHttpScheme && !hasBareDomain) return null;
+
+  try {
+    const parsed = new URL(hasHttpScheme ? url : `https://${address}`);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+      ? parsed.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function countExercises(content: StrengthContent): number {
   return content.blocks.reduce((total, block) => {
     if (block.type === 'exercise') return total + 1;
@@ -98,6 +118,8 @@ export function strengthContentToText(content: StrengthContent): string {
       .join(' · ');
     const lines = [`${indent}• ${e.name}${details ? ` — ${details}` : ''}`];
     if (e.notes) lines.push(`${indent}  ${e.notes}`);
+    const media = e.mediaUrl?.trim();
+    if (media) lines.push(`${indent}  ${getStrengthMediaHref(media) ?? media}`);
     return lines.join('\n');
   };
   return content.blocks
@@ -107,11 +129,14 @@ export function strengthContentToText(content: StrengthContent): string {
       const header = [
         block.name || m.strength_block_circuit(),
         block.rounds && `× ${block.rounds}`,
+        block.rest &&
+          `· ${m.strength_field_rest_between_rounds().toLowerCase()} ${block.rest}`,
       ]
         .filter(Boolean)
         .join(' ');
       return [
         header,
+        ...(block.notes ? [block.notes] : []),
         ...block.exercises.map((e) => exerciseLine(e, '  ')),
       ].join('\n');
     })
