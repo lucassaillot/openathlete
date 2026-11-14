@@ -1,13 +1,16 @@
 import { m } from '@/paraglide/messages';
+import { isCapacitor } from '@/utils/capacitor';
 import { cn } from '@/utils/shadcn';
+import { Browser } from '@capacitor/browser';
 import { ExternalLink, Repeat, StickyNote } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type {
   StrengthContent,
   StrengthExerciseItem,
 } from '@openathlete/shared';
 
-import { formatSetsReps } from './strength-utils';
+import { formatSetsReps, getStrengthMediaHref } from './strength-utils';
 
 function Tag({ label, value }: { label: string; value: string }) {
   return (
@@ -16,17 +19,6 @@ function Tag({ label, value }: { label: string; value: string }) {
       <span className="min-w-0 break-words font-medium">{value}</span>
     </span>
   );
-}
-
-function safeUrl(url: string): string | null {
-  try {
-    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-      ? parsed.toString()
-      : null;
-  } catch {
-    return null;
-  }
 }
 
 function ExerciseView({
@@ -39,7 +31,8 @@ function ExerciseView({
   compact?: boolean;
 }) {
   const prescription = formatSetsReps(exercise);
-  const media = exercise.mediaUrl ? safeUrl(exercise.mediaUrl) : null;
+  const media = exercise.mediaUrl?.trim();
+  const mediaHref = media ? getStrengthMediaHref(media) : null;
   const tags = [
     exercise.load && { label: m.strength_field_load(), value: exercise.load },
     exercise.rest && { label: m.strength_field_rest(), value: exercise.rest },
@@ -88,16 +81,32 @@ function ExerciseView({
             {exercise.notes}
           </p>
         )}
-        {media && (
+        {mediaHref ? (
           <a
-            href={media}
+            href={mediaHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+            onClick={(event) => {
+              if (!isCapacitor()) return;
+              event.preventDefault();
+              void Browser.open({ url: mediaHref }).catch(() =>
+                toast.error(m.strength_error()),
+              );
+            }}
+            className="inline-flex w-fit max-w-full items-start gap-1 text-sm font-medium text-primary underline underline-offset-4"
           >
-            <ExternalLink className="size-3.5" />
-            {m.strength_open_media()}
+            <ExternalLink
+              aria-hidden="true"
+              className="mt-0.5 size-3.5 shrink-0"
+            />
+            <span className="min-w-0 break-words">{media}</span>
           </a>
+        ) : (
+          media && (
+            <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+              {media}
+            </p>
+          )
         )}
       </div>
     </div>
@@ -149,7 +158,7 @@ export function StrengthContentView({
         const circuitDetails = [
           block.rounds && m.strength_rounds_value({ rounds: block.rounds }),
           block.rest &&
-            `${m.strength_field_rest().toLowerCase()} ${block.rest}`,
+            `${m.strength_field_rest_between_rounds()} ${block.rest}`,
         ]
           .filter(Boolean)
           .join(' · ');

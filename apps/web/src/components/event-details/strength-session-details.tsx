@@ -48,6 +48,7 @@ export function StrengthSessionDetails({ event }: { event: TrainingEvent }) {
               type="button"
               variant="ghost"
               size="sm"
+              aria-label={m.strength_copy_text()}
               onClick={handleCopy}
             >
               {copied ? (
