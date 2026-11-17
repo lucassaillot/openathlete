@@ -223,6 +223,18 @@ export class StravaProviderService
   /**
    * Complete OAuth flow and save account
    */
+  /**
+   * Revokes the application's access to the athlete's Strava account
+   * (it disappears from "My Apps" on Strava and webhooks stop).
+   */
+  async deauthorize(accessToken: string): Promise<void> {
+    await axios.post(
+      'https://www.strava.com/oauth/deauthorize',
+      new URLSearchParams({ access_token: accessToken }),
+      { timeout: 10_000 },
+    );
+  }
+
   async connect(user: AuthUser, code: string): Promise<ProviderAccount> {
     const tokenResponse = await this.exchangeCodeForTokens(code);
 
